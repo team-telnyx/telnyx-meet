@@ -9,6 +9,9 @@ built using the [@telnyx/video](https://www.npmjs.com/package/@telnyx/video) SDK
 You can join in a video conference room and have a meeting with many participants publishing and subscribing to audio and video streams. You can also share your screen into the meeting.
 
 
+## Deploy your own
+
+Once you have access to [the environment variables you'll need](#step-4-set-up-environment-variables), deploy the example using [Vercel](https://vercel.com/new/git/external?repository-url=https://github.com/team-telnyx/telnyx-meet.git&project-name=telnyx-meet&repository-name=telnyx-meet&env=TELNYX_API_HOST,TELNYX_API_KEY&envDescription=Required%20to%20connect%20the%20app%20with%20TelnyxMeet&envLink=https://github.com/team-telnyx/telnyx-meet/#step-4-set-up-environment-variables):
 
 ## Getting Started
 
@@ -65,9 +68,9 @@ After you have cloned this repo:
 
 Run the commands
 
-1 - `yarn` or `npm i` to install the dependencies.
+1 - `yarn` to install the dependencies.
 
-2 - `yarn dev` or `npm run dev` will initialize the server.
+2 - `yarn dev` will initialize the server.
 
 3 - Access the `http://localhost:3000/rooms`
 
