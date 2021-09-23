@@ -19,8 +19,9 @@ Just follow these steps:
 1. Sign up for a Telnyx Account
 2. Create an API KEY
 3. Create a Room ID
-4. Run the code
-5. Deploy on Vercel
+4. Set up environment variables
+5. Run the code
+6. Deploy on Vercel
 
 ---
 
@@ -43,13 +44,8 @@ You need this API Key to consume the API `https://api.telnyx.com/v2/rooms` to ma
 
 You should read this documentation [video/Rooms](https://developers.telnyx.com/docs/api/v2/video/Rooms) to learn how to create a new video room id. When you get your `roomId` you can join in a video meet conference.
 
-## Step 4: Run the code
 
-After you have cloned this repo: 
-
-```bash
-  % git clone https://github.com/team-telnyx/telnyx-meet.git
-```
+### Step 4. Set up environment variables
 
 Create a new copy of `.env.sample` with the name `.env.local` and set the env var `TELNYX_API_KEY` with your Telnyx API KEY value.
 
@@ -57,6 +53,14 @@ Your `.env.local` file should look like this:
 ```js
 TELNYX_API_HOST=https://api.telnyx.com/v2
 TELNYX_API_KEY="KEYae7df0................"
+```
+
+## Step 5: Run the code
+
+After you have cloned this repo: 
+
+```bash
+  % git clone https://github.com/team-telnyx/telnyx-meet.git
 ```
 
 Run the commands
@@ -73,7 +77,7 @@ Run the commands
 
 ## ![telnyx meet](screenshots/telnyx-meet.png)
 
-## Step 5: Deploy on Vercel
+## Step 6: Deploy on Vercel
 
 You can deploy this app to the cloud with [Vercel](https://vercel.com) ([Documentation](https://nextjs.org/docs/deployment)).
 
@@ -87,4 +91,4 @@ To deploy your local project to Vercel, push it to GitHub/GitLab/Bitbucket and [
 
 Alternatively, you can deploy using our template by clicking on the Deploy button below.
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/git/external?repository-url=https://github.com/team-telnyx/telnyx-meet.git&project-name=telnyx-meet&repository-name=telnyx-meet&env=TELNYX_API_HOST,TELNYX_API_KEY&envDescription=Required%20to%20connect%20the%20app%20with%20TelnyxMeet&envLink=https://vercel.link/cms-cosmic-env)
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/git/external?repository-url=https://github.com/team-telnyx/telnyx-meet.git&project-name=telnyx-meet&repository-name=telnyx-meet&env=TELNYX_API_HOST,TELNYX_API_KEY&envDescription=Required%20to%20connect%20the%20app%20with%20TelnyxMeet&envLink=https://github.com/team-telnyx/telnyx-meet/#step-4-set-up-environment-variables)
