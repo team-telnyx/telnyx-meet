@@ -19,6 +19,10 @@ const Container = styled.div<{ viewType: string }>`
       display: none;
     }`
       : null}
+
+  @media (max-width: ${breakpointMedium}px) {
+    margin-bottom: 0px;
+  }
 `;
 
 export function Pagination({

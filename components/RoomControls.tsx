@@ -46,6 +46,12 @@ const LeaveButton = styled(Button)`
   margin-right: 6px;
 `;
 
+const FontAwesomeIconStyled = styled(FontAwesomeIcon)`
+  @media (max-width: ${breakpointMedium}px) {
+    font-size: 25px;
+  }
+`;
+
 const isSinkIdSupported = (): boolean => {
   const audio = document.createElement('audio');
   // @ts-expect-error
@@ -60,7 +66,7 @@ const getUserMedia = async (
 
 const getDisplayMedia = async (): Promise<MediaStream> => {
   // @ts-expect-error
-  return navigator?.mediaDevices?.getDisplayMedia();
+  return navigator?.mediaDevices?.getDisplayMedia({ audio: true, video: true });
 };
 
 function DeviceSelect({
@@ -100,7 +106,7 @@ function DeviceSelect({
           <Box>
             {device.id === currentDeviceId && (
               <Text color='accent-1'>
-                <FontAwesomeIcon icon={faCheck} fixedWidth />
+                <FontAwesomeIconStyled icon={faCheck} fixedWidth />
               </Text>
             )}
           </Box>
@@ -139,7 +145,9 @@ export default function RoomControls({
 
   const [audioTrack, setAudioTrack] = useState<MediaStreamTrack>();
   const [videoTrack, setVideoTrack] = useState<MediaStreamTrack>();
-  const [presentationTrack, setPresentationTrack] =
+  const [presentationAudioTrack, setPresentationAudioTrack] =
+    useState<MediaStreamTrack>();
+  const [presentationVideoTrack, setPresentationVideoTrack] =
     useState<MediaStreamTrack>();
 
   const publisher = room.state.publisher;
@@ -192,20 +200,24 @@ export default function RoomControls({
   }, [audioTrack, videoTrack]);
 
   useEffect(() => {
-    if (presentationStream && !presentationTrack) {
+    if (presentationStream && !presentationVideoTrack) {
       room.unpublish('presentation');
 
       return;
     }
 
-    if (presentationTrack) {
-      room.publish({ key: 'presentation', videoTrack: presentationTrack });
+    if (presentationVideoTrack) {
+      room.publish({
+        key: 'presentation',
+        videoTrack: presentationVideoTrack,
+        audioTrack: presentationAudioTrack,
+      });
 
-      presentationTrack.onended = () => {
+      presentationVideoTrack.onended = () => {
         room.unpublish('presentation');
       };
     }
-  }, [presentationTrack]);
+  }, [presentationVideoTrack, presentationAudioTrack]);
 
   useEffect(() => {
     if (!room.state.publisher.streamsPublished['self']) {
@@ -216,8 +228,11 @@ export default function RoomControls({
     }
 
     if (!room.state.publisher.streamsPublished['presentation']) {
-      presentationTrack?.stop();
-      setPresentationTrack(undefined);
+      presentationAudioTrack?.stop();
+      presentationVideoTrack?.stop();
+
+      setPresentationAudioTrack(undefined);
+      setPresentationVideoTrack(undefined);
     }
   }, [room.state.publisher.streamsPublished]);
 
@@ -359,7 +374,7 @@ export default function RoomControls({
                     !selfStream?.audioEnabled ? 'status-error' : 'accent-1'
                   }
                 >
-                  <FontAwesomeIcon
+                  <FontAwesomeIconStyled
                     icon={
                       !selfStream?.audioEnabled
                         ? faMicrophoneSlash
@@ -412,7 +427,7 @@ export default function RoomControls({
                     !selfStream?.videoEnabled ? 'status-error' : 'accent-1'
                   }
                 >
-                  <FontAwesomeIcon
+                  <FontAwesomeIconStyled
                     icon={!selfStream?.videoEnabled ? faVideoSlash : faVideo}
                     fixedWidth
                   />
@@ -434,13 +449,17 @@ export default function RoomControls({
               publisher.streamsPublished['presentation']?.status === 'pending'
             }
             onClick={() => {
-              if (presentationTrack) {
-                presentationTrack.stop();
-                setPresentationTrack(undefined);
+              if (presentationAudioTrack || presentationVideoTrack) {
+                presentationAudioTrack?.stop();
+                presentationVideoTrack?.stop();
+
+                setPresentationAudioTrack(undefined);
+                setPresentationVideoTrack(undefined);
               } else {
                 getDisplayMedia()
                   .then((stream) => {
-                    setPresentationTrack(stream?.getVideoTracks()[0]);
+                    setPresentationAudioTrack(stream?.getAudioTracks()[0]);
+                    setPresentationVideoTrack(stream?.getVideoTracks()[0]);
                   })
                   .catch((err) => {
                     handleMediaError(err, 'screen');
@@ -458,7 +477,10 @@ export default function RoomControls({
                       : 'status-error'
                   }
                 >
-                  <FontAwesomeIcon icon={faLaptop} fixedWidth />
+                  <FontAwesomeIconStyled
+                    icon={faLaptop}
+                    fixedWidth
+                  />
                 </Text>
               </Box>
               <Text size='xsmall' color='light-6'>

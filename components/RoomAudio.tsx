@@ -22,19 +22,18 @@ export default function RoomAudio({
         return;
       }
 
-      const streamId = participant.streams['self']?.streamId;
-      if (!streamId) {
-        return;
-      }
+      Object.keys(participant.streams).forEach((key) => {
+        const streamId = participant.streams[key].streamId;
 
-      const stream = streams[streamId];
-      if (!stream.audioTrack) {
-        return;
-      }
+        const stream = streams[streamId];
+        if (!stream.audioTrack) {
+          return;
+        }
 
-      audioTracks.push({
-        id: stream.id,
-        track: stream.audioTrack,
+        audioTracks.push({
+          id: stream.id,
+          track: stream.audioTrack,
+        });
       });
     });
 

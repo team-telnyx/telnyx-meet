@@ -45,8 +45,8 @@ function Room({
     <Box fill background='#1b1b1b' overflow='hidden'>
       <RoomInfo roomId={roomId} />
 
-      <Box direction='row' flex>
-        <Box flex style={{ position: 'relative', margin: '16px' }}>
+      <Box direction='row' flex >
+        <Box flex id="room-container" style={{ position: 'relative', margin: '16px' }}>
           {room.state.status === 'connecting' && (
             <Box align='center' justify='center' fill>
               <Text

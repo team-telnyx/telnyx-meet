@@ -1,6 +1,5 @@
-import React, { ReactChild } from 'react';
+import React, { ReactChild, useEffect } from 'react';
 import Feed from './Feed';
-import { Participant } from '@telnyx/video';
 import { TelnyxRoom } from '../hooks/room';
 import { useWindowSize, getWindowSize } from '../hooks/windowSize';
 import { Pagination } from './Pagination';
@@ -48,11 +47,47 @@ function GridLayout({
   getStatsForParticipantStream: TelnyxRoom['getStatsForParticipantStream'];
   dataTestId: string;
 }) {
+  const NAVIGATION_BUTTONS_HEIGHT = 96;
+  const REPORT_BUTTON_HEIGHT = 32;
+  const screenSize = useWindowSize();
+
+  const [maxParticipantPerPage, setMaxParticipantPerPage] = React.useState(2);
+
+  useEffect(() => {
+    const MAIN_FEEDS_MIN_WIDTH = 320;
+    const MAIN_FEEDS_MIN_HEIGHT = 640;
+
+    const FEED_MIN_WIDTH = 244;
+    const FEED_MIN_HEIGHT = 137;
+
+    const mainFeeds = document.getElementById('room-container');
+    const mainFeedWidth = mainFeeds!.clientWidth || MAIN_FEEDS_MIN_WIDTH;
+    const mainFeedHeight = mainFeeds!.clientHeight || MAIN_FEEDS_MIN_HEIGHT;
+    const mainFeedsArea =
+      mainFeedWidth * (mainFeedHeight - NAVIGATION_BUTTONS_HEIGHT - REPORT_BUTTON_HEIGHT);
+    const feed = document.querySelectorAll('[data-id="video-feed-grid"]')[0];
+
+    let feedArea;
+
+    if (feed) {
+      feedArea = feed.clientWidth * feed.clientHeight;
+    } else {
+      feedArea = FEED_MIN_WIDTH * FEED_MIN_HEIGHT;
+    }
+
+    const totalArea = Math.floor(mainFeedsArea / feedArea);
+
+    if (totalArea > 0) {
+      setMaxParticipantPerPage(totalArea);
+    }
+  }, [screenSize]);
+
   const feeds = Object.keys(participants).map((id) => {
     const participant = participants[id];
 
     return (
       <Feed
+        dataId='video-feed-grid'
         key={`${participant.id}_self`}
         participant={participant}
         streamKey='self'
@@ -67,39 +102,30 @@ function GridLayout({
     );
   });
 
-  const screenSize = useWindowSize();
-
   const xlarge = {
     size: 5,
-    userPerPage: 12,
   };
 
   const large = {
     size: 4,
-    userPerPage: 12,
   };
 
   const medium = {
     size: 3,
-    userPerPage: 12,
   };
 
   const small = {
     size: 2,
-    userPerPage: 6,
   };
 
   const xsmall = {
     size: 1,
-    userPerPage: 2,
   };
 
   const resolutions: any = { xlarge, large, medium, small, xsmall };
   const columnsQuantity = screenSize
     ? resolutions[getWindowSize(screenSize?.width || 0)]
     : medium;
-
-  const USERS_PER_PAGE = columnsQuantity.userPerPage;
 
   const layoutProps = {
     dataTestId,
@@ -112,7 +138,7 @@ function GridLayout({
         <Pagination
           viewType='grid'
           data={feeds}
-          dataLimit={USERS_PER_PAGE}
+          dataLimit={maxParticipantPerPage}
           RenderComponent={GridView}
           layoutProps={layoutProps}
         />

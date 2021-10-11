@@ -25,6 +25,7 @@ function Feed({
   mirrorVideo = false,
   audioOutputDeviceId,
   getStatsForParticipantStream,
+  dataId,
 }: {
   participant: Participant;
   streamKey: string;
@@ -35,7 +36,9 @@ function Feed({
   muteAudio: boolean;
   mirrorVideo: boolean;
   audioOutputDeviceId?: MediaDeviceInfo['deviceId'];
+  dataId?: string;
 }) {
+  const audioActivityIndicator = streamKey === 'self';
   const [showStatsOverlay, setShowStatsOverlay] = useState(false);
   const [stats, setStats] = useState<any>(null);
   const [allowedBrowser, setAllowedBrowser] = useState(false);
@@ -138,6 +141,7 @@ function Feed({
   return (
     <div
       id={stream?.isSpeaking ? 'speaking-box' : ''}
+      data-id={dataId}
       data-testid={`video-feed-${context.username
         ?.toLowerCase()
         .replace(' ', '-')}`}
@@ -148,7 +152,7 @@ function Feed({
           ? 'unset'
           : `${(9 / 16) * 100}%` /* 56.25% - 16:9 Aspect Ratio */,
         overflow: 'hidden',
-        border: stream?.isSpeaking ? '3px solid yellow' : 'unset',
+        border: stream?.isSpeaking && audioActivityIndicator ? '3px solid yellow' : 'unset',
         height: isPresentation ? '100%' : 'unset',
       }}
     >

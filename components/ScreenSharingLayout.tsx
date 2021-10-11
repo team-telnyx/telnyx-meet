@@ -1,10 +1,11 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import Feed from './Feed';
 import { Participant } from '@telnyx/video';
 import { TelnyxRoom } from '../hooks/room';
 import styled from 'styled-components';
 import { Pagination } from './Pagination';
 import { ReactChild } from 'react';
+import { useWindowSize } from '../hooks/windowSize';
 
 const breakpointMedium = 1023;
 
@@ -13,6 +14,8 @@ const SideBar = styled.div`
   grid-template-columns: minmax(200px, 347px);
   grid-gap: 5px 0px;
   align-content: start;
+  max-height: calc(100% - 54px);
+  overflow: hidden;
 
   @media (max-width: ${breakpointMedium}px) {
     display: none;
@@ -26,8 +29,6 @@ function NewSideBar({ children }: { children: ReactChild }) {
     </SideBar>
   );
 }
-
-const USERS_PER_PAGE = 4;
 
 function ScreenSharingLayout({
   participants,
@@ -48,11 +49,38 @@ function ScreenSharingLayout({
   getStatsForParticipantStream: TelnyxRoom['getStatsForParticipantStream'];
   dataTestId: string;
 }) {
+
+  const USERS_PER_PAGE = 3;
+  const NAVIGATION_BUTTONS_HEIGHT = 48;
+  const FEED_MIN_HEIGHT = 154;
+
+  const [maxParticipantPerPage, setMaxParticipantPerPage] =
+    useState(USERS_PER_PAGE);
+
+  const screenSize = useWindowSize();
+
+  useEffect(() => {
+    const feeds = document.getElementById('feeds');
+    const feed = document.querySelectorAll('[data-id="video-feed-sidebar"]')[0];
+  
+    if (feeds) {
+      let feedHeight = feed && feed.clientHeight ? feed.clientHeight : FEED_MIN_HEIGHT;
+
+      const maxPerPage = Math.floor((feeds.clientHeight - NAVIGATION_BUTTONS_HEIGHT) / feedHeight);
+ 
+      if(maxPerPage > 0) {
+        setMaxParticipantPerPage(maxPerPage);
+      }
+    }
+
+  }, [maxParticipantPerPage, screenSize.height]);
+
   const participantsFeeds = Object.keys(participants).map((id) => {
     const participant = participants[id];
-
+  
     return (
       <Feed
+        dataId="video-feed-sidebar"
         key={`${participant.id}_self`}
         participant={participant}
         streamKey='self'
@@ -69,6 +97,7 @@ function ScreenSharingLayout({
 
   return (
     <div
+      id="feeds"
       data-testid={dataTestId}
       style={{
         display: 'flex',
@@ -82,7 +111,7 @@ function ScreenSharingLayout({
           viewType='screen-sharing'
           RenderComponent={NewSideBar}
           data={participantsFeeds}
-          dataLimit={USERS_PER_PAGE}
+          dataLimit={maxParticipantPerPage}
         />
       ) : null}
       <div
