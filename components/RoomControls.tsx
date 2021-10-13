@@ -65,7 +65,6 @@ const getUserMedia = async (
 };
 
 const getDisplayMedia = async (): Promise<MediaStream> => {
-  // @ts-expect-error
   return navigator?.mediaDevices?.getDisplayMedia({ audio: true, video: true });
 };
 

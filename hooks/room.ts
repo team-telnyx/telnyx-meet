@@ -61,6 +61,7 @@ export const useRoom = ({ roomId, tokens, context }: Props): TelnyxRoom => {
     createRoom({ roomId, clientToken: tokens.clientToken, context })
   );
   const [clientToken, setClientToken] = useState<string>(tokens.clientToken);
+  //@ts-ignore
   const [state, setState] = useState<State>(roomRef.current.state);
   const [presenter, setPresenter] = useState<Participant>();
 

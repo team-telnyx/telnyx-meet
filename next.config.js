@@ -1,8 +1,20 @@
 const WorkerPlugin = require('worker-plugin');
+const withSourceMaps = require('@zeit/next-source-maps')();
 const { BugsnagSourceMapUploaderPlugin } = require('webpack-bugsnag-plugins');
 
-module.exports = {
-  webpack: (config, { buildId, dev, isServer, defaultLoaders, webpack }) => {
+module.exports = withSourceMaps({
+  // productionBrowserSourceMaps: true,
+  serverRuntimeConfig: {
+    // Will only be available on the server side
+    BUGSNAG_API_KEY: process.env.NEXT_PUBLIC_BUGSNAG_API_KEY,
+  },
+  publicRuntimeConfig: {
+    // Will be available on both server and client
+    BUGSNAG_API_KEY: process.env.NEXT_PUBLIC_BUGSNAG_API_KEY, // Pass through env variables
+  },
+  webpack: (config, options) => {  
+    const { isServer } = options;
+
     if (!isServer) {
       config.plugins.push(
         new WorkerPlugin({
@@ -18,7 +30,7 @@ module.exports = {
         new BugsnagSourceMapUploaderPlugin({
           apiKey: process.env.NEXT_PUBLIC_BUGSNAG_API_KEY,
           appVersion: require('./package.json').version,
-          publicPath: process.env.SOURCE_MAPS_PATH,
+          publicPath: `${process.env.HOSTNAME}/_next/`,
           overwrite: true,
           uploadSource: true,
         })
@@ -27,4 +39,4 @@ module.exports = {
 
     return config;
   },
-};
+});
