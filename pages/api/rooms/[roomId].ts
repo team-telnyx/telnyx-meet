@@ -1,6 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 
 import { notify } from '../../../lib/bugsnag';
+import { getAPIKey, USER_SCOPE } from '../../../utils/helpers';
 
 type Data = {
   data: {};
@@ -14,11 +15,14 @@ export default async function handler(
 
   if (req.method === 'GET' && roomId) {
     try {
+      const userScope = req.headers['X-Telnyx-Internal-Video-Meet-Account'] as USER_SCOPE;
+      const apiKey = getAPIKey(userScope);
+
       const response = await fetch(
         `${process.env.TELNYX_API_HOST}/rooms/${roomId}`,
         {
           headers: {
-            Authorization: `Bearer ${process.env.TELNYX_API_KEY}`,
+            Authorization: `Bearer ${apiKey}`,
           },
         }
       );

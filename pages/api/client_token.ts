@@ -1,4 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
+import { getAPIKey, USER_SCOPE } from '../../utils/helpers';
 
 import { notify } from '../../lib/bugsnag';
 
@@ -10,6 +11,8 @@ export default async function handler(
 ) {
   if (req.method === 'POST') {
     if (req.body && req.body.room_id) {
+      const userScope = req.headers['X-Telnyx-Internal-Video-Meet-Account'] as USER_SCOPE;
+      const apiKey = getAPIKey(userScope);
       try {
         const response = await fetch(
           `${process.env.TELNYX_API_HOST}/rooms/${req.body.room_id}/actions/generate_join_client_token`,
@@ -21,7 +24,7 @@ export default async function handler(
             }),
             headers: {
               'Content-Type': 'application/json',
-              Authorization: `Bearer ${process.env.TELNYX_API_KEY}`,
+              Authorization: `Bearer ${apiKey}`,
             },
           }
         );
