@@ -1,5 +1,7 @@
 import React from 'react';
 import { Box, Button, TextInput } from 'grommet';
+import { saveItem } from '../utils/storage';
+import { USERNAME_KEY } from '../constants';
 
 interface Props {
   roomId: string;
@@ -73,6 +75,7 @@ const JoinRoom = ({
             disabled={!roomId}
             label='Join room'
             onClick={() => {
+              saveItem(USERNAME_KEY, username);
               joinRoom();
             }}
           />

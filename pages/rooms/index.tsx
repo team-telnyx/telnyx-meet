@@ -7,10 +7,23 @@ import Room from '../../components/Room';
 import JoinRoom from '../../components/JoinRoom';
 
 import { generateUsername, generateId } from '../../utils/helpers';
+import { getItem } from '../../utils/storage';
+import { USERNAME_KEY } from '../../constants';
 
+
+function getUserName(): string {
+  let user = getItem(USERNAME_KEY);
+  if (user) {
+    return user;
+  } else {
+    return generateUsername();
+  }
+}
 export default function Rooms({ id }: { id: string }) {
   const [roomId, setRoomId] = useState<string>();
-  const [username, setUsername] = useState<string>(generateUsername());
+  
+  const [username, setUsername] = useState<string>('');
+
   const [tokens, setTokens] = useState<{
     clientToken: string;
     refreshToken: string;
@@ -19,6 +32,10 @@ export default function Rooms({ id }: { id: string }) {
     refreshToken: '',
   });
   const [isReady, setIsReady] = useState(false);
+
+  useEffect(() => {
+    setUsername(getUserName())
+  }, []) 
 
   useEffect(() => {
     setRoomId(id);
