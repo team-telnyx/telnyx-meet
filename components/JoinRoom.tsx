@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { Box, Button, TextInput } from 'grommet';
 
 interface Props {
@@ -7,6 +7,7 @@ interface Props {
   updateRoomId?: (value: string) => void;
   updateUsername: (value: string) => void;
   updateTokens: (tokens: { clientToken: string; refreshToken: string }) => void;
+  localStream: MediaStream;
 }
 
 const JoinRoom = ({
@@ -15,7 +16,9 @@ const JoinRoom = ({
   updateRoomId,
   updateUsername,
   updateTokens,
+  localStream,
 }: Props) => {
+  const videoElRef = useRef<HTMLVideoElement>(null);
   const joinRoom = async () => {
     const response = await fetch('/api/client_token', {
       method: 'POST',
@@ -37,17 +40,78 @@ const JoinRoom = ({
     }
   };
 
+  console.log('localStream', localStream);
+  console.log('videoElRef.current', videoElRef.current);
+
+  if (videoElRef.current) {
+    videoElRef.current.srcObject = localStream;
+  }
+
   return (
-    <Box fill background='#1b1b1b' overflow='hidden'>
-      <Box align='center' justify='center' fill gap='xsmall'>
-        <Box
-          background={{ color: 'white', opacity: 'weak' }}
-          round='xsmall'
-          pad='small'
+    <div
+      style={{
+        display: 'grid',
+        height: '100%',
+        width: '100%',
+        gridTemplateColumns: '1fr 1fr',
+        alignItems: 'center',
+      }}
+    >
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'center',
+          backgroundColor: 'blue',
+          height: '100%',
+          width: '100%',
+        }}
+      >
+        <div
+          id='preview-video'
+          style={{
+            backgroundColor: '#202124',
+            // paddingTop: '56.25%',
+            borderRadius: 8,
+            position: 'relative',
+            minWidth: 740,
+            alignSelf: 'center',
+            overflow: 'hidden',
+            height: '416px'
+          }}
         >
-          Enter the Room UUID and choose a name for yourself
-        </Box>
+          {localStream && (
+            <video
+              ref={videoElRef}
+              playsInline={true}
+              autoPlay={true}
+              muted={true}
+              style={{
+                position: 'absolute',
+                left: 0,
+                top: 0,
+                height: '100%',
+                width: '100%',
+                borderRadius: '8px',
+                transform: 'scaleX(-1)',
+                objectFit: 'cover',
+              }}
+            ></video>
+          )}
+          <div style={{ position: 'absolute', bottom: 16, left: '50%', marginLeft: '-80px' }}>
+            <Button primary label="Mic" style={{marginRight: 20}}></Button>
+            <Button secondary label="Cam" ></Button>
+          </div>
+        </div>
+      </div>
+      <div style={{ display: 'flex', justifyContent: 'center' }}>
         <Box pad='small' gap='medium'>
+          <Box
+            background={{ color: 'white', opacity: 'weak' }}
+            round='xsmall'
+            pad='small'
+          >
+            Enter the Room UUID and choose a name for yourself
+          </Box>
           <TextInput
             data-testid='input-room-uuid'
             value={roomId}
@@ -77,8 +141,8 @@ const JoinRoom = ({
             }}
           />
         </Box>
-      </Box>
-    </Box>
+      </div>
+    </div>
   );
 };
 

@@ -33,6 +33,7 @@ export default function Rooms({ id }: { id: string }) {
   });
   const [isReady, setIsReady] = useState(false);
   const [hasGranted, setHasGranted] = useState('');
+  const [localStream, setLocalStream] = useState<MediaStream>();
   const [error, setError] = useState<
     { title: string; body: string } | undefined
   >(undefined);
@@ -73,6 +74,7 @@ export default function Rooms({ id }: { id: string }) {
       audio: true,
     })
       .then((stream) => {
+        setLocalStream(stream);
         setHasGranted(GRANT_STATUS.GRANTED);
         setError(undefined);
       })
@@ -120,6 +122,7 @@ export default function Rooms({ id }: { id: string }) {
             updateUsername={setUsername}
             updateRoomId={setRoomId}
             updateTokens={setTokens}
+            localStream={localStream}
           />
         )}
       </Main>
