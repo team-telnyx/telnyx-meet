@@ -1,5 +1,12 @@
-import React, { useEffect, useRef } from 'react';
-import { Box, Button, TextInput } from 'grommet';
+import React, { useEffect, useRef, useState } from 'react';
+import { Box, Button, TextInput, Text } from 'grommet';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import {
+  faMicrophone,
+  faMicrophoneSlash,
+  faVideo,
+  faVideoSlash,
+} from '@fortawesome/free-solid-svg-icons';
 
 interface Props {
   roomId: string;
@@ -8,7 +15,15 @@ interface Props {
   updateUsername: (value: string) => void;
   updateTokens: (tokens: { clientToken: string; refreshToken: string }) => void;
   localStream: MediaStream;
+  setPopupMessage: any;
+  setLocalStream: any;
 }
+
+const getUserMedia = async (
+  constraints: MediaStreamConstraints
+): Promise<MediaStream> => {
+  return await navigator?.mediaDevices?.getUserMedia(constraints);
+};
 
 const JoinRoom = ({
   roomId,
@@ -17,8 +32,15 @@ const JoinRoom = ({
   updateUsername,
   updateTokens,
   localStream,
+  setPopupMessage,
+  setLocalStream,
 }: Props) => {
   const videoElRef = useRef<HTMLVideoElement>(null);
+  const [mute, setMute] = useState(true);
+  const [showVideo, setShowVideo] = useState(false);
+
+  console.log('showVideo', showVideo)
+
   const joinRoom = async () => {
     const response = await fetch('/api/client_token', {
       method: 'POST',
@@ -40,12 +62,41 @@ const JoinRoom = ({
     }
   };
 
-  console.log('localStream', localStream);
-  console.log('videoElRef.current', videoElRef.current);
+  useEffect(() => {
+    if (videoElRef.current && localStream) {
+      videoElRef.current.srcObject = localStream;
+      setShowVideo(true);
+    }
+  }, [localStream]);
 
-  if (videoElRef.current) {
-    videoElRef.current.srcObject = localStream;
-  }
+  useEffect(() => {
+    if (localStream && !showVideo) {
+      localStream.getVideoTracks()[0].stop();
+      if (videoElRef.current) {
+        videoElRef.current.srcObject = null;
+      }
+      setShowVideo(false)
+    } else {
+      getUserMedia({
+        video: true,
+        audio: true,
+      }).then((stream) => {
+        if (videoElRef.current) {
+          videoElRef.current.srcObject = stream;
+          setLocalStream(stream);
+          setShowVideo(true)
+        }
+      }).catch(error => {
+        setShowVideo(false)
+        setPopupMessage({
+          title: 'Camera and microphone are blocked',
+          body: "Telnyx Meet requires access to your camera and microphone. Click the camera blocked icon in your browser's address bar.",
+        })
+      });
+    }
+  }, [showVideo]);
+
+  console.log("localStream", localStream)
 
   return (
     <div
@@ -76,7 +127,7 @@ const JoinRoom = ({
             minWidth: 740,
             alignSelf: 'center',
             overflow: 'hidden',
-            height: '416px'
+            height: '416px',
           }}
         >
           {localStream && (
@@ -84,7 +135,7 @@ const JoinRoom = ({
               ref={videoElRef}
               playsInline={true}
               autoPlay={true}
-              muted={true}
+              muted={mute}
               style={{
                 position: 'absolute',
                 left: 0,
@@ -97,9 +148,67 @@ const JoinRoom = ({
               }}
             ></video>
           )}
-          <div style={{ position: 'absolute', bottom: 16, left: '50%', marginLeft: '-80px' }}>
-            <Button primary label="Mic" style={{marginRight: 20}}></Button>
-            <Button secondary label="Cam" ></Button>
+          {!showVideo && (
+            <Text
+              style={{
+                position: 'absolute',
+                left: '50%',
+                top: '50%',
+                color: '#fff',
+                transform: 'translateX(-50%)',
+              }}
+            >
+              Camera is off
+            </Text>
+          )}
+          <div
+            style={{
+              position: 'absolute',
+              bottom: 16,
+              left: '50%',
+              transform: 'translateX(-50%)',
+            }}
+          >
+            <Button
+              style={{ marginRight: 20 }}
+              onClick={() => setMute((mute) => !mute)}
+            >
+              <Box align='center' gap='xsmall'>
+                <Box>
+                  <Text
+                    size='40.3px' // kinda hacky, make fa icon 48px
+                    color={mute ? 'status-error' : 'accent-1'}
+                  >
+                    <FontAwesomeIcon
+                      icon={mute ? faMicrophoneSlash : faMicrophone}
+                      fixedWidth
+                    />
+                  </Text>
+                </Box>
+                <Text size='xsmall' color='light-6'>
+                  {mute ? 'Unmute mic' : 'Mute mic'}
+                </Text>
+              </Box>
+            </Button>
+
+            <Button onClick={() => setShowVideo((showVideo) => !showVideo)}>
+              <Box align='center' gap='xsmall'>
+                <Box>
+                  <Text
+                    size='40.3px' // kinda hacky, make fa icon 48px
+                    color={!showVideo ? 'status-error' : 'accent-1'}
+                  >
+                    <FontAwesomeIcon
+                      icon={!showVideo ? faVideoSlash : faVideo}
+                      fixedWidth
+                    />
+                  </Text>
+                </Box>
+                <Text size='xsmall' color='light-6'>
+                  {!showVideo ? 'Start video' : 'Stop video'}
+                </Text>
+              </Box>
+            </Button>
           </div>
         </div>
       </div>

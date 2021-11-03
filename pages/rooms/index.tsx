@@ -123,6 +123,8 @@ export default function Rooms({ id }: { id: string }) {
             updateRoomId={setRoomId}
             updateTokens={setTokens}
             localStream={localStream}
+            setLocalStream={setLocalStream}
+            setPopupMessage={setError}
           />
         )}
       </Main>
