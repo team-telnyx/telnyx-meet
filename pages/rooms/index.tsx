@@ -9,6 +9,7 @@ import JoinRoom from '../../components/JoinRoom';
 import { generateUsername, generateId } from '../../utils/helpers';
 
 import ErrorDialog from '../../components/ErrorDialog';
+import { LocalStreamsContext } from '../../contexts/LocalStreamsContext';
 
 const getUserMedia = async (
   constraints: MediaStreamConstraints
@@ -33,9 +34,10 @@ export default function Rooms({ id }: { id: string }) {
   });
   const [isReady, setIsReady] = useState(false);
   const [hasGranted, setHasGranted] = useState('');
-  const [localStream, setLocalStream] = useState<MediaStream>();
-  const [localAudioDeviceId, setLocalAudioDeviceId] = useState<string>('');
-  const [localVideoDeviceId, setLocalVideoDeviceId] = useState<string>('');
+  const [localStreams, setLocalStreams] = useState<{
+    localAudioTrack: MediaStreamTrack | undefined;
+    localVideoTrack: MediaStreamTrack | undefined;
+  }>({ localAudioTrack: undefined, localVideoTrack: undefined });
 
   const [error, setError] = useState<
     { title: string; body: string } | undefined
@@ -77,7 +79,10 @@ export default function Rooms({ id }: { id: string }) {
       audio: true,
     })
       .then((stream) => {
-        setLocalStream(stream);
+        const localAudioTrack = stream?.getAudioTracks()[0];
+        const localVideoTrack = stream?.getAudioTracks()[0];
+
+        setLocalStreams({ localAudioTrack, localVideoTrack });
         setHasGranted(GRANT_STATUS.GRANTED);
         setError(undefined);
       })
@@ -93,23 +98,20 @@ export default function Rooms({ id }: { id: string }) {
   }, []);
 
   useEffect(() => {
-    if (localStream) {
-      console.log('getAudioTracks====>', localStream.getAudioTracks()[0]);
-      console.log('getVideoTracks====>', localStream.getVideoTracks()[0]);
-      setLocalAudioDeviceId(
-        localStream.getAudioTracks()[0] &&
-          localStream.getAudioTracks()[0]?.readyState === 'live'
-          ? localStream.getAudioTracks()[0]?.id
-          : ''
-      );
-      setLocalVideoDeviceId(
-        localStream.getVideoTracks()[0] &&
-          localStream.getVideoTracks()[0]?.readyState === 'live'
-          ? localStream.getVideoTracks()[0]?.id
-          : ''
-      );
+    if (localStreams?.localAudioTrack) {
+      setLocalStreams((streams) => ({
+        ...streams,
+        localAudioTrack: localStreams?.localAudioTrack,
+      }));
     }
-  }, [localStream]);
+
+    if (localStreams?.localVideoTrack) {
+      setLocalStreams((streams) => ({
+        ...streams,
+        localVideoTrack: localStreams?.localVideoTrack,
+      }));
+    }
+  }, [localStreams?.localAudioTrack, localStreams?.localVideoTrack]);
 
   const onClose = () => {
     setError(undefined);
@@ -126,32 +128,30 @@ export default function Rooms({ id }: { id: string }) {
         <ErrorDialog onClose={onClose} title={error.title} body={error.body} />
       )}
 
-      <Main align='center' justify='center' background='light-2'>
-        {roomId && isReady ? (
-          <Room
-            roomId={roomId}
-            tokens={tokens}
-            context={{
-              id: generateId(),
-              username,
-            }}
-            localAudioDeviceId={localAudioDeviceId}
-            localVideoDeviceId={localVideoDeviceId}
-            onDisconnected={onDisconnected}
-          />
-        ) : (
-          <JoinRoom
-            roomId={roomId || ''}
-            username={username}
-            updateUsername={setUsername}
-            updateRoomId={setRoomId}
-            updateTokens={setTokens}
-            localStream={localStream}
-            setLocalStream={setLocalStream}
-            setPopupMessage={setError}
-          />
-        )}
-      </Main>
+      <LocalStreamsContext.Provider value={[localStreams, setLocalStreams]}>
+        <Main align='center' justify='center' background='light-2'>
+          {roomId && isReady ? (
+            <Room
+              roomId={roomId}
+              tokens={tokens}
+              context={{
+                id: generateId(),
+                username,
+              }}
+              onDisconnected={onDisconnected}
+            />
+          ) : (
+            <JoinRoom
+              roomId={roomId || ''}
+              username={username}
+              updateUsername={setUsername}
+              updateRoomId={setRoomId}
+              updateTokens={setTokens}
+              setPopupMessage={setError}
+            />
+          )}
+        </Main>
+      </LocalStreamsContext.Provider>
     </Fragment>
   );
 }

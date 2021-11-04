@@ -1,6 +1,6 @@
 import { getDevices } from '@telnyx/video';
 
-import { useEffect, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import { Box, Button, Menu, Text } from 'grommet';
 import { Group as GroupIcon } from 'grommet-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -16,6 +16,7 @@ import ErrorDialog from './ErrorDialog';
 import { TelnyxRoom } from '../hooks/room';
 
 import styled from 'styled-components';
+import { LocalStreamsContext } from '../contexts/LocalStreamsContext';
 
 const breakpointMedium = 1023;
 
@@ -127,17 +128,33 @@ export default function RoomControls({
   room,
   disableScreenshare,
   onAudioOutputDeviceChange,
-  localAudioDeviceId,
-  localVideoDeviceId,
 }: {
   isParticipantsListVisible: boolean;
   onChangeParticipantsListVisible: Function;
   room: TelnyxRoom;
   disableScreenshare: boolean;
   onAudioOutputDeviceChange: (deviceId?: MediaDeviceInfo['deviceId']) => void;
-  localAudioDeviceId: string;
-  localVideoDeviceId: string;
 }) {
+
+  const [localStreams, setLocalStreams] = useContext(LocalStreamsContext);
+
+  let localAudioDeviceId: string = '';
+  let localVideoDeviceId: string = '';
+
+  if (localStreams?.localAudioTrack) {
+    localAudioDeviceId =
+      localStreams?.localAudioTrack?.readyState === 'live'
+        ? localStreams?.localAudioTrack?.id
+        : '';
+  }
+
+  if (localStreams?.localVideoTrack) {
+    localVideoDeviceId =
+     localStreams?.localVideoTrack?.readyState === 'live'
+       ? localStreams?.localVideoTrack?.id
+       : '';
+ }
+
   const [devices, setDevices] = useState<any>({});
   const [audioInputDeviceId, setAudioInputDeviceId] =
     useState<string>(localAudioDeviceId);
@@ -180,7 +197,7 @@ export default function RoomControls({
   useEffect(() => {
     console.log('localAudioDeviceId===>', localAudioDeviceId)
     console.log('localVideoDeviceId====>', localVideoDeviceId)
-
+   debugger
     getUserMedia({
       audio: localAudioDeviceId
         ? {
@@ -200,7 +217,7 @@ export default function RoomControls({
       .catch((error) => {
         console.log('error===>', error);
       });
-  }, [localAudioDeviceId, localVideoDeviceId]);
+  }, [localStreams?.localAudioTrack, localStreams?.localVideoTrack]);
 
   useEffect(() => {
     // get devices if permissions are already granted
@@ -223,7 +240,6 @@ export default function RoomControls({
     }
 
     if (audioTrack || videoTrack) {
-      debugger
       if (
         (!room.state.publisher.streamsPublished['self'] ||
           room.state.publisher.streamsPublished['self'].status ===

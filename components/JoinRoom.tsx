@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState, useContext } from 'react';
 import { Box, Button, TextInput, Text } from 'grommet';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
@@ -8,15 +8,15 @@ import {
   faVideoSlash,
 } from '@fortawesome/free-solid-svg-icons';
 
+import { LocalStreamsContext } from '../contexts/LocalStreamsContext';
+
 interface Props {
   roomId: string;
   username: string;
   updateRoomId?: (value: string) => void;
   updateUsername: (value: string) => void;
   updateTokens: (tokens: { clientToken: string; refreshToken: string }) => void;
-  localStream: MediaStream | undefined;
   setPopupMessage: any;
-  setLocalStream: any;
 }
 
 const getUserMedia = async (
@@ -31,15 +31,12 @@ const JoinRoom = ({
   updateRoomId,
   updateUsername,
   updateTokens,
-  localStream,
   setPopupMessage,
-  setLocalStream,
 }: Props) => {
   const videoElRef = useRef<HTMLVideoElement>(null);
   const [mute, setMute] = useState(true);
   const [showVideo, setShowVideo] = useState(false);
-
-  console.log('showVideo', showVideo)
+  const [localStreams, setLocalStreams] = useContext(LocalStreamsContext);
 
   const joinRoom = async () => {
     const response = await fetch('/api/client_token', {
@@ -63,15 +60,15 @@ const JoinRoom = ({
   };
 
   useEffect(() => {
-    if (videoElRef.current && localStream) {
-      videoElRef.current.srcObject = localStream;
+    if (videoElRef.current && localStreams?.localVideoTrack) {
+      videoElRef.current.srcObject = new MediaStream([localStreams?.localVideoTrack]);
       setShowVideo(true);
     }
-  }, [localStream]);
+  }, [localStreams?.localVideoTrack]);
 
   useEffect(() => {
-    if (localStream && !showVideo) {
-      localStream.getVideoTracks()[0].stop();
+    if (localStreams?.localVideoTrack && !showVideo) {
+      localStreams?.localVideoTrack.stop();
       if (videoElRef.current) {
         videoElRef.current.srcObject = null;
       }
@@ -83,7 +80,9 @@ const JoinRoom = ({
       }).then((stream) => {
         if (videoElRef.current) {
           videoElRef.current.srcObject = stream;
-          setLocalStream(stream);
+          const localAudioTrack = stream?.getAudioTracks()[0];
+          const localVideoTrack = stream?.getVideoTracks()[0];
+          setLocalStreams({localAudioTrack, localVideoTrack});
           setShowVideo(true)
         }
       }).catch(error => {
@@ -96,6 +95,33 @@ const JoinRoom = ({
     }
   }, [showVideo]);
 
+  useEffect(() => {
+    if (localStreams?.localAudioTrack && mute) {
+      localStreams?.localAudioTrack.stop();
+      if(videoElRef.current && localStreams?.localVideoTrack) {
+        videoElRef.current.srcObject = new MediaStream([localStreams?.localVideoTrack]);
+      }
+      setMute(true)
+    } else {
+      getUserMedia({
+        video: showVideo,
+        audio: true,
+      }).then((stream) => {
+        if (videoElRef.current) {
+          videoElRef.current.srcObject = stream;
+          const localAudioTrack = stream?.getAudioTracks()[0];
+          setLocalStreams((streams: any) => ({...streams, localAudioTrack}));
+          setMute(false)
+        }
+      }).catch(error => {
+        setMute(true)
+        setPopupMessage({
+          title: 'Camera and microphone are blocked',
+          body: "Telnyx Meet requires access to your camera and microphone. Click the camera blocked icon in your browser's address bar.",
+        })
+      });
+    }
+  }, [mute]);
 
   return (
     <div
@@ -129,7 +155,7 @@ const JoinRoom = ({
             height: '416px',
           }}
         >
-          {localStream && (
+          {localStreams?.localVideoTrack && (
             <video
               ref={videoElRef}
               playsInline={true}
