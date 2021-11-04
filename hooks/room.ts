@@ -9,6 +9,7 @@ import { useEffect, useRef, useState, useContext, useMemo } from 'react';
 import { DebugContext } from '../contexts/DebugContext';
 
 const TOKEN_TTL = 50;
+const useAudioMixer = false;
 
 const createRoom = ({
   roomId,
@@ -24,6 +25,7 @@ const createRoom = ({
 
   return new Room(roomId, {
     clientToken,
+    useAudioMixer,
     publisher: createPublisher({
       context: JSON.stringify(context),
     }),
@@ -41,12 +43,12 @@ interface Props {
 
 export interface TelnyxRoom {
   readonly state: State;
+  readonly participantsByActivity: Set<string>;
   readonly presenter?: Participant;
   readonly publish: Room['publish'];
   readonly unpublish: Room['unpublish'];
   readonly disconnect: Room['disconnect'];
-  isPublished: (key: string) => boolean;
-  isSubscribed: (participantId: Participant['id'], key: string) => boolean;
+  isReady: (participantId: Participant['id'], key: string) => boolean;
   getParticipantStream: (
     participantId: Participant['id'],
     key: string
@@ -61,9 +63,11 @@ export const useRoom = ({ roomId, tokens, context }: Props): TelnyxRoom => {
     createRoom({ roomId, clientToken: tokens.clientToken, context })
   );
   const [clientToken, setClientToken] = useState<string>(tokens.clientToken);
-  //@ts-ignore
   const [state, setState] = useState<State>(roomRef.current.state);
   const [presenter, setPresenter] = useState<Participant>();
+  const [participantsByActivity, setParticipantsByActivity] = useState<
+    Set<string>
+  >(new Set());
 
   roomRef.current.updateClientToken(clientToken);
 
@@ -71,17 +75,91 @@ export const useRoom = ({ roomId, tokens, context }: Props): TelnyxRoom => {
     setState(state);
   };
 
+  const onConnected = (state: State) => {
+    setParticipantsByActivity(new Set());
+  };
+
+  const onDisconnected = (state: State) => {
+    setParticipantsByActivity(new Set());
+  };
+
   const onStreamAdded = (
     { participantId, key }: { participantId: Participant['id']; key: string },
     state: State
   ) => {
-    if (state.participants[participantId].isRemote) {
-      roomRef.current.subscribe(participantId, key, {
-        audio: true,
-        video: true,
-      });
+    const participant = state.participants[participantId];
+    const stream = state.streams[participant.streams[key].streamId];
+    if (participant.isRemote) {
+      if (useAudioMixer && stream.videoEnabled) {
+        roomRef.current.subscribe(participantId, key, {
+          audio: false,
+          video: true,
+        });
+      }
+
+      if (!useAudioMixer && (stream.audioEnabled || stream.videoEnabled)) {
+        roomRef.current.subscribe(participantId, key, {
+          audio: true,
+          video: true,
+        });
+      }
     }
   };
+
+  const onParticipantJoined = ({
+    participantId,
+  }: {
+    participantId: Participant['id'];
+  }) => {
+    participantsByActivity.add(participantId);
+    setParticipantsByActivity(new Set([...participantsByActivity]));
+  };
+
+  const onParticipantLeft = ({
+    participantId,
+  }: {
+    participantId: Participant['id'];
+  }) => {
+    participantsByActivity.delete(participantId);
+    setParticipantsByActivity(new Set([...participantsByActivity]));
+  };
+
+  const onParticipantSpeaking = ({
+    participantId,
+    key,
+  }: {
+    participantId: Participant['id'];
+    key: string;
+  }) => {
+    if (key !== 'self') {
+      return;
+    }
+
+    participantsByActivity.delete(participantId);
+    setParticipantsByActivity(
+      new Set([participantId, ...participantsByActivity])
+    );
+  };
+
+  const isReady = useMemo(() => {
+    return (participantId: Participant['id'], key: string): boolean => {
+      if (participantId === state.publisher.participantId) {
+        if (!state.publisher.streamsPublished[key]) {
+          // since no stream exists with the key we return true
+          return true;
+        }
+
+        return state.publisher.streamsPublished[key]?.status === 'published';
+      }
+
+      if (!state.subscriptions[participantId]?.[key]) {
+        // since no subscription exists with for the participant stream we return true
+        return true;
+      }
+
+      return state.subscriptions[participantId]?.[key]?.status === 'started';
+    };
+  }, [state.subscriptions, state.publisher]);
 
   const isSubscribed = useMemo(() => {
     return (participantId: Participant['id'], key: string): boolean => {
@@ -159,7 +237,12 @@ export const useRoom = ({ roomId, tokens, context }: Props): TelnyxRoom => {
     }
 
     roomRef.current.on('state_changed', onStateChanged);
+    roomRef.current.on('connected', onConnected);
+    roomRef.current.on('disconnected', onDisconnected);
     roomRef.current.on('stream_added', onStreamAdded);
+    roomRef.current.on('participant_joined', onParticipantJoined);
+    roomRef.current.on('participant_left', onParticipantLeft);
+    roomRef.current.on('participant_speaking', onParticipantSpeaking);
     roomRef.current.connect();
 
     return () => {
@@ -169,12 +252,12 @@ export const useRoom = ({ roomId, tokens, context }: Props): TelnyxRoom => {
 
   return {
     state,
+    participantsByActivity,
     presenter,
     publish: roomRef.current.publish.bind(roomRef.current),
     unpublish: roomRef.current.unpublish.bind(roomRef.current),
     disconnect: roomRef.current.disconnect.bind(roomRef.current),
-    isSubscribed,
-    isPublished,
+    isReady,
     getParticipantStream,
     getStatsForParticipantStream:
       roomRef.current.getStatsForParticipantStream.bind(roomRef.current),

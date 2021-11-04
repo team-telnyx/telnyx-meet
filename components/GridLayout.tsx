@@ -32,16 +32,16 @@ function GridView({
 
 function GridLayout({
   participants,
-  isPublished,
-  isSubscribed,
+  participantsByActivity,
+  isReady,
   getParticipantStream,
   audioOutputDeviceId,
   getStatsForParticipantStream,
   dataTestId,
 }: {
   participants: TelnyxRoom['state']['participants'];
-  isPublished: TelnyxRoom['isPublished'];
-  isSubscribed: TelnyxRoom['isSubscribed'];
+  participantsByActivity: TelnyxRoom['participantsByActivity'];
+  isReady: TelnyxRoom['isReady'];
   getParticipantStream: TelnyxRoom['getParticipantStream'];
   audioOutputDeviceId?: MediaDeviceInfo['deviceId'];
   getStatsForParticipantStream: TelnyxRoom['getStatsForParticipantStream'];
@@ -64,7 +64,8 @@ function GridLayout({
     const mainFeedWidth = mainFeeds!.clientWidth || MAIN_FEEDS_MIN_WIDTH;
     const mainFeedHeight = mainFeeds!.clientHeight || MAIN_FEEDS_MIN_HEIGHT;
     const mainFeedsArea =
-      mainFeedWidth * (mainFeedHeight - NAVIGATION_BUTTONS_HEIGHT - REPORT_BUTTON_HEIGHT);
+      mainFeedWidth *
+      (mainFeedHeight - NAVIGATION_BUTTONS_HEIGHT - REPORT_BUTTON_HEIGHT);
     const feed = document.querySelectorAll('[data-id="video-feed-grid"]')[0];
 
     let feedArea;
@@ -82,7 +83,7 @@ function GridLayout({
     }
   }, [screenSize]);
 
-  const feeds = Object.keys(participants).map((id) => {
+  const feeds = [...participantsByActivity].map((id) => {
     const participant = participants[id];
 
     return (
@@ -91,8 +92,7 @@ function GridLayout({
         key={`${participant.id}_self`}
         participant={participant}
         streamKey='self'
-        isPublished={isPublished}
-        isSubscribed={isSubscribed}
+        isReady={isReady}
         getParticipantStream={getParticipantStream}
         muteAudio={!participant.isRemote}
         mirrorVideo={!participant.isRemote}

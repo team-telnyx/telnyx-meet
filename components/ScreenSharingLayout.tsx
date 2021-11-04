@@ -32,24 +32,23 @@ function NewSideBar({ children }: { children: ReactChild }) {
 
 function ScreenSharingLayout({
   participants,
+  participantsByActivity,
   presenter,
-  isPublished,
-  isSubscribed,
+  isReady,
   getParticipantStream,
   audioOutputDeviceId,
   getStatsForParticipantStream,
   dataTestId,
 }: {
   participants: TelnyxRoom['state']['participants'];
+  participantsByActivity: TelnyxRoom['participantsByActivity'];
   presenter: Participant;
-  isPublished: TelnyxRoom['isPublished'];
-  isSubscribed: TelnyxRoom['isSubscribed'];
+  isReady: TelnyxRoom['isReady'];
   getParticipantStream: TelnyxRoom['getParticipantStream'];
   audioOutputDeviceId?: MediaDeviceInfo['deviceId'];
   getStatsForParticipantStream: TelnyxRoom['getStatsForParticipantStream'];
   dataTestId: string;
 }) {
-
   const USERS_PER_PAGE = 3;
   const NAVIGATION_BUTTONS_HEIGHT = 48;
   const FEED_MIN_HEIGHT = 154;
@@ -62,30 +61,31 @@ function ScreenSharingLayout({
   useEffect(() => {
     const feeds = document.getElementById('feeds');
     const feed = document.querySelectorAll('[data-id="video-feed-sidebar"]')[0];
-  
-    if (feeds) {
-      let feedHeight = feed && feed.clientHeight ? feed.clientHeight : FEED_MIN_HEIGHT;
 
-      const maxPerPage = Math.floor((feeds.clientHeight - NAVIGATION_BUTTONS_HEIGHT) / feedHeight);
- 
-      if(maxPerPage > 0) {
+    if (feeds) {
+      let feedHeight =
+        feed && feed.clientHeight ? feed.clientHeight : FEED_MIN_HEIGHT;
+
+      const maxPerPage = Math.floor(
+        (feeds.clientHeight - NAVIGATION_BUTTONS_HEIGHT) / feedHeight
+      );
+
+      if (maxPerPage > 0) {
         setMaxParticipantPerPage(maxPerPage);
       }
     }
-
   }, [maxParticipantPerPage, screenSize.height]);
 
-  const participantsFeeds = Object.keys(participants).map((id) => {
+  const participantsFeeds = [...participantsByActivity].map((id) => {
     const participant = participants[id];
-  
+
     return (
       <Feed
-        dataId="video-feed-sidebar"
+        dataId='video-feed-sidebar'
         key={`${participant.id}_self`}
         participant={participant}
         streamKey='self'
-        isPublished={isPublished}
-        isSubscribed={isSubscribed}
+        isReady={isReady}
         getParticipantStream={getParticipantStream}
         muteAudio={!participant.isRemote}
         mirrorVideo={!participant.isRemote}
@@ -97,7 +97,7 @@ function ScreenSharingLayout({
 
   return (
     <div
-      id="feeds"
+      id='feeds'
       data-testid={dataTestId}
       style={{
         display: 'flex',
@@ -124,8 +124,7 @@ function ScreenSharingLayout({
         <Feed
           participant={presenter}
           streamKey='presentation'
-          isPublished={isPublished}
-          isSubscribed={isSubscribed}
+          isReady={isReady}
           getParticipantStream={getParticipantStream}
           getStatsForParticipantStream={getStatsForParticipantStream}
           muteAudio={true}
