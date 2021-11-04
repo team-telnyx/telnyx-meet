@@ -14,7 +14,7 @@ interface Props {
   updateRoomId?: (value: string) => void;
   updateUsername: (value: string) => void;
   updateTokens: (tokens: { clientToken: string; refreshToken: string }) => void;
-  localStream: MediaStream;
+  localStream: MediaStream | undefined;
   setPopupMessage: any;
   setLocalStream: any;
 }
@@ -96,7 +96,6 @@ const JoinRoom = ({
     }
   }, [showVideo]);
 
-  console.log("localStream", localStream)
 
   return (
     <div
@@ -112,7 +111,7 @@ const JoinRoom = ({
         style={{
           display: 'flex',
           justifyContent: 'center',
-          backgroundColor: 'blue',
+          backgroundColor: '#cecece',
           height: '100%',
           width: '100%',
         }}

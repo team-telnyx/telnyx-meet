@@ -34,6 +34,9 @@ export default function Rooms({ id }: { id: string }) {
   const [isReady, setIsReady] = useState(false);
   const [hasGranted, setHasGranted] = useState('');
   const [localStream, setLocalStream] = useState<MediaStream>();
+  const [localAudioDeviceId, setLocalAudioDeviceId] = useState<string>('');
+  const [localVideoDeviceId, setLocalVideoDeviceId] = useState<string>('');
+
   const [error, setError] = useState<
     { title: string; body: string } | undefined
   >(undefined);
@@ -89,6 +92,25 @@ export default function Rooms({ id }: { id: string }) {
       });
   }, []);
 
+  useEffect(() => {
+    if (localStream) {
+      console.log('getAudioTracks====>', localStream.getAudioTracks()[0]);
+      console.log('getVideoTracks====>', localStream.getVideoTracks()[0]);
+      setLocalAudioDeviceId(
+        localStream.getAudioTracks()[0] &&
+          localStream.getAudioTracks()[0]?.readyState === 'live'
+          ? localStream.getAudioTracks()[0]?.id
+          : ''
+      );
+      setLocalVideoDeviceId(
+        localStream.getVideoTracks()[0] &&
+          localStream.getVideoTracks()[0]?.readyState === 'live'
+          ? localStream.getVideoTracks()[0]?.id
+          : ''
+      );
+    }
+  }, [localStream]);
+
   const onClose = () => {
     setError(undefined);
   };
@@ -113,6 +135,8 @@ export default function Rooms({ id }: { id: string }) {
               id: generateId(),
               username,
             }}
+            localAudioDeviceId={localAudioDeviceId}
+            localVideoDeviceId={localVideoDeviceId}
             onDisconnected={onDisconnected}
           />
         ) : (

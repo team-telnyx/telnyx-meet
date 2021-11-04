@@ -13,6 +13,8 @@ function Room({
   tokens,
   context,
   onDisconnected,
+  localAudioDeviceId,
+  localVideoDeviceId
 }: {
   roomId: string;
   tokens: {
@@ -24,6 +26,8 @@ function Room({
     username: string;
   };
   onDisconnected: () => void;
+  localAudioDeviceId: string;
+  localVideoDeviceId: string;
 }) {
   const [isParticipantsListVisible, setIsParticipantsListVisible] =
     useState<boolean>(false);
@@ -99,6 +103,8 @@ function Room({
       {room.state.status === 'connected' && (
         <>
           <RoomControls
+            localAudioDeviceId={localAudioDeviceId}
+            localVideoDeviceId={localVideoDeviceId}
             isParticipantsListVisible={isParticipantsListVisible}
             onChangeParticipantsListVisible={setIsParticipantsListVisible}
             room={room}

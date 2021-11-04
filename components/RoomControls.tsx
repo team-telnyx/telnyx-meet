@@ -127,16 +127,22 @@ export default function RoomControls({
   room,
   disableScreenshare,
   onAudioOutputDeviceChange,
+  localAudioDeviceId,
+  localVideoDeviceId,
 }: {
   isParticipantsListVisible: boolean;
   onChangeParticipantsListVisible: Function;
   room: TelnyxRoom;
   disableScreenshare: boolean;
   onAudioOutputDeviceChange: (deviceId?: MediaDeviceInfo['deviceId']) => void;
+  localAudioDeviceId: string;
+  localVideoDeviceId: string;
 }) {
   const [devices, setDevices] = useState<any>({});
-  const [audioInputDeviceId, setAudioInputDeviceId] = useState<string>();
-  const [videoDeviceId, setVideoDeviceId] = useState<string>();
+  const [audioInputDeviceId, setAudioInputDeviceId] =
+    useState<string>(localAudioDeviceId);
+  const [videoDeviceId, setVideoDeviceId] =
+    useState<string>(localVideoDeviceId);
   const [audioOutputDeviceId, setAudioOutputDeviceId] = useState<string>();
   const [error, setError] = useState<
     { title: string; body: string } | undefined
@@ -172,6 +178,31 @@ export default function RoomControls({
   };
 
   useEffect(() => {
+    console.log('localAudioDeviceId===>', localAudioDeviceId)
+    console.log('localVideoDeviceId====>', localVideoDeviceId)
+
+    getUserMedia({
+      audio: localAudioDeviceId
+        ? {
+            deviceId: localAudioDeviceId,
+          }
+        : false,
+      video: localVideoDeviceId
+        ? {
+            deviceId: localVideoDeviceId,
+          }
+        : false,
+    })
+      .then((stream) => {
+        setAudioTrack(stream.getAudioTracks()[0]);
+        setVideoTrack(stream.getVideoTracks()[0]);
+      })
+      .catch((error) => {
+        console.log('error===>', error);
+      });
+  }, [localAudioDeviceId, localVideoDeviceId]);
+
+  useEffect(() => {
     // get devices if permissions are already granted
     getAndSetDevices();
     navigator?.mediaDevices?.addEventListener('devicechange', getAndSetDevices);
@@ -192,7 +223,15 @@ export default function RoomControls({
     }
 
     if (audioTrack || videoTrack) {
-      room.publish({ key: 'self', audioTrack, videoTrack });
+      debugger
+      if (
+        (!room.state.publisher.streamsPublished['self'] ||
+          room.state.publisher.streamsPublished['self'].status ===
+            'published') &&
+        (!selfStream || !selfStream.audioTrack || !selfStream.videoTrack)
+      ) {
+        room.publish({ key: 'self', audioTrack, videoTrack });
+      }
     }
 
     getAndSetDevices(); // will populate the devices based on the current permissions
@@ -476,10 +515,7 @@ export default function RoomControls({
                       : 'status-error'
                   }
                 >
-                  <FontAwesomeIconStyled
-                    icon={faLaptop}
-                    fixedWidth
-                  />
+                  <FontAwesomeIconStyled icon={faLaptop} fixedWidth />
                 </Text>
               </Box>
               <Text size='xsmall' color='light-6'>
