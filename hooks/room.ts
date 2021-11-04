@@ -9,7 +9,7 @@ import { useEffect, useRef, useState, useContext, useMemo } from 'react';
 import { DebugContext } from '../contexts/DebugContext';
 
 const TOKEN_TTL = 50;
-const useAudioMixer = false;
+const useAudioMixer = true;
 
 const createRoom = ({
   roomId,
