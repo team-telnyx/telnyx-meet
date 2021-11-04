@@ -34,7 +34,7 @@ const JoinRoom = ({
   setPopupMessage,
 }: Props) => {
   const videoElRef = useRef<HTMLVideoElement>(null);
-  const [mute, setMute] = useState(true);
+  const [enableAudio, setEnableAudio] = useState(false);
   const [showVideo, setShowVideo] = useState(false);
   const [localStreams, setLocalStreams] = useContext(LocalStreamsContext);
 
@@ -60,68 +60,95 @@ const JoinRoom = ({
   };
 
   useEffect(() => {
-    if (videoElRef.current && localStreams?.localVideoTrack) {
-      videoElRef.current.srcObject = new MediaStream([localStreams?.localVideoTrack]);
+    if (
+      videoElRef.current &&
+      (localStreams?.localVideoTrack || localStreams?.localAudioTrack)
+    ) {
+      //@ts-ignore
+      videoElRef.current.srcObject = new MediaStream([
+        localStreams?.localVideoTrack,
+      ]);
       setShowVideo(true);
     }
   }, [localStreams?.localVideoTrack]);
 
   useEffect(() => {
+    debugger;
     if (localStreams?.localVideoTrack && !showVideo) {
       localStreams?.localVideoTrack.stop();
       if (videoElRef.current) {
-        videoElRef.current.srcObject = null;
+        if (localStreams?.localAudioTrack) {
+          videoElRef.current.srcObject = new MediaStream([
+            localStreams?.localAudioTrack,
+          ]);
+        } else {
+          videoElRef.current.srcObject = null;
+        }
       }
-      setShowVideo(false)
-    } else {
+      setShowVideo(false);
+    } else if (showVideo) {
       getUserMedia({
         video: true,
-        audio: true,
-      }).then((stream) => {
-        if (videoElRef.current) {
-          videoElRef.current.srcObject = stream;
-          const localAudioTrack = stream?.getAudioTracks()[0];
-          const localVideoTrack = stream?.getVideoTracks()[0];
-          setLocalStreams({localAudioTrack, localVideoTrack});
-          setShowVideo(true)
-        }
-      }).catch(error => {
-        setShowVideo(false)
-        setPopupMessage({
-          title: 'Camera and microphone are blocked',
-          body: "Telnyx Meet requires access to your camera and microphone. Click the camera blocked icon in your browser's address bar.",
+        audio: enableAudio,
+      })
+        .then((stream) => {
+          if (videoElRef.current) {
+            const localAudioTrack = stream?.getAudioTracks()[0];
+            const localVideoTrack = stream?.getVideoTracks()[0];
+            if(localVideoTrack && localAudioTrack) {
+              videoElRef.current.srcObject = new MediaStream([localAudioTrack, localVideoTrack]);
+            } else {
+              videoElRef.current.srcObject = new MediaStream([localVideoTrack]);
+            }
+
+            setLocalStreams({ localAudioTrack, localVideoTrack });
+            setShowVideo(true);
+          }
         })
-      });
+        .catch((error) => {
+          setShowVideo(false);
+          setPopupMessage({
+            title: 'Camera and microphone are blocked',
+            body: "Telnyx Meet requires access to your camera and microphone. Click the camera blocked icon in your browser's address bar.",
+          });
+        });
     }
   }, [showVideo]);
 
   useEffect(() => {
-    if (localStreams?.localAudioTrack && mute) {
+    if (localStreams?.localAudioTrack && !enableAudio) {
       localStreams?.localAudioTrack.stop();
-      if(videoElRef.current && localStreams?.localVideoTrack) {
-        videoElRef.current.srcObject = new MediaStream([localStreams?.localVideoTrack]);
+      if (videoElRef.current && localStreams?.localVideoTrack) {
+        videoElRef.current.srcObject = new MediaStream([
+          localStreams?.localVideoTrack,
+        ]);
       }
-      setMute(true)
-    } else {
+      setEnableAudio(false);
+    } else if (enableAudio) {
       getUserMedia({
         video: showVideo,
         audio: true,
-      }).then((stream) => {
-        if (videoElRef.current) {
-          videoElRef.current.srcObject = stream;
-          const localAudioTrack = stream?.getAudioTracks()[0];
-          setLocalStreams((streams: any) => ({...streams, localAudioTrack}));
-          setMute(false)
-        }
-      }).catch(error => {
-        setMute(true)
-        setPopupMessage({
-          title: 'Camera and microphone are blocked',
-          body: "Telnyx Meet requires access to your camera and microphone. Click the camera blocked icon in your browser's address bar.",
+      })
+        .then((stream) => {
+          if (videoElRef.current) {
+            videoElRef.current.srcObject = stream;
+            const localAudioTrack = stream?.getAudioTracks()[0];
+            setLocalStreams((streams: any) => ({
+              ...streams,
+              localAudioTrack,
+            }));
+            setEnableAudio(true);
+          }
         })
-      });
+        .catch((error) => {
+          setEnableAudio(false);
+          setPopupMessage({
+            title: 'Camera and microphone are blocked',
+            body: "Telnyx Meet requires access to your camera and microphone. Click the camera blocked icon in your browser's address bar.",
+          });
+        });
     }
-  }, [mute]);
+  }, [enableAudio]);
 
   return (
     <div
@@ -160,7 +187,7 @@ const JoinRoom = ({
               ref={videoElRef}
               playsInline={true}
               autoPlay={true}
-              muted={mute}
+              muted={enableAudio ? false : true}
               style={{
                 position: 'absolute',
                 left: 0,
@@ -196,22 +223,22 @@ const JoinRoom = ({
           >
             <Button
               style={{ marginRight: 20 }}
-              onClick={() => setMute((mute) => !mute)}
+              onClick={() => setEnableAudio((enableAudio) => !enableAudio)}
             >
               <Box align='center' gap='xsmall'>
                 <Box>
                   <Text
                     size='40.3px' // kinda hacky, make fa icon 48px
-                    color={mute ? 'status-error' : 'accent-1'}
+                    color={!enableAudio ? 'status-error' : 'accent-1'}
                   >
                     <FontAwesomeIcon
-                      icon={mute ? faMicrophoneSlash : faMicrophone}
+                      icon={!enableAudio ? faMicrophoneSlash : faMicrophone}
                       fixedWidth
                     />
                   </Text>
                 </Box>
                 <Text size='xsmall' color='light-6'>
-                  {mute ? 'Unmute mic' : 'Mute mic'}
+                  {!enableAudio ? 'Unmute mic' : 'Mute mic'}
                 </Text>
               </Box>
             </Button>

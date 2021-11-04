@@ -33,7 +33,6 @@ export default function Rooms({ id }: { id: string }) {
     refreshToken: '',
   });
   const [isReady, setIsReady] = useState(false);
-  const [hasGranted, setHasGranted] = useState('');
   const [localStreams, setLocalStreams] = useState<{
     localAudioTrack: MediaStreamTrack | undefined;
     localVideoTrack: MediaStreamTrack | undefined;
@@ -80,10 +79,9 @@ export default function Rooms({ id }: { id: string }) {
     })
       .then((stream) => {
         const localAudioTrack = stream?.getAudioTracks()[0];
-        const localVideoTrack = stream?.getAudioTracks()[0];
+        const localVideoTrack = stream?.getVideoTracks()[0];
 
         setLocalStreams({ localAudioTrack, localVideoTrack });
-        setHasGranted(GRANT_STATUS.GRANTED);
         setError(undefined);
       })
       .catch((error) => {
@@ -93,7 +91,6 @@ export default function Rooms({ id }: { id: string }) {
             body: "Telnyx Meet requires access to your camera and microphone. Click the camera blocked icon in your browser's address bar.",
           });
         }
-        setHasGranted(GRANT_STATUS.DENIED);
       });
   }, []);
 
