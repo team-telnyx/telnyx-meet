@@ -45,8 +45,12 @@ function Room({
     <Box fill background='#1b1b1b' overflow='hidden'>
       <RoomInfo roomId={roomId} />
 
-      <Box direction='row' flex >
-        <Box flex id="room-container" style={{ position: 'relative', margin: '16px' }}>
+      <Box direction='row' flex>
+        <Box
+          flex
+          id='room-container'
+          style={{ position: 'relative', margin: '16px' }}
+        >
           {room.state.status === 'connecting' && (
             <Box align='center' justify='center' fill>
               <Text
@@ -75,9 +79,9 @@ function Room({
             <Feeds
               dataTestId='feeds'
               participants={room.state.participants}
+              participantsByActivity={room.participantsByActivity}
               presenter={room.presenter}
-              isPublished={room.isPublished}
-              isSubscribed={room.isSubscribed}
+              isReady={room.isReady}
               getParticipantStream={room.getParticipantStream}
               audioOutputDeviceId={audioOutputDeviceId}
               getStatsForParticipantStream={room.getStatsForParticipantStream}
@@ -113,6 +117,8 @@ function Room({
             participants={room.state.participants}
             publisher={room.state.publisher}
             streams={room.state.streams}
+            useAudioMixer={room.state.audioMixer.isEnabled}
+            mixedAudioTrack={room.state.audioMixer.track}
             audioOutputDeviceId={audioOutputDeviceId}
           />
         </>

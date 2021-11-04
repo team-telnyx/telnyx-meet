@@ -18,8 +18,7 @@ const allowedBrowsers = ['Chrome', 'Safari'];
 function Feed({
   participant,
   streamKey,
-  isPublished,
-  isSubscribed,
+  isReady,
   getParticipantStream,
   muteAudio = true,
   mirrorVideo = false,
@@ -29,8 +28,7 @@ function Feed({
 }: {
   participant: Participant;
   streamKey: string;
-  isPublished: TelnyxRoom['isPublished'];
-  isSubscribed: TelnyxRoom['isSubscribed'];
+  isReady: TelnyxRoom['isReady'];
   getParticipantStream: TelnyxRoom['getParticipantStream'];
   getStatsForParticipantStream: TelnyxRoom['getStatsForParticipantStream'];
   muteAudio: boolean;
@@ -50,9 +48,7 @@ function Feed({
   const context = participant.context
     ? JSON.parse(participant.context)
     : undefined;
-  const showSpinner = participant.isRemote
-    ? stream && !isSubscribed(participant.id, streamKey)
-    : stream && !isPublished(streamKey);
+  const showSpinner = !isReady(participant.id, streamKey);
 
   if (!context) {
     throw new Error(`No context for the participant`);
@@ -90,7 +86,7 @@ function Feed({
   }
 
   function renderStats() {
-    if(!allowedBrowser) {
+    if (!allowedBrowser) {
       return null;
     }
 
@@ -152,7 +148,10 @@ function Feed({
           ? 'unset'
           : `${(9 / 16) * 100}%` /* 56.25% - 16:9 Aspect Ratio */,
         overflow: 'hidden',
-        border: stream?.isSpeaking && audioActivityIndicator ? '3px solid yellow' : 'unset',
+        border:
+          stream?.isSpeaking && audioActivityIndicator
+            ? '3px solid yellow'
+            : 'unset',
         height: isPresentation ? '100%' : 'unset',
       }}
     >

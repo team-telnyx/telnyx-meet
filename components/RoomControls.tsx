@@ -61,10 +61,12 @@ const isSinkIdSupported = (): boolean => {
 const getUserMedia = async (
   constraints: MediaStreamConstraints
 ): Promise<MediaStream> => {
+  // @ts-ignore
   return navigator?.mediaDevices?.getUserMedia(constraints);
 };
 
 const getDisplayMedia = async (): Promise<MediaStream> => {
+  // @ts-ignore
   return navigator?.mediaDevices?.getDisplayMedia({ audio: true, video: true });
 };
 
@@ -157,7 +159,7 @@ export default function RoomControls({
     'presentation'
   );
 
-  const participantCount = Object.keys(room.state.participants).length;
+  const participantCount = room.participantsByActivity.size;
 
   const getAndSetDevices = () => {
     getDevices()
@@ -476,10 +478,7 @@ export default function RoomControls({
                       : 'status-error'
                   }
                 >
-                  <FontAwesomeIconStyled
-                    icon={faLaptop}
-                    fixedWidth
-                  />
+                  <FontAwesomeIconStyled icon={faLaptop} fixedWidth />
                 </Text>
               </Box>
               <Text size='xsmall' color='light-6'>

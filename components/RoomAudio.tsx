@@ -6,14 +6,22 @@ export default function RoomAudio({
   participants,
   publisher,
   streams,
+  useAudioMixer,
+  mixedAudioTrack,
   audioOutputDeviceId,
 }: {
   participants: TelnyxRoom['state']['participants'];
   publisher: TelnyxRoom['state']['publisher'];
   streams: TelnyxRoom['state']['streams'];
+  useAudioMixer: boolean;
+  mixedAudioTrack?: MediaStreamTrack;
   audioOutputDeviceId?: MediaDeviceInfo['deviceId'];
 }) {
   const audioTracks = useMemo(() => {
+    if (useAudioMixer) {
+      return [];
+    }
+
     const audioTracks: Array<{ id: string; track: MediaStreamTrack }> = [];
 
     Object.keys(participants).forEach((participantId) => {
@@ -40,7 +48,21 @@ export default function RoomAudio({
     return audioTracks;
   }, [streams]);
 
-  const audioEls = useMemo(() => {
+  const roomAudio = useMemo(() => {
+    if (useAudioMixer) {
+      if (mixedAudioTrack) {
+        return (
+          <AudioTrack
+            id='mixedAudio'
+            audioTrack={mixedAudioTrack}
+            audioOutputDeviceId={audioOutputDeviceId}
+          />
+        );
+      }
+
+      return null;
+    }
+
     return audioTracks.map(({ id, track }) => {
       return (
         <AudioTrack
@@ -51,7 +73,7 @@ export default function RoomAudio({
         />
       );
     });
-  }, [audioTracks, audioOutputDeviceId]);
+  }, [audioTracks, useAudioMixer, mixedAudioTrack, audioOutputDeviceId]);
 
-  return <>{audioEls}</>;
+  return <>{roomAudio}</>;
 }
