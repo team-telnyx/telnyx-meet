@@ -346,7 +346,10 @@ export default function RoomControls({
           }
         })
         .catch((error) => {
-          console.log("error===>", error)
+          setError({
+            title: 'Camera and microphone are blocked',
+            body: "Telnyx Meet requires access to your camera and microphone. Click the camera blocked icon in your browser's address bar.",
+          });
         });
     }
     
