@@ -141,9 +141,9 @@ export default function RoomControls({
 
   const [devices, setDevices] = useState<any>({});
   const [audioInputDeviceId, setAudioInputDeviceId] =
-    useState<string | undefined>();
+    useState<string | undefined>(previewAudioInputDeviceId);
   const [videoDeviceId, setVideoDeviceId] =
-    useState<string | undefined>();
+    useState<string | undefined>(previewVideoInputDeviceId);
   const [audioOutputDeviceId, setAudioOutputDeviceId] = useState<string>();
   const [error, setError] = useState<
     { title: string; body: string } | undefined
@@ -329,35 +329,33 @@ export default function RoomControls({
   }, [audioOutputDeviceId]);
 
   useEffect(() => {
-    console.log("OPA====>previewAudioInputDeviceId", previewAudioInputDeviceId)
-    console.log("OPA====>previewVideoInputDeviceId", previewVideoInputDeviceId)
-
-    if(previewAudioInputDeviceId || previewVideoInputDeviceId) {
+    if(audioInputDeviceId || videoDeviceId) {
       getUserMedia({
-        video: previewVideoInputDeviceId ? true :  false,
-        audio: previewAudioInputDeviceId ? true :  false,
+        video: videoDeviceId ? true :  false,
+        audio: audioInputDeviceId ? true :  false,
       })
         .then((stream) => {
           const localAudioTrack = stream?.getAudioTracks()[0];
           const localVideoTrack = stream?.getVideoTracks()[0];
-  
+
           if (localAudioTrack || localVideoTrack) {
             room.publish({ key: 'self', audioTrack: localAudioTrack, videoTrack: localVideoTrack });
-          }
+          } 
+    
         })
         .catch((error) => {
-          setError({
-            title: 'Camera and microphone are blocked',
-            body: "Telnyx Meet requires access to your camera and microphone. Click the camera blocked icon in your browser's address bar.",
-          });
+          console.log("error===>", error)
         });
+    } else {
+      room.unpublish('self');
     }
-    
-  }, [previewAudioInputDeviceId, previewVideoInputDeviceId])
+  }, [videoDeviceId, audioInputDeviceId])
 
 
-  console.log("previewAudioInputDeviceId", previewAudioInputDeviceId)
-  console.log("previewVideoInputDeviceId", previewVideoInputDeviceId)
+  // console.log("previewAudioInputDeviceId", previewAudioInputDeviceId)
+  console.log("audioInputDeviceId", audioInputDeviceId)
+  // console.log("previewVideoInputDeviceId", previewVideoInputDeviceId)
+  console.log("videoDeviceId", videoDeviceId)
 
   return (
     <Box
@@ -379,9 +377,10 @@ export default function RoomControls({
             data-testid='btn-toggle-audio'
             size='large'
             onClick={() => {
-              if (audioTrack) {
-                audioTrack.stop();
+              if (audioTrack || audioInputDeviceId) {
+                audioTrack?.stop();
                 setAudioTrack(undefined);
+                setAudioInputDeviceId(undefined);
               } else {
                 getUserMedia({
                   audio: audioInputDeviceId
@@ -391,6 +390,7 @@ export default function RoomControls({
                 })
                   .then((stream) => {
                     setAudioTrack(stream?.getAudioTracks()[0]);
+                    setAudioInputDeviceId(stream?.getAudioTracks()[0].id);
                   })
                   .catch((err) => {
                     handleMediaError(err, 'audio');
@@ -433,9 +433,10 @@ export default function RoomControls({
             data-testid='btn-toggle-video'
             size='large'
             onClick={() => {
-              if (videoTrack) {
-                videoTrack.stop();
+              if (videoTrack || videoDeviceId) {
+                videoTrack?.stop();
                 setVideoTrack(undefined);
+                setVideoDeviceId(undefined);
               } else {
                 getUserMedia({
                   audio: false,
@@ -443,6 +444,7 @@ export default function RoomControls({
                 })
                   .then((stream) => {
                     setVideoTrack(stream?.getVideoTracks()[0]);
+                    setVideoDeviceId(stream?.getVideoTracks()[0].id);
                   })
                   .catch((err) => {
                     handleMediaError(err, 'video');

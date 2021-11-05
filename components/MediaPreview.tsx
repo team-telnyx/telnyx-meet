@@ -76,10 +76,7 @@ function MediaPreview({
 
         if (videoElRef.current) {
           videoElRef.current.srcObject = stream;
-          console.log(videoElRef.current.srcObject);
         }
-
-        console.log(localVideoTrack);
       })
       .catch((error) => {
         if (error instanceof DOMException && error.name === 'NotAllowedError') {
