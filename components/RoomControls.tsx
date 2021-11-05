@@ -195,14 +195,7 @@ export default function RoomControls({
     }
 
     if (audioTrack || videoTrack) {
-      if (
-        (!room.state.publisher.streamsPublished['self'] ||
-          room.state.publisher.streamsPublished['self'].status ===
-            'published') &&
-        (!selfStream || !selfStream.audioTrack || !selfStream.videoTrack)
-      ) {
         room.publish({ key: 'self', audioTrack, videoTrack });
-      }
     }
 
     getAndSetDevices(); // will populate the devices based on the current permissions
