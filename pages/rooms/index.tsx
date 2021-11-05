@@ -5,23 +5,9 @@ import { Main } from 'grommet';
 
 import Room from '../../components/Room';
 import JoinRoom from '../../components/JoinRoom';
+import MediaPreview from '../../components/MediaPreview';
 
 import { generateUsername, generateId } from '../../utils/helpers';
-
-import ErrorDialog from '../../components/ErrorDialog';
-import { LocalStreamsContext } from '../../contexts/LocalStreamsContext';
-
-const getUserMedia = async (
-  constraints: MediaStreamConstraints
-): Promise<MediaStream> => {
-  return await navigator?.mediaDevices?.getUserMedia(constraints);
-};
-
-enum GRANT_STATUS {
-  PENDING = 'pending',
-  DENIED = 'denied',
-  GRANTED = 'granted',
-}
 export default function Rooms({ id }: { id: string }) {
   const [roomId, setRoomId] = useState<string>();
   const [username, setUsername] = useState<string>(generateUsername());
@@ -33,14 +19,6 @@ export default function Rooms({ id }: { id: string }) {
     refreshToken: '',
   });
   const [isReady, setIsReady] = useState(false);
-  const [localStreams, setLocalStreams] = useState<{
-    localAudioTrack: MediaStreamTrack | undefined;
-    localVideoTrack: MediaStreamTrack | undefined;
-  }>({ localAudioTrack: undefined, localVideoTrack: undefined });
-
-  const [error, setError] = useState<
-    { title: string; body: string } | undefined
-  >(undefined);
 
   useEffect(() => {
     setRoomId(id);
@@ -58,62 +36,6 @@ export default function Rooms({ id }: { id: string }) {
     setTokens({ clientToken: '', refreshToken: '' });
   };
 
-  useEffect(() => {
-    navigator.mediaDevices.enumerateDevices().then((devices) => {
-      const mic = devices.filter((mic) => mic.kind === 'audioinput')[0];
-      const webcam = devices.filter(
-        (webcam) => webcam.kind === 'videoinput'
-      )[0];
-
-      if (!mic.label && !webcam.label) {
-        setError({
-          title: 'Allow Telnyx Meet to use your camera and microphone',
-          body: 'Telnyx Meet needs access to your camera and microphone so that other participants can see and hear you. Telnyx Meet will ask you to confirm this decision on each browser and computer you use.',
-        });
-      }
-    });
-
-    getUserMedia({
-      video: true,
-      audio: true,
-    })
-      .then((stream) => {
-        const localAudioTrack = stream?.getAudioTracks()[0];
-        const localVideoTrack = stream?.getVideoTracks()[0];
-
-        setLocalStreams({ localAudioTrack, localVideoTrack });
-        setError(undefined);
-      })
-      .catch((error) => {
-        if (error instanceof DOMException && error.name === 'NotAllowedError') {
-          setError({
-            title: 'Camera and microphone are blocked',
-            body: "Telnyx Meet requires access to your camera and microphone. Click the camera blocked icon in your browser's address bar.",
-          });
-        }
-      });
-  }, []);
-
-  useEffect(() => {
-    if (localStreams?.localAudioTrack) {
-      setLocalStreams((streams) => ({
-        ...streams,
-        localAudioTrack: localStreams?.localAudioTrack,
-      }));
-    }
-
-    if (localStreams?.localVideoTrack) {
-      setLocalStreams((streams) => ({
-        ...streams,
-        localVideoTrack: localStreams?.localVideoTrack,
-      }));
-    }
-  }, [localStreams?.localAudioTrack, localStreams?.localVideoTrack]);
-
-  const onClose = () => {
-    setError(undefined);
-  };
-
   return (
     <Fragment>
       <Head>
@@ -121,34 +43,38 @@ export default function Rooms({ id }: { id: string }) {
         <link rel='icon' href='/favicon.ico' />
       </Head>
 
-      {error && (
-        <ErrorDialog onClose={onClose} title={error.title} body={error.body} />
-      )}
-
-      <LocalStreamsContext.Provider value={[localStreams, setLocalStreams]}>
-        <Main align='center' justify='center' background='light-2'>
-          {roomId && isReady ? (
-            <Room
-              roomId={roomId}
-              tokens={tokens}
-              context={{
-                id: generateId(),
-                username,
-              }}
-              onDisconnected={onDisconnected}
-            />
-          ) : (
+      <Main align='center' justify='center' background='light-2'>
+        {roomId && isReady ? (
+          <Room
+            roomId={roomId}
+            tokens={tokens}
+            context={{
+              id: generateId(),
+              username,
+            }}
+            onDisconnected={onDisconnected}
+          />
+        ) : (
+          <div
+            style={{
+              display: 'grid',
+              height: '100%',
+              width: '100%',
+              gridTemplateColumns: '1fr 1fr',
+              alignItems: 'center',
+            }}
+          >
+            <MediaPreview />
             <JoinRoom
               roomId={roomId || ''}
               username={username}
               updateUsername={setUsername}
               updateRoomId={setRoomId}
               updateTokens={setTokens}
-              setPopupMessage={setError}
             />
-          )}
-        </Main>
-      </LocalStreamsContext.Provider>
+          </div>
+        )}
+      </Main>
     </Fragment>
   );
 }
