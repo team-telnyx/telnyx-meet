@@ -193,6 +193,7 @@ function MediaPreview({
               if (localAudioTrack) {
                 localAudioTrack.stop();
                 setLocalAudioTrack(undefined);
+                setAudioInputDeviceId(undefined);
               } else {
                 getUserMedia({
                   audio: audioInputDeviceId
@@ -242,6 +243,7 @@ function MediaPreview({
               if (localVideoTrack) {
                 localVideoTrack.stop();
                 setLocalVideoTrack(undefined);
+                setVideoInputDeviceId(undefined);
               } else {
                 getUserMedia({
                   audio: false,

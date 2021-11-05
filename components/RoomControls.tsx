@@ -141,9 +141,9 @@ export default function RoomControls({
 
   const [devices, setDevices] = useState<any>({});
   const [audioInputDeviceId, setAudioInputDeviceId] =
-    useState<string>();
+    useState<string | undefined>();
   const [videoDeviceId, setVideoDeviceId] =
-    useState<string>();
+    useState<string | undefined>();
   const [audioOutputDeviceId, setAudioOutputDeviceId] = useState<string>();
   const [error, setError] = useState<
     { title: string; body: string } | undefined
@@ -328,9 +328,31 @@ export default function RoomControls({
     onAudioOutputDeviceChange(audioOutputDeviceId);
   }, [audioOutputDeviceId]);
 
+  useEffect(() => {
+    console.log("OPA====>previewAudioInputDeviceId", previewAudioInputDeviceId)
+    console.log("OPA====>previewVideoInputDeviceId", previewVideoInputDeviceId)
 
-  console.log("OPA====>previewVideoInputDeviceId", previewVideoInputDeviceId)
-  console.log("OPA====>previewAudioInputDeviceId", previewAudioInputDeviceId)
+    if(previewAudioInputDeviceId || previewVideoInputDeviceId) {
+      getUserMedia({
+        video: previewVideoInputDeviceId ? true :  false,
+        audio: previewAudioInputDeviceId ? true :  false,
+      })
+        .then((stream) => {
+          const localAudioTrack = stream?.getAudioTracks()[0];
+          const localVideoTrack = stream?.getVideoTracks()[0];
+  
+          if (localAudioTrack || localVideoTrack) {
+            room.publish({ key: 'self', audioTrack: localAudioTrack, videoTrack: localVideoTrack });
+          }
+        })
+        .catch((error) => {
+          console.log("error===>", error)
+        });
+    }
+    
+  }, [previewAudioInputDeviceId, previewVideoInputDeviceId])
+
+
 
   return (
     <Box
