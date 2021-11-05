@@ -7,6 +7,7 @@ import {
   faVideoSlash,
 } from '@fortawesome/free-solid-svg-icons';
 import { Box, Button, Text } from 'grommet';
+import styled from 'styled-components';
 
 import ErrorDialog from './ErrorDialog';
 
@@ -15,6 +16,41 @@ const getUserMedia = async (
 ): Promise<MediaStream> => {
   return await navigator?.mediaDevices?.getUserMedia(constraints);
 };
+
+const breakpointSmall = 400;
+const breakpointMedium = 530;
+const breakpointLarge = 1450;
+
+const ContainerVideoPreviewStyled = styled.div`
+  position: relative;
+  background-color: #202124;
+  border-radius: 8px;
+  overflow: hidden;
+  align-self: center;
+  min-width: 320px;
+  height: 160px;
+
+  @media (min-width: ${breakpointSmall}px) {
+    min-width: 390px;
+    height: 195px;
+  }
+
+  @media (min-width: ${breakpointMedium}px) {
+    min-width: 500px;
+    height: 250px;
+  }
+
+  @media (min-width: ${breakpointLarge}px) {
+    min-width: 700px;
+    height: 350px;
+  } 
+`;
+
+const FontAwesomeIconStyled = styled(FontAwesomeIcon)`
+  @media (max-width: ${breakpointLarge}px) {
+    font-size: 25px;
+  }
+`;
 
 function MediaPreview({
   audioInputDeviceId,
@@ -34,10 +70,6 @@ function MediaPreview({
     MediaStreamTrack | undefined
   >();
 
-  // const [audioOutputDeviceId, setAudioOutputDeviceId] = useState<
-  //   string | undefined
-  // >();
-  // const [hasMediaPermission, setHasMediaPermission] = useState<boolean>(false);
   const [error, setError] = useState<
     { title: string; body: string } | undefined
   >(undefined);
@@ -122,19 +154,7 @@ function MediaPreview({
       {error && (
         <ErrorDialog onClose={onClose} title={error.title} body={error.body} />
       )}
-      <div
-        id='preview-video'
-        style={{
-          backgroundColor: '#202124',
-          // paddingTop: '56.25%',
-          borderRadius: 8,
-          position: 'relative',
-          minWidth: 740,
-          alignSelf: 'center',
-          overflow: 'hidden',
-          height: '416px',
-        }}
-      >
+      <ContainerVideoPreviewStyled id='preview-video'>
         {localVideoTrack?.enabled && (
           <video
             id='video-preview'
@@ -180,7 +200,7 @@ function MediaPreview({
         <div
           style={{
             position: 'absolute',
-            bottom: 16,
+            bottom: 5,
             left: '50%',
             transform: 'translateX(-50%)',
           }}
@@ -220,7 +240,7 @@ function MediaPreview({
                     !localAudioTrack?.enabled ? 'status-error' : 'accent-1'
                   }
                 >
-                  <FontAwesomeIcon
+                  <FontAwesomeIconStyled
                     icon={
                       !localAudioTrack?.enabled
                         ? faMicrophoneSlash
@@ -270,7 +290,7 @@ function MediaPreview({
                     !localVideoTrack?.enabled ? 'status-error' : 'accent-1'
                   }
                 >
-                  <FontAwesomeIcon
+                  <FontAwesomeIconStyled
                     icon={!localVideoTrack?.enabled ? faVideoSlash : faVideo}
                     fixedWidth
                   />
@@ -282,7 +302,7 @@ function MediaPreview({
             </Box>
           </Button>
         </div>
-      </div>
+      </ContainerVideoPreviewStyled>
     </div>
   );
 }

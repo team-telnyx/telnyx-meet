@@ -2,12 +2,29 @@ import PropTypes from 'prop-types';
 import { Fragment, useEffect, useState } from 'react';
 import Head from 'next/head';
 import { Main } from 'grommet';
+import styled from 'styled-components';
 
 import Room from '../../components/Room';
 import JoinRoom from '../../components/JoinRoom';
 import MediaPreview from '../../components/MediaPreview';
 
 import { generateUsername, generateId } from '../../utils/helpers';
+
+
+const breakpointMedium = 1023;
+const breakpointSmall = 1021;
+
+const GridPreviewContainer = styled.div`
+  display: grid;
+  height: 100%;
+  width: 100%;
+  grid-template-columns: 1fr;
+  align-items: center;
+
+  @media (min-width: ${breakpointSmall}px) {
+    grid-template-columns: 1fr 1fr;
+  }
+`;
 export default function Rooms({ id }: { id: string }) {
   const [roomId, setRoomId] = useState<string>();
   const [username, setUsername] = useState<string>(generateUsername());
@@ -65,15 +82,7 @@ export default function Rooms({ id }: { id: string }) {
             setVideoInputDeviceId={setVideoInputDeviceId}
           />
         ) : (
-          <div
-            style={{
-              display: 'grid',
-              height: '100%',
-              width: '100%',
-              gridTemplateColumns: '1fr 1fr',
-              alignItems: 'center',
-            }}
-          >
+          <GridPreviewContainer>
             <MediaPreview
               audioInputDeviceId={audioInputDeviceId}
               setAudioInputDeviceId={setAudioInputDeviceId}
@@ -87,7 +96,7 @@ export default function Rooms({ id }: { id: string }) {
               updateRoomId={setRoomId}
               updateTokens={setTokens}
             />
-          </div>
+          </GridPreviewContainer>
         )}
       </Main>
     </Fragment>
