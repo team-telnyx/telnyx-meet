@@ -127,12 +127,16 @@ export default function RoomControls({
   room,
   disableScreenshare,
   onAudioOutputDeviceChange,
+  previewAudioInputDeviceId,
+  previewVideoInputDeviceId
 }: {
   isParticipantsListVisible: boolean;
   onChangeParticipantsListVisible: Function;
   room: TelnyxRoom;
   disableScreenshare: boolean;
   onAudioOutputDeviceChange: (deviceId?: MediaDeviceInfo['deviceId']) => void;
+  previewAudioInputDeviceId: string | undefined;
+  previewVideoInputDeviceId: string | undefined;
 }) {
 
   const [devices, setDevices] = useState<any>({});
@@ -323,6 +327,10 @@ export default function RoomControls({
   useEffect(() => {
     onAudioOutputDeviceChange(audioOutputDeviceId);
   }, [audioOutputDeviceId]);
+
+
+  console.log("OPA====>previewVideoInputDeviceId", previewVideoInputDeviceId)
+  console.log("OPA====>previewAudioInputDeviceId", previewAudioInputDeviceId)
 
   return (
     <Box

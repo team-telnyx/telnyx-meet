@@ -16,7 +16,17 @@ const getUserMedia = async (
   return await navigator?.mediaDevices?.getUserMedia(constraints);
 };
 
-function MediaPreview() {
+function MediaPreview({
+  audioInputDeviceId,
+  setAudioInputDeviceId,
+  videoInputDeviceId,
+  setVideoInputDeviceId,
+}: {
+  audioInputDeviceId: string | undefined;
+  setAudioInputDeviceId: any;
+  videoInputDeviceId: string | undefined;
+  setVideoInputDeviceId: any;
+}) {
   const [localAudioTrack, setLocalAudioTrack] = useState<
     MediaStreamTrack | undefined
   >();
@@ -24,12 +34,6 @@ function MediaPreview() {
     MediaStreamTrack | undefined
   >();
 
-  const [audioInputDeviceId, setAudioInputDeviceId] = useState<
-    string | undefined
-  >();
-  const [videoInputDeviceId, setVideoInputDeviceId] = useState<
-    string | undefined
-  >();
   // const [audioOutputDeviceId, setAudioOutputDeviceId] = useState<
   //   string | undefined
   // >();

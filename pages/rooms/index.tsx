@@ -19,6 +19,12 @@ export default function Rooms({ id }: { id: string }) {
     refreshToken: '',
   });
   const [isReady, setIsReady] = useState(false);
+  const [audioInputDeviceId, setAudioInputDeviceId] = useState<
+    string | undefined
+  >();
+  const [videoInputDeviceId, setVideoInputDeviceId] = useState<
+    string | undefined
+  >();
 
   useEffect(() => {
     setRoomId(id);
@@ -53,6 +59,8 @@ export default function Rooms({ id }: { id: string }) {
               username,
             }}
             onDisconnected={onDisconnected}
+            audioInputDeviceId={audioInputDeviceId}
+            videoInputDeviceId={videoInputDeviceId}
           />
         ) : (
           <div
@@ -64,7 +72,12 @@ export default function Rooms({ id }: { id: string }) {
               alignItems: 'center',
             }}
           >
-            <MediaPreview />
+            <MediaPreview
+              audioInputDeviceId={audioInputDeviceId}
+              setAudioInputDeviceId={setAudioInputDeviceId}
+              videoInputDeviceId={videoInputDeviceId}
+              setVideoInputDeviceId={setVideoInputDeviceId}
+            />
             <JoinRoom
               roomId={roomId || ''}
               username={username}
