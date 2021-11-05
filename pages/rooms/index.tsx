@@ -60,7 +60,9 @@ export default function Rooms({ id }: { id: string }) {
             }}
             onDisconnected={onDisconnected}
             audioInputDeviceId={audioInputDeviceId}
+            setAudioInputDeviceId={setAudioInputDeviceId}
             videoInputDeviceId={videoInputDeviceId}
+            setVideoInputDeviceId={setVideoInputDeviceId}
           />
         ) : (
           <div
