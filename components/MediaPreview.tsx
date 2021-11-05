@@ -30,15 +30,16 @@ function MediaPreview() {
   const [videoInputDeviceId, setVideoInputDeviceId] = useState<
     string | undefined
   >();
-  const [audioOutputDeviceId, setAudioOutputDeviceId] = useState<
-    string | undefined
-  >();
-  const [hasMediaPermission, setHasMediaPermission] = useState<boolean>(false);
+  // const [audioOutputDeviceId, setAudioOutputDeviceId] = useState<
+  //   string | undefined
+  // >();
+  // const [hasMediaPermission, setHasMediaPermission] = useState<boolean>(false);
   const [error, setError] = useState<
     { title: string; body: string } | undefined
   >(undefined);
 
   const videoElRef = useRef<HTMLVideoElement>(null);
+  const audioElRef = useRef<HTMLAudioElement>(null);
 
   useEffect(() => {
     navigator.mediaDevices.enumerateDevices().then((devices) => {
@@ -86,22 +87,22 @@ function MediaPreview() {
       });
   }, []);
 
-
   useEffect(() => {
-    if (videoElRef.current) {
-      const stream = new MediaStream();
-
-      if(localAudioTrack) {
-        stream.addTrack(localAudioTrack)
+    if (audioElRef.current) {
+      if (localAudioTrack) {
+        const stream = new MediaStream();
+        stream.addTrack(localAudioTrack);
+        audioElRef.current.srcObject = stream;
       }
-      if(localVideoTrack) {
-        stream.addTrack(localVideoTrack)
-      }
-
-      videoElRef.current.srcObject = stream;
-      console.log(videoElRef.current.srcObject);
     }
-  }, [localAudioTrack, localVideoTrack])
+    if (videoElRef.current) {
+      if (localVideoTrack) {
+        const stream = new MediaStream();
+        stream.addTrack(localVideoTrack);
+        videoElRef.current.srcObject = stream;
+      }
+    }
+  }, [localAudioTrack, localVideoTrack]);
 
   const onClose = () => {
     setError(undefined);
@@ -139,7 +140,7 @@ function MediaPreview() {
             ref={videoElRef}
             playsInline={true}
             autoPlay={true}
-            muted={localAudioTrack?.enabled ? false : true}
+            muted={false}
             style={{
               position: 'absolute',
               left: 0,
@@ -165,6 +166,16 @@ function MediaPreview() {
             Camera is off
           </Text>
         )}
+
+        {localAudioTrack?.enabled && (
+          <audio
+            ref={audioElRef}
+            playsInline={true}
+            autoPlay={true}
+            muted={false}
+          ></audio>
+        )}
+
         <div
           style={{
             position: 'absolute',

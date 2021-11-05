@@ -16,7 +16,6 @@ import ErrorDialog from './ErrorDialog';
 import { TelnyxRoom } from '../hooks/room';
 
 import styled from 'styled-components';
-import { LocalStreamsContext } from '../contexts/LocalStreamsContext';
 
 const breakpointMedium = 1023;
 
@@ -136,30 +135,11 @@ export default function RoomControls({
   onAudioOutputDeviceChange: (deviceId?: MediaDeviceInfo['deviceId']) => void;
 }) {
 
-  const [localStreams, setLocalStreams] = useContext(LocalStreamsContext);
-
-  let localAudioDeviceId: string = '';
-  let localVideoDeviceId: string = '';
-
-  if (localStreams?.localAudioTrack) {
-    localAudioDeviceId =
-      localStreams?.localAudioTrack?.readyState === 'live'
-        ? localStreams?.localAudioTrack?.id
-        : '';
-  }
-
-  if (localStreams?.localVideoTrack) {
-    localVideoDeviceId =
-     localStreams?.localVideoTrack?.readyState === 'live'
-       ? localStreams?.localVideoTrack?.id
-       : '';
- }
-
   const [devices, setDevices] = useState<any>({});
   const [audioInputDeviceId, setAudioInputDeviceId] =
-    useState<string>(localAudioDeviceId);
+    useState<string>();
   const [videoDeviceId, setVideoDeviceId] =
-    useState<string>(localVideoDeviceId);
+    useState<string>();
   const [audioOutputDeviceId, setAudioOutputDeviceId] = useState<string>();
   const [error, setError] = useState<
     { title: string; body: string } | undefined
@@ -193,31 +173,6 @@ export default function RoomControls({
   const onClose = () => {
     setError(undefined);
   };
-
-  useEffect(() => {
-    console.log('localAudioDeviceId===>', localAudioDeviceId)
-    console.log('localVideoDeviceId====>', localVideoDeviceId)
-   debugger
-    getUserMedia({
-      audio: localAudioDeviceId
-        ? {
-            deviceId: localAudioDeviceId,
-          }
-        : false,
-      video: localVideoDeviceId
-        ? {
-            deviceId: localVideoDeviceId,
-          }
-        : false,
-    })
-      .then((stream) => {
-        setAudioTrack(stream.getAudioTracks()[0]);
-        setVideoTrack(stream.getVideoTracks()[0]);
-      })
-      .catch((error) => {
-        console.log('error===>', error);
-      });
-  }, [localStreams?.localAudioTrack, localStreams?.localVideoTrack]);
 
   useEffect(() => {
     // get devices if permissions are already granted
