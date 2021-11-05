@@ -203,6 +203,7 @@ function MediaPreview({
                 })
                   .then((stream) => {
                     setLocalAudioTrack(stream?.getAudioTracks()[0]);
+                    setAudioInputDeviceId(stream?.getAudioTracks()[0].id);
                   })
                   .catch((err) => {
                     setError({
@@ -253,6 +254,7 @@ function MediaPreview({
                 })
                   .then((stream) => {
                     setLocalVideoTrack(stream?.getVideoTracks()[0]);
+                    setVideoInputDeviceId(stream?.getVideoTracks()[0].id);
                   })
                   .catch((err) => {
                     setError({

@@ -356,6 +356,8 @@ export default function RoomControls({
   }, [previewAudioInputDeviceId, previewVideoInputDeviceId])
 
 
+  console.log("previewAudioInputDeviceId", previewAudioInputDeviceId)
+  console.log("previewVideoInputDeviceId", previewVideoInputDeviceId)
 
   return (
     <Box
