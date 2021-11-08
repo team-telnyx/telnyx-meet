@@ -38,7 +38,7 @@ const JoinRoom = ({
   };
 
   return (
-    <div style={{ display: 'flex', justifyContent: 'center' }}>
+    <Box direction='row' justify='center'>
       <Box pad='small' gap='medium'>
         <Box
           background={{ color: 'white', opacity: 'weak' }}
@@ -58,26 +58,26 @@ const JoinRoom = ({
           placeholder={'Room UUID'}
         />
 
-          <TextInput
-            data-testid='input-username'
-            value={username}
-            onChange={(e) => {
-              updateUsername(e.target.value);
-            }}
-            placeholder='Your name'
-          />
-          <Button
-            data-testid='btn-join-room'
-            primary
-            disabled={!roomId}
-            label='Join room'
-            onClick={() => {
-              saveItem(USERNAME_KEY, username);
-              joinRoom();
-            }}
-          />
-        </Box>
-    </div>
+        <TextInput
+          data-testid='input-username'
+          value={username}
+          onChange={(e) => {
+            updateUsername(e.target.value);
+          }}
+          placeholder='Your name'
+        />
+        <Button
+          data-testid='btn-join-room'
+          primary
+          disabled={!roomId}
+          label='Join room'
+          onClick={() => {
+            saveItem(USERNAME_KEY, username);
+            joinRoom();
+          }}
+        />
+      </Box>
+    </Box>
   );
 };
 

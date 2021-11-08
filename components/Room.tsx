@@ -29,9 +29,9 @@ function Room({
   };
   onDisconnected: () => void;
   audioInputDeviceId: string | undefined;
-  setAudioInputDeviceId: any;
+  setAudioInputDeviceId: (audioInputDeviceId: string | undefined) => {};
   videoInputDeviceId: string | undefined;
-  setVideoInputDeviceId: any;
+  setVideoInputDeviceId: (videoInputDeviceId: string | undefined) => {};
 }) {
   const [isParticipantsListVisible, setIsParticipantsListVisible] =
     useState<boolean>(false);

@@ -139,8 +139,8 @@ export default function RoomControls({
   onAudioOutputDeviceChange: (deviceId?: MediaDeviceInfo['deviceId']) => void;
   previewAudioInputDeviceId: string | undefined;
   previewVideoInputDeviceId: string | undefined;
-  setPreviewAudioInputDeviceId: any;
-  setPreviewVideoInputDeviceId: any;
+  setPreviewAudioInputDeviceId: (previewAudioInputDeviceId: string | undefined) => {};
+  setPreviewVideoInputDeviceId: (previewVideoInputDeviceId: string | undefined) => {};
 }) {
   const [devices, setDevices] = useState<any>({});
   const [audioInputDeviceId, setAudioInputDeviceId] = useState<

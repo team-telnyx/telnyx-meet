@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { FontAwesomeIcon as BaseFontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   faMicrophone,
   faMicrophoneSlash,
@@ -21,7 +21,7 @@ const breakpointSmall = 400;
 const breakpointMedium = 530;
 const breakpointLarge = 1450;
 
-const ContainerVideoPreviewStyled = styled.div`
+const VideoPreview = styled.div`
   position: relative;
   background-color: #202124;
   border-radius: 8px;
@@ -46,7 +46,7 @@ const ContainerVideoPreviewStyled = styled.div`
   } 
 `;
 
-const FontAwesomeIconStyled = styled(FontAwesomeIcon)`
+const FontAwesomeIcon = styled(BaseFontAwesomeIcon)`
   @media (max-width: ${breakpointLarge}px) {
     font-size: 25px;
   }
@@ -59,9 +59,9 @@ function MediaPreview({
   setVideoInputDeviceId,
 }: {
   audioInputDeviceId: string | undefined;
-  setAudioInputDeviceId: any;
+  setAudioInputDeviceId: (audioInputDeviceId: string | undefined) => {};
   videoInputDeviceId: string | undefined;
-  setVideoInputDeviceId: any;
+  setVideoInputDeviceId: (videoInputDeviceId: string | undefined) => {};
 }) {
   const [localAudioTrack, setLocalAudioTrack] = useState<
     MediaStreamTrack | undefined
@@ -154,7 +154,7 @@ function MediaPreview({
       {error && (
         <ErrorDialog onClose={onClose} title={error.title} body={error.body} />
       )}
-      <ContainerVideoPreviewStyled id='preview-video'>
+      <VideoPreview id='preview-video'>
         {localVideoTrack?.enabled && (
           <video
             id='video-preview'
@@ -240,7 +240,7 @@ function MediaPreview({
                     !localAudioTrack?.enabled ? 'status-error' : 'accent-1'
                   }
                 >
-                  <FontAwesomeIconStyled
+                  <FontAwesomeIcon
                     icon={
                       !localAudioTrack?.enabled
                         ? faMicrophoneSlash
@@ -290,7 +290,7 @@ function MediaPreview({
                     !localVideoTrack?.enabled ? 'status-error' : 'accent-1'
                   }
                 >
-                  <FontAwesomeIconStyled
+                  <FontAwesomeIcon
                     icon={!localVideoTrack?.enabled ? faVideoSlash : faVideo}
                     fixedWidth
                   />
@@ -302,7 +302,7 @@ function MediaPreview({
             </Box>
           </Button>
         </div>
-      </ContainerVideoPreviewStyled>
+      </VideoPreview>
     </div>
   );
 }
