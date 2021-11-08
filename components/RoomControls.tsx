@@ -1,6 +1,6 @@
 import { getDevices } from '@telnyx/video';
 
-import { useEffect, useState } from 'react';
+import { Dispatch, SetStateAction, useEffect, useState } from 'react';
 import { Box, Button, Menu, Text } from 'grommet';
 import { Group as GroupIcon } from 'grommet-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -139,8 +139,8 @@ export default function RoomControls({
   onAudioOutputDeviceChange: (deviceId?: MediaDeviceInfo['deviceId']) => void;
   previewAudioInputDeviceId: string | undefined;
   previewVideoInputDeviceId: string | undefined;
-  setPreviewAudioInputDeviceId: (previewAudioInputDeviceId: string | undefined) => {};
-  setPreviewVideoInputDeviceId: (previewVideoInputDeviceId: string | undefined) => {};
+  setPreviewAudioInputDeviceId: Dispatch<SetStateAction<string | undefined>>;
+  setPreviewVideoInputDeviceId: Dispatch<SetStateAction<string | undefined>>;
 }) {
   const [devices, setDevices] = useState<any>({});
   const [audioInputDeviceId, setAudioInputDeviceId] = useState<
