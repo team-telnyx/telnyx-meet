@@ -1,8 +1,6 @@
 import React from 'react';
 import { Box, Button, TextInput } from 'grommet';
-import { saveItem } from '../utils/storage';
-import { USERNAME_KEY } from '../constants';
-
+import { saveItem, USERNAME_KEY } from '../utils/storage';
 interface Props {
   roomId: string;
   username: string;

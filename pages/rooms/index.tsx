@@ -7,9 +7,7 @@ import Room from '../../components/Room';
 import JoinRoom from '../../components/JoinRoom';
 
 import { generateUsername, generateId } from '../../utils/helpers';
-import { getItem } from '../../utils/storage';
-import { USERNAME_KEY } from '../../constants';
-
+import { getItem, USERNAME_KEY } from '../../utils/storage';
 
 function getUserName(): string {
   let user = getItem(USERNAME_KEY);
