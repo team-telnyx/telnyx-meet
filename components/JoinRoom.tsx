@@ -1,6 +1,6 @@
-import React, { useEffect, useRef, useState, useContext } from 'react';
-import { Box, Button, TextInput, Text } from 'grommet';
-
+import React from 'react';
+import { Box, Button, TextInput } from 'grommet';
+import { saveItem, USERNAME_KEY } from '../utils/storage';
 interface Props {
   roomId: string;
   username: string;
@@ -58,24 +58,25 @@ const JoinRoom = ({
           placeholder={'Room UUID'}
         />
 
-        <TextInput
-          data-testid='input-username'
-          value={username}
-          onChange={(e) => {
-            updateUsername(e.target.value);
-          }}
-          placeholder='Your name'
-        />
-        <Button
-          data-testid='btn-join-room'
-          primary
-          disabled={!roomId}
-          label='Join room'
-          onClick={() => {
-            joinRoom();
-          }}
-        />
-      </Box>
+          <TextInput
+            data-testid='input-username'
+            value={username}
+            onChange={(e) => {
+              updateUsername(e.target.value);
+            }}
+            placeholder='Your name'
+          />
+          <Button
+            data-testid='btn-join-room'
+            primary
+            disabled={!roomId}
+            label='Join room'
+            onClick={() => {
+              saveItem(USERNAME_KEY, username);
+              joinRoom();
+            }}
+          />
+        </Box>
     </div>
   );
 };

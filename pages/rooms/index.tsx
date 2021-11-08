@@ -9,10 +9,10 @@ import JoinRoom from '../../components/JoinRoom';
 import MediaPreview from '../../components/MediaPreview';
 
 import { generateUsername, generateId } from '../../utils/helpers';
+import { getItem, USERNAME_KEY } from '../../utils/storage';
 
 
-const breakpointMedium = 1023;
-const breakpointSmall = 1021;
+const breakpointMedium = 1021;
 
 const GridPreviewContainer = styled.div`
   display: grid;
@@ -21,13 +21,24 @@ const GridPreviewContainer = styled.div`
   grid-template-columns: 1fr;
   align-items: center;
 
-  @media (min-width: ${breakpointSmall}px) {
+  @media (min-width: ${breakpointMedium}px) {
     grid-template-columns: 1fr 1fr;
   }
 `;
+
+function getUserName(): string {
+  let user = getItem(USERNAME_KEY);
+  if (user) {
+    return user;
+  } else {
+    return generateUsername();
+  }
+}
 export default function Rooms({ id }: { id: string }) {
   const [roomId, setRoomId] = useState<string>();
-  const [username, setUsername] = useState<string>(generateUsername());
+  
+  const [username, setUsername] = useState<string>('');
+
   const [tokens, setTokens] = useState<{
     clientToken: string;
     refreshToken: string;
@@ -42,6 +53,10 @@ export default function Rooms({ id }: { id: string }) {
   const [videoInputDeviceId, setVideoInputDeviceId] = useState<
     string | undefined
   >();
+
+  useEffect(() => {
+    setUsername(getUserName())
+  }, []) 
 
   useEffect(() => {
     setRoomId(id);
