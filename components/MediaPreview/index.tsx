@@ -1,17 +1,11 @@
-import React, {
-  useEffect,
-  useState,
-  useRef,
-  SetStateAction,
-  Dispatch,
-} from 'react';
+import React, { useEffect, useState, useRef, useContext } from 'react';
 import { Text } from 'grommet';
 import styled from 'styled-components';
 
 import ErrorDialog from '../ErrorDialog';
 import { MediaControlBar } from './MediaControlBar';
 import { getUserMedia, MediaDeviceErrors } from './helper';
-
+import { TelnyxMeetContext } from '../../contexts/TelnyxMeetContext';
 
 const breakpointSmall = 400;
 const breakpointMedium = 530;
@@ -42,17 +36,14 @@ const VideoPreview = styled.div`
   }
 `;
 
-function MediaPreview({
-  audioInputDeviceId,
-  setAudioInputDeviceId,
-  videoInputDeviceId,
-  setVideoInputDeviceId,
-}: {
-  audioInputDeviceId: string | undefined;
-  setAudioInputDeviceId: Dispatch<SetStateAction<string | undefined>>;
-  videoInputDeviceId: string | undefined;
-  setVideoInputDeviceId: Dispatch<SetStateAction<string | undefined>>;
-}) {
+function MediaPreview() {
+  const {
+    audioInputDeviceId,
+    setAudioInputDeviceId,
+    videoDeviceId,
+    setVideoDeviceId,
+  } = useContext(TelnyxMeetContext);
+
   const [localAudioTrack, setLocalAudioTrack] = useState<
     MediaStreamTrack | undefined
   >();
@@ -90,7 +81,7 @@ function MediaPreview({
         setLocalAudioTrack(localAudioTrack);
         setLocalVideoTrack(localVideoTrack);
         setAudioInputDeviceId(localAudioTrack.id);
-        setVideoInputDeviceId(localVideoTrack.id);
+        setVideoDeviceId(localVideoTrack.id);
         setError(undefined);
 
         if (videoElRef.current) {
@@ -196,8 +187,8 @@ function MediaPreview({
             audioInputDeviceId={audioInputDeviceId}
             videoTrack={localVideoTrack}
             setVideoTrack={setLocalVideoTrack}
-            setVideoInputDeviceId={setVideoInputDeviceId}
-            videoInputDeviceId={videoInputDeviceId}
+            setVideoInputDeviceId={setVideoDeviceId}
+            videoInputDeviceId={videoDeviceId}
             setError={setError}
           />
         </div>

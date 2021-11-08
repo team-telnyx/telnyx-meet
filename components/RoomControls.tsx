@@ -1,6 +1,10 @@
 import { getDevices } from '@telnyx/video';
 
-import { Dispatch, SetStateAction, useEffect, useState } from 'react';
+import {
+  useContext,
+  useEffect,
+  useState,
+} from 'react';
 import { Box, Button, Menu, Text } from 'grommet';
 import { Group as GroupIcon } from 'grommet-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -16,6 +20,7 @@ import ErrorDialog from './ErrorDialog';
 import { TelnyxRoom } from '../hooks/room';
 
 import styled from 'styled-components';
+import { TelnyxMeetContext } from '../contexts/TelnyxMeetContext';
 
 const breakpointMedium = 1023;
 
@@ -127,27 +132,23 @@ export default function RoomControls({
   room,
   disableScreenshare,
   onAudioOutputDeviceChange,
-  previewAudioInputDeviceId,
-  previewVideoInputDeviceId,
-  setPreviewAudioInputDeviceId,
-  setPreviewVideoInputDeviceId,
 }: {
   isParticipantsListVisible: boolean;
   onChangeParticipantsListVisible: Function;
   room: TelnyxRoom;
   disableScreenshare: boolean;
   onAudioOutputDeviceChange: (deviceId?: MediaDeviceInfo['deviceId']) => void;
-  previewAudioInputDeviceId: string | undefined;
-  previewVideoInputDeviceId: string | undefined;
-  setPreviewAudioInputDeviceId: Dispatch<SetStateAction<string | undefined>>;
-  setPreviewVideoInputDeviceId: Dispatch<SetStateAction<string | undefined>>;
 }) {
+  const {
+    audioInputDeviceId,
+    audioOutputDeviceId,
+    videoDeviceId,
+    setAudioInputDeviceId,
+    setAudioOutputDeviceId,
+    setVideoDeviceId,
+  } = useContext(TelnyxMeetContext);
+
   const [devices, setDevices] = useState<any>({});
-  const [audioInputDeviceId, setAudioInputDeviceId] = useState<
-    string | undefined
-  >();
-  const [videoDeviceId, setVideoDeviceId] = useState<string | undefined>();
-  const [audioOutputDeviceId, setAudioOutputDeviceId] = useState<string>();
   const [error, setError] = useState<
     { title: string; body: string } | undefined
   >(undefined);
@@ -332,10 +333,10 @@ export default function RoomControls({
   }, [audioOutputDeviceId]);
 
   useEffect(() => {
-    if (previewAudioInputDeviceId || previewVideoInputDeviceId) {
+    if (audioInputDeviceId || videoDeviceId) {
       getUserMedia({
-        video: previewVideoInputDeviceId ? true : false,
-        audio: previewAudioInputDeviceId ? true : false,
+        video: videoDeviceId ? true : false,
+        audio: audioInputDeviceId ? true : false,
       })
         .then((stream) => {
           const localAudioTrack = stream?.getAudioTracks()[0];
@@ -355,7 +356,7 @@ export default function RoomControls({
     } else if (room.state.publisher.streamsPublished['self']) {
       room.unpublish('self');
     }
-  }, [previewAudioInputDeviceId, previewVideoInputDeviceId]);
+  }, [audioInputDeviceId, videoDeviceId]);
 
   return (
     <Box
@@ -377,10 +378,10 @@ export default function RoomControls({
             data-testid='btn-toggle-audio'
             size='large'
             onClick={() => {
-              if (audioTrack || previewAudioInputDeviceId) {
+              if (audioTrack || audioInputDeviceId) {
                 audioTrack?.stop();
                 setAudioTrack(undefined);
-                setPreviewAudioInputDeviceId(undefined);
+                setAudioInputDeviceId(undefined);
               } else {
                 getUserMedia({
                   audio: audioInputDeviceId
@@ -432,10 +433,10 @@ export default function RoomControls({
             data-testid='btn-toggle-video'
             size='large'
             onClick={() => {
-              if (videoTrack || previewVideoInputDeviceId) {
+              if (videoTrack || videoDeviceId) {
                 videoTrack?.stop();
                 setVideoTrack(undefined);
-                setPreviewVideoInputDeviceId(undefined);
+                setVideoDeviceId(undefined);
               } else {
                 getUserMedia({
                   audio: false,

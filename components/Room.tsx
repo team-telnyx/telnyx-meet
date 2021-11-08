@@ -13,10 +13,6 @@ function Room({
   tokens,
   context,
   onDisconnected,
-  audioInputDeviceId,
-  videoInputDeviceId,
-  setAudioInputDeviceId,
-  setVideoInputDeviceId
 }: {
   roomId: string;
   tokens: {
@@ -28,10 +24,6 @@ function Room({
     username: string;
   };
   onDisconnected: () => void;
-  audioInputDeviceId: string | undefined;
-  setAudioInputDeviceId: Dispatch<SetStateAction<string | undefined>>
-  videoInputDeviceId: string | undefined;
-  setVideoInputDeviceId: Dispatch<SetStateAction<string | undefined>>
 }) {
   const [isParticipantsListVisible, setIsParticipantsListVisible] =
     useState<boolean>(false);
@@ -116,10 +108,6 @@ function Room({
                 : false
             }
             onAudioOutputDeviceChange={setAudioOutputDeviceId}
-            setPreviewAudioInputDeviceId={setAudioInputDeviceId}
-            setPreviewVideoInputDeviceId={setVideoInputDeviceId}
-            previewAudioInputDeviceId={audioInputDeviceId}
-            previewVideoInputDeviceId={videoInputDeviceId}
           />
           <RoomAudio
             participants={room.state.participants}
