@@ -350,7 +350,7 @@ export default function RoomControls({
           }
         })
         .catch((error) => {
-          console.log('error===>', error);
+          console.warn('getUserMedia', error);
         });
     } else if (room.state.publisher.streamsPublished['self']) {
       room.unpublish('self');
