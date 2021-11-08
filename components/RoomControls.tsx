@@ -1,6 +1,6 @@
 import { getDevices } from '@telnyx/video';
 
-import { useContext, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Box, Button, Menu, Text } from 'grommet';
 import { Group as GroupIcon } from 'grommet-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
