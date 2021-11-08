@@ -2,22 +2,22 @@ export const USERNAME_KEY = 'username';
 
 export const saveItem = (key: string, value: any) => {
   if(!key || !value) {
-    console.error('getItem should has a key and a value')
+   throw new Error('key and value must be provided')
   }
 
   if (!window || !window.localStorage) {
-    console.error('saveItem should be used in the client side')
+    console.warn('localStorage not supported')
   }
   localStorage.setItem(key, value);
 };
 
 export const getItem = (key: string) => {
   if(!key) {
-    console.error('getItem should has a key')
+    throw new Error('No key provided')
   }
 
   if (!window || !window.localStorage) {
-    console.error('getItem should be used in the client side')
+    console.warn('localStorage not supported')
   }
 
   return localStorage.getItem(key);
