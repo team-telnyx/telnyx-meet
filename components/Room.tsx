@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, SetStateAction, Dispatch } from 'react';
 import { Box, Text } from 'grommet';
 import Feeds from './Feeds';
 import RoomInfo from './RoomInfo';
@@ -29,9 +29,9 @@ function Room({
   };
   onDisconnected: () => void;
   audioInputDeviceId: string | undefined;
-  setAudioInputDeviceId: (audioInputDeviceId: string | undefined) => {};
+  setAudioInputDeviceId: Dispatch<SetStateAction<string | undefined>>
   videoInputDeviceId: string | undefined;
-  setVideoInputDeviceId: (videoInputDeviceId: string | undefined) => {};
+  setVideoInputDeviceId: Dispatch<SetStateAction<string | undefined>>
 }) {
   const [isParticipantsListVisible, setIsParticipantsListVisible] =
     useState<boolean>(false);
