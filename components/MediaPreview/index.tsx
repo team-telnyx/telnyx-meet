@@ -187,8 +187,8 @@ function MediaPreview() {
             audioInputDeviceId={audioInputDeviceId}
             videoTrack={localVideoTrack}
             setVideoTrack={setLocalVideoTrack}
-            setVideoInputDeviceId={setVideoDeviceId}
-            videoInputDeviceId={videoDeviceId}
+            setVideoDeviceId={setVideoDeviceId}
+            videoDeviceId={videoDeviceId}
             setError={setError}
           />
         </div>

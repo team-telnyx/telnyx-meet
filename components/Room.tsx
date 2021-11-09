@@ -1,4 +1,4 @@
-import React, { useState, useEffect, SetStateAction, Dispatch } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Box, Text } from 'grommet';
 import Feeds from './Feeds';
 import RoomInfo from './RoomInfo';
