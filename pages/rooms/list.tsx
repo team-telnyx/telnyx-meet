@@ -70,6 +70,9 @@ export default function Home() {
                 {
                   header: 'UUID',
                   property: 'id',
+                  render: (datum: Data) => (
+                    <a href={`/rooms/${datum.id}`}>{datum.id}</a>
+                  ),
                 },
                 {
                   header: 'Max participants',
