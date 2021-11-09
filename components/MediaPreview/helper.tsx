@@ -11,6 +11,6 @@ export const MediaDeviceErrors = {
   },
   allowMediaWarning: {
     title: 'Allow Telnyx Meet to use your camera and microphone',
-    body: 'Telnyx Meet needs access to your camera and microphone so that other participants can see and hear you. Telnyx Meet will ask you to confirm this decision on each browser and computer you use.',
+    body: 'Telnyx Meet requires access to your camera and microphone to let other participants see and hear you.',
   }
 };
