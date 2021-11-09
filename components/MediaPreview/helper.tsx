@@ -1,7 +1,7 @@
 export const getUserMedia = async (
   constraints: MediaStreamConstraints
 ): Promise<MediaStream> => {
-  return await navigator?.mediaDevices?.getUserMedia(constraints);
+  return await window?.navigator?.mediaDevices?.getUserMedia(constraints);
 };
 
 export const MediaDeviceErrors = {
