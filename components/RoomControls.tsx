@@ -1,10 +1,6 @@
 import { getDevices } from '@telnyx/video';
 
-import {
-  useContext,
-  useEffect,
-  useState,
-} from 'react';
+import { useContext, useEffect, useState } from 'react';
 import { Box, Button, Menu, Text } from 'grommet';
 import { Group as GroupIcon } from 'grommet-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -201,8 +197,10 @@ export default function RoomControls({
 
       return;
     }
-
-    if (audioTrack || videoTrack) {
+    
+    if (
+      (audioTrack || videoTrack) && 
+      (!room.state.publisher.streamsPublished['self'] || room.state.publisher.streamsPublished['self']?.status === 'published')) {
       room.publish({ key: 'self', audioTrack, videoTrack });
     }
 
@@ -335,28 +333,31 @@ export default function RoomControls({
   useEffect(() => {
     if (audioInputDeviceId || videoDeviceId) {
       getUserMedia({
-        video: videoDeviceId ? true : false,
-        audio: audioInputDeviceId ? true : false,
+        video: videoDeviceId ? { deviceId: videoDeviceId } : false,
+        audio: audioInputDeviceId ? { deviceId: audioInputDeviceId } : false,
       })
         .then((stream) => {
           const localAudioTrack = stream?.getAudioTracks()[0];
           const localVideoTrack = stream?.getVideoTracks()[0];
 
-          if (localAudioTrack || localVideoTrack) {
-            room.publish({
-              key: 'self',
-              audioTrack: localAudioTrack,
-              videoTrack: localVideoTrack,
-            });
+          room.publish({ key: 'self', audioTrack: localAudioTrack, videoTrack: localVideoTrack });
+
+          if(localAudioTrack) {
+            setAudioTrack(localAudioTrack);
           }
+          if(localVideoTrack) {
+            setVideoTrack(localVideoTrack);
+          }
+        
         })
         .catch((error) => {
           console.warn('getUserMedia', error);
         });
-    } else if (room.state.publisher.streamsPublished['self']) {
+    } 
+    else if (room.state.publisher.streamsPublished['self']) {
       room.unpublish('self');
     }
-  }, [audioInputDeviceId, videoDeviceId]);
+  }, []);
 
   return (
     <Box
@@ -378,7 +379,7 @@ export default function RoomControls({
             data-testid='btn-toggle-audio'
             size='large'
             onClick={() => {
-              if (audioTrack || audioInputDeviceId) {
+              if (audioTrack) {
                 audioTrack?.stop();
                 setAudioTrack(undefined);
                 setAudioInputDeviceId(undefined);
@@ -391,6 +392,7 @@ export default function RoomControls({
                 })
                   .then((stream) => {
                     setAudioTrack(stream?.getAudioTracks()[0]);
+                    setAudioInputDeviceId(stream?.getAudioTracks()[0].id);
                   })
                   .catch((err) => {
                     handleMediaError(err, 'audio');
@@ -433,7 +435,7 @@ export default function RoomControls({
             data-testid='btn-toggle-video'
             size='large'
             onClick={() => {
-              if (videoTrack || videoDeviceId) {
+              if (videoTrack) {
                 videoTrack?.stop();
                 setVideoTrack(undefined);
                 setVideoDeviceId(undefined);
@@ -444,6 +446,7 @@ export default function RoomControls({
                 })
                   .then((stream) => {
                     setVideoTrack(stream?.getVideoTracks()[0]);
+                    setVideoDeviceId(stream?.getVideoTracks()[0].id);
                   })
                   .catch((err) => {
                     handleMediaError(err, 'video');
