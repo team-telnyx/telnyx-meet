@@ -38,8 +38,10 @@ const JoinRoom = ({
   };
 
   return (
-    <Box direction='row' justify='center'>
-      <Box pad='small' gap='medium'>
+    
+      <Box pad='small' gap='medium' style={{
+        justifySelf: 'center'
+      }}>
         <Box
           background={{ color: 'white', opacity: 'weak' }}
           round='xsmall'
@@ -77,7 +79,7 @@ const JoinRoom = ({
           }}
         />
       </Box>
-    </Box>
+
   );
 };
 
