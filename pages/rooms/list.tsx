@@ -4,6 +4,7 @@ import { Box, DataTable, Main, Text } from 'grommet';
 import AppHeader from '../../components/AppHeader';
 
 type Data = {
+  id: string;
   unique_name: string;
   record_audio: boolean;
   record_video: boolean;
