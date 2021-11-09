@@ -15,4 +15,5 @@ const TelnyxMeetContext = React.createContext<{
   setAudioOutputDeviceId:  (value: React.SetStateAction<string | undefined>) => {},
   setVideoDeviceId: (value: React.SetStateAction<string | undefined>) => {},
 });
+
 export { TelnyxMeetContext };
