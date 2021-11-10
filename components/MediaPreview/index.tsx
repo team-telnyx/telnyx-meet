@@ -56,7 +56,6 @@ function MediaPreview() {
   >(undefined);
 
   const videoElRef = useRef<HTMLVideoElement>(null);
-  const audioElRef = useRef<HTMLAudioElement>(null);
 
   useEffect(() => {
     navigator.mediaDevices.enumerateDevices().then((devices) => {
@@ -96,13 +95,6 @@ function MediaPreview() {
   }, []);
 
   useEffect(() => {
-    if (audioElRef.current) {
-      if (localAudioTrack) {
-        const stream = new MediaStream();
-        stream.addTrack(localAudioTrack);
-        audioElRef.current.srcObject = stream;
-      }
-    }
     if (videoElRef.current) {
       if (localVideoTrack) {
         const stream = new MediaStream();
@@ -110,7 +102,7 @@ function MediaPreview() {
         videoElRef.current.srcObject = stream;
       }
     }
-  }, [localAudioTrack, localVideoTrack]);
+  }, [localVideoTrack]);
 
   const onClose = () => {
     setError(undefined);
@@ -136,7 +128,7 @@ function MediaPreview() {
             ref={videoElRef}
             playsInline={true}
             autoPlay={true}
-            muted={false}
+            muted={true}
             style={{
               position: 'absolute',
               left: 0,
@@ -161,15 +153,6 @@ function MediaPreview() {
           >
             Camera is off
           </Text>
-        )}
-
-        {localAudioTrack?.enabled && (
-          <audio
-            ref={audioElRef}
-            playsInline={true}
-            autoPlay={true}
-            muted={true}
-          ></audio>
         )}
 
         <div
