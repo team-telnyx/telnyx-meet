@@ -168,7 +168,7 @@ function MediaPreview() {
             ref={audioElRef}
             playsInline={true}
             autoPlay={true}
-            muted={false}
+            muted={true}
           ></audio>
         )}
 
