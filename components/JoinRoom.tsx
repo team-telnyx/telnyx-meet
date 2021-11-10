@@ -38,47 +38,49 @@ const JoinRoom = ({
   };
 
   return (
-    <Box fill background='#1b1b1b' overflow='hidden'>
-      <Box align='center' justify='center' fill gap='xsmall'>
-        <Box
-          background={{ color: 'white', opacity: 'weak' }}
-          round='xsmall'
-          pad='small'
-        >
-          Enter the Room UUID and choose a name for yourself
-        </Box>
-        <Box pad='small' gap='medium'>
-          <TextInput
-            data-testid='input-room-uuid'
-            value={roomId}
-            onChange={(e) => {
-              if (typeof updateRoomId === 'function') {
-                updateRoomId(e.target.value);
-              }
-            }}
-            placeholder={'Room UUID'}
-          />
-
-          <TextInput
-            data-testid='input-username'
-            value={username}
-            onChange={(e) => {
-              updateUsername(e.target.value);
-            }}
-            placeholder='Your name'
-          />
-          <Button
-            data-testid='btn-join-room'
-            primary
-            disabled={!roomId}
-            label='Join room'
-            onClick={() => {
-              saveItem(USERNAME_KEY, username);
-              joinRoom();
-            }}
-          />
-        </Box>
+    <Box
+      pad='small'
+      gap='medium'
+      style={{
+        justifySelf: 'center',
+      }}
+    >
+      <Box
+        background={{ color: 'white', opacity: 'weak' }}
+        round='xsmall'
+        pad='small'
+      >
+        Enter the Room UUID and choose a name for yourself
       </Box>
+      <TextInput
+        data-testid='input-room-uuid'
+        value={roomId}
+        onChange={(e) => {
+          if (typeof updateRoomId === 'function') {
+            updateRoomId(e.target.value);
+          }
+        }}
+        placeholder={'Room UUID'}
+      />
+
+      <TextInput
+        data-testid='input-username'
+        value={username}
+        onChange={(e) => {
+          updateUsername(e.target.value);
+        }}
+        placeholder='Your name'
+      />
+      <Button
+        data-testid='btn-join-room'
+        primary
+        disabled={!roomId}
+        label='Join room'
+        onClick={() => {
+          saveItem(USERNAME_KEY, username);
+          joinRoom();
+        }}
+      />
     </Box>
   );
 };

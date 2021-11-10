@@ -2,12 +2,29 @@ import PropTypes from 'prop-types';
 import { Fragment, useEffect, useState } from 'react';
 import Head from 'next/head';
 import { Main } from 'grommet';
+import styled from 'styled-components';
 
 import Room from '../../components/Room';
 import JoinRoom from '../../components/JoinRoom';
+import MediaPreview from '../../components/MediaPreview';
 
 import { generateUsername, generateId } from '../../utils/helpers';
 import { getItem, USERNAME_KEY } from '../../utils/storage';
+import { TelnyxMeetContext } from '../../contexts/TelnyxMeetContext';
+
+const breakpointMedium = 1021;
+
+const GridPreviewContainer = styled.div`
+  display: grid;
+  height: 100%;
+  width: 100%;
+  grid-template-columns: 1fr;
+  align-items: center;
+
+  @media (min-width: ${breakpointMedium}px) {
+    grid-template-columns: 1fr 1fr;
+  }
+`;
 
 function getUserName(): string {
   let user = getItem(USERNAME_KEY);
@@ -19,7 +36,7 @@ function getUserName(): string {
 }
 export default function Rooms({ id }: { id: string }) {
   const [roomId, setRoomId] = useState<string>();
-  
+
   const [username, setUsername] = useState<string>('');
 
   const [tokens, setTokens] = useState<{
@@ -30,10 +47,19 @@ export default function Rooms({ id }: { id: string }) {
     refreshToken: '',
   });
   const [isReady, setIsReady] = useState(false);
+  const [audioInputDeviceId, setAudioInputDeviceId] = useState<
+    string | undefined
+  >();
+  const [audioOutputDeviceId, setAudioOutputDeviceId] = useState<
+    string | undefined
+  >();
+  const [videoInputDeviceId, setVideoInputDeviceId] = useState<
+    string | undefined
+  >();
 
   useEffect(() => {
-    setUsername(getUserName())
-  }, []) 
+    setUsername(getUserName());
+  }, []);
 
   useEffect(() => {
     setRoomId(id);
@@ -58,27 +84,41 @@ export default function Rooms({ id }: { id: string }) {
         <link rel='icon' href='/favicon.ico' />
       </Head>
 
-      <Main align='center' justify='center' background='light-2'>
-        {roomId && isReady ? (
-          <Room
-            roomId={roomId}
-            tokens={tokens}
-            context={{
-              id: generateId(),
-              username,
-            }}
-            onDisconnected={onDisconnected}
-          />
-        ) : (
-          <JoinRoom
-            roomId={roomId || ''}
-            username={username}
-            updateUsername={setUsername}
-            updateRoomId={setRoomId}
-            updateTokens={setTokens}
-          />
-        )}
-      </Main>
+      <TelnyxMeetContext.Provider
+        value={{
+          audioInputDeviceId,
+          audioOutputDeviceId,
+          videoInputDeviceId,
+          setAudioInputDeviceId,
+          setAudioOutputDeviceId,
+          setVideoInputDeviceId,
+        }}
+      >
+        <Main align='center' justify='center' background='light-2'>
+          {roomId && isReady ? (
+            <Room
+              roomId={roomId}
+              tokens={tokens}
+              context={{
+                id: generateId(),
+                username,
+              }}
+              onDisconnected={onDisconnected}
+            />
+          ) : (
+            <GridPreviewContainer>
+              <MediaPreview />
+              <JoinRoom
+                roomId={roomId || ''}
+                username={username}
+                updateUsername={setUsername}
+                updateRoomId={setRoomId}
+                updateTokens={setTokens}
+              />
+            </GridPreviewContainer>
+          )}
+        </Main>
+      </TelnyxMeetContext.Provider>
     </Fragment>
   );
 }

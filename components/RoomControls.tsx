@@ -1,6 +1,6 @@
 import { getDevices } from '@telnyx/video';
 
-import { useEffect, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import { Box, Button, Menu, Text } from 'grommet';
 import { Group as GroupIcon } from 'grommet-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -16,6 +16,7 @@ import ErrorDialog from './ErrorDialog';
 import { TelnyxRoom } from '../hooks/room';
 
 import styled from 'styled-components';
+import { TelnyxMeetContext } from '../contexts/TelnyxMeetContext';
 
 const breakpointMedium = 1023;
 
@@ -74,7 +75,7 @@ function DeviceSelect({
   selectedDeviceId,
   onSelectDevice,
 }: {
-  kind: 'audio_input' | 'video' | 'audio_output';
+  kind: 'audio_input' | 'video_input' | 'audio_output';
   devices: Array<{ id: string; label: string }>;
   selectedDeviceId?: string;
   onSelectDevice: Function;
@@ -89,7 +90,7 @@ function DeviceSelect({
     case 'audio_output':
       label = 'output';
       break;
-    case 'video':
+    case 'video_input':
       label = 'camera';
       break;
     default:
@@ -134,16 +135,27 @@ export default function RoomControls({
   disableScreenshare: boolean;
   onAudioOutputDeviceChange: (deviceId?: MediaDeviceInfo['deviceId']) => void;
 }) {
+  const {
+    audioInputDeviceId,
+    audioOutputDeviceId,
+    videoInputDeviceId,
+    setAudioInputDeviceId,
+    setAudioOutputDeviceId,
+    setVideoInputDeviceId,
+  } = useContext(TelnyxMeetContext);
+
   const [devices, setDevices] = useState<any>({});
-  const [audioInputDeviceId, setAudioInputDeviceId] = useState<string>();
-  const [videoDeviceId, setVideoDeviceId] = useState<string>();
-  const [audioOutputDeviceId, setAudioOutputDeviceId] = useState<string>();
   const [error, setError] = useState<
     { title: string; body: string } | undefined
   >(undefined);
 
-  const [audioTrack, setAudioTrack] = useState<MediaStreamTrack>();
-  const [videoTrack, setVideoTrack] = useState<MediaStreamTrack>();
+  const [selfTracks, setSelfTracks] = useState<{
+    audio: MediaStreamTrack | undefined;
+    video: MediaStreamTrack | undefined;
+  }>({
+    audio: undefined,
+    video: undefined,
+  });
   const [presentationAudioTrack, setPresentationAudioTrack] =
     useState<MediaStreamTrack>();
   const [presentationVideoTrack, setPresentationVideoTrack] =
@@ -185,18 +197,42 @@ export default function RoomControls({
   }, []);
 
   useEffect(() => {
-    if (selfStream && !audioTrack && !videoTrack) {
+    if (selfStream && !selfTracks.audio && !selfTracks.video) {
       room.unpublish('self');
 
       return;
     }
 
-    if (audioTrack || videoTrack) {
-      room.publish({ key: 'self', audioTrack, videoTrack });
+    if (selfTracks.audio || selfTracks.video) {
+      room.publish({
+        key: 'self',
+        audioTrack: selfTracks.audio,
+        videoTrack: selfTracks.video,
+      });
     }
 
     getAndSetDevices(); // will populate the devices based on the current permissions
-  }, [audioTrack, videoTrack]);
+  }, [selfTracks]);
+
+  useEffect(() => {
+    if (audioInputDeviceId || videoInputDeviceId) {
+      getUserMedia({
+        video: videoInputDeviceId ? { deviceId: videoInputDeviceId } : false,
+        audio: audioInputDeviceId ? { deviceId: audioInputDeviceId } : false,
+      })
+        .then((stream) => {
+          const localAudioTrack = stream?.getAudioTracks()[0];
+          const localVideoTrack = stream?.getVideoTracks()[0];
+
+          setSelfTracks({ audio: localAudioTrack, video: localVideoTrack });
+        })
+        .catch((error) => {
+          console.warn('getUserMedia', error);
+        });
+    } else if (room.state.publisher.streamsPublished['self']) {
+      room.unpublish('self');
+    }
+  }, []);
 
   useEffect(() => {
     if (presentationStream && !presentationVideoTrack) {
@@ -217,23 +253,6 @@ export default function RoomControls({
       };
     }
   }, [presentationVideoTrack, presentationAudioTrack]);
-
-  useEffect(() => {
-    if (!room.state.publisher.streamsPublished['self']) {
-      audioTrack?.stop();
-      videoTrack?.stop();
-      setAudioTrack(undefined);
-      setVideoTrack(undefined);
-    }
-
-    if (!room.state.publisher.streamsPublished['presentation']) {
-      presentationAudioTrack?.stop();
-      presentationVideoTrack?.stop();
-
-      setPresentationAudioTrack(undefined);
-      setPresentationVideoTrack(undefined);
-    }
-  }, [room.state.publisher.streamsPublished]);
 
   const handleMediaError = (err: Error, kind: 'audio' | 'video' | 'screen') => {
     if (kind === 'audio') {
@@ -268,15 +287,15 @@ export default function RoomControls({
     kind,
     deviceId,
   }: {
-    kind: 'audio_input' | 'video' | 'audio_output';
+    kind: 'audio_input' | 'video_input' | 'audio_output';
     deviceId: string;
   }) => {
     console.log('[video-meet] onDeviceChange: ', kind, ' id: ', deviceId);
 
     if (kind === 'audio_input') {
       setAudioInputDeviceId(deviceId);
-      if (audioTrack) {
-        audioTrack.stop();
+      if (selfTracks.audio) {
+        selfTracks.audio.stop();
 
         getUserMedia({
           video: false,
@@ -285,7 +304,10 @@ export default function RoomControls({
           },
         })
           .then((stream) => {
-            setAudioTrack(stream?.getAudioTracks()[0]);
+            setSelfTracks((value) => ({
+              ...value,
+              audio: stream.getAudioTracks()[0],
+            }));
           })
           .catch((err) => {
             handleMediaError(err, 'audio');
@@ -293,10 +315,10 @@ export default function RoomControls({
       }
     }
 
-    if (kind === 'video') {
-      setVideoDeviceId(deviceId);
-      if (videoTrack) {
-        videoTrack.stop();
+    if (kind === 'video_input') {
+      setVideoInputDeviceId(deviceId);
+      if (selfTracks.video) {
+        selfTracks.video.stop();
         getUserMedia({
           audio: false,
           video: {
@@ -304,7 +326,10 @@ export default function RoomControls({
           },
         })
           .then((stream) => {
-            setVideoTrack(stream?.getVideoTracks()[0]);
+            setSelfTracks((value) => ({
+              ...value,
+              video: stream.getVideoTracks()[0],
+            }));
           })
           .catch((err) => {
             handleMediaError(err, 'video');
@@ -341,9 +366,9 @@ export default function RoomControls({
             data-testid='btn-toggle-audio'
             size='large'
             onClick={() => {
-              if (audioTrack) {
-                audioTrack.stop();
-                setAudioTrack(undefined);
+              if (selfTracks.audio) {
+                selfTracks.audio.stop();
+                setSelfTracks((value) => ({ ...value, audio: undefined }));
               } else {
                 getUserMedia({
                   audio: audioInputDeviceId
@@ -352,7 +377,11 @@ export default function RoomControls({
                   video: false,
                 })
                   .then((stream) => {
-                    setAudioTrack(stream?.getAudioTracks()[0]);
+                    setSelfTracks((value) => ({
+                      ...value,
+                      audio: stream?.getAudioTracks()[0],
+                    }));
+                    setAudioInputDeviceId(stream?.getAudioTracks()[0].id);
                   })
                   .catch((err) => {
                     handleMediaError(err, 'audio');
@@ -395,16 +424,23 @@ export default function RoomControls({
             data-testid='btn-toggle-video'
             size='large'
             onClick={() => {
-              if (videoTrack) {
-                videoTrack.stop();
-                setVideoTrack(undefined);
+              if (selfTracks.video) {
+                selfTracks.video.stop();
+                setSelfTracks((value) => ({ ...value, video: undefined }));
               } else {
                 getUserMedia({
                   audio: false,
-                  video: videoDeviceId ? { deviceId: videoDeviceId } : true,
+                  video: videoInputDeviceId
+                    ? { deviceId: videoInputDeviceId }
+                    : true,
                 })
                   .then((stream) => {
-                    setVideoTrack(stream?.getVideoTracks()[0]);
+                    setSelfTracks((value) => ({
+                      ...value,
+                      video: stream?.getVideoTracks()[0],
+                    }));
+
+                    setVideoInputDeviceId(stream?.getVideoTracks()[0].id);
                   })
                   .catch((err) => {
                     handleMediaError(err, 'video');
@@ -476,10 +512,7 @@ export default function RoomControls({
                       : 'status-error'
                   }
                 >
-                  <FontAwesomeIconStyled
-                    icon={faLaptop}
-                    fixedWidth
-                  />
+                  <FontAwesomeIconStyled icon={faLaptop} fixedWidth />
                 </Text>
               </Box>
               <Text size='xsmall' color='light-6'>
@@ -533,9 +566,9 @@ export default function RoomControls({
         />
 
         <DeviceSelect
-          kind='video'
+          kind='video_input'
           devices={devices?.videoinput}
-          selectedDeviceId={videoDeviceId}
+          selectedDeviceId={videoInputDeviceId}
           onSelectDevice={onDeviceChange}
         />
 
