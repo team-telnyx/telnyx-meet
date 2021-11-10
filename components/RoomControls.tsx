@@ -12,10 +12,12 @@ import {
   faLaptop,
   faCheck,
 } from '@fortawesome/free-solid-svg-icons';
+import styled from 'styled-components';
+import Bowser from 'bowser';
+
 import ErrorDialog from './ErrorDialog';
 import { TelnyxRoom } from '../hooks/room';
 
-import styled from 'styled-components';
 import { TelnyxMeetContext } from '../contexts/TelnyxMeetContext';
 
 const breakpointMedium = 1023;
@@ -161,6 +163,8 @@ export default function RoomControls({
   const [presentationVideoTrack, setPresentationVideoTrack] =
     useState<MediaStreamTrack>();
 
+  const [isSafari, setIsSafari] = useState(false);
+
   const publisher = room.state.publisher;
 
   const selfStream = room.getParticipantStream(publisher.participantId, 'self');
@@ -182,6 +186,13 @@ export default function RoomControls({
   const onClose = () => {
     setError(undefined);
   };
+
+  useEffect(() => {
+    const browser = Bowser.getParser(window.navigator.userAgent);
+    if (browser.getBrowserName().toLocaleLowerCase() === 'safari') {
+      setIsSafari(true);
+    }
+  }, []);
 
   useEffect(() => {
     // get devices if permissions are already granted
@@ -346,6 +357,13 @@ export default function RoomControls({
     onAudioOutputDeviceChange(audioOutputDeviceId);
   }, [audioOutputDeviceId]);
 
+  const onCloseSafari = () => {
+    if (document && document.getElementsByTagName('audio')) {
+      document.getElementsByTagName('audio')[0]?.play();
+    }
+    setIsSafari(false);
+  };
+
   return (
     <Box
       gridArea='controls'
@@ -359,6 +377,14 @@ export default function RoomControls({
     >
       {error && (
         <ErrorDialog onClose={onClose} title={error.title} body={error.body} />
+      )}
+
+      {isSafari && (
+        <ErrorDialog
+          onClose={onCloseSafari}
+          title={'Participating in the meeting'}
+          body={'Click on unmute mic button to start to talk'}
+        />
       )}
       <Box pad='small' direction='row' gap='medium'>
         <Box width='80px'>
