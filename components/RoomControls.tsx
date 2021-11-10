@@ -386,7 +386,6 @@ export default function RoomControls({
               if (audioTrack) {
                 audioTrack?.stop();
                 setAudioTrack(undefined);
-                setAudioInputDeviceId(undefined);
               } else {
                 getUserMedia({
                   audio: audioInputDeviceId
@@ -442,7 +441,6 @@ export default function RoomControls({
               if (videoTrack) {
                 videoTrack?.stop();
                 setVideoTrack(undefined);
-                setVideoInputDeviceId(undefined);
               } else {
                 getUserMedia({
                   audio: false,
