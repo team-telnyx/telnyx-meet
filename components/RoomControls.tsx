@@ -138,10 +138,10 @@ export default function RoomControls({
   const {
     audioInputDeviceId,
     audioOutputDeviceId,
-    videoDeviceId,
+    videoInputDeviceId,
     setAudioInputDeviceId,
     setAudioOutputDeviceId,
-    setVideoDeviceId,
+    setVideoInputDeviceId,
   } = useContext(TelnyxMeetContext);
 
   const [devices, setDevices] = useState<any>({});
@@ -305,7 +305,7 @@ export default function RoomControls({
     }
 
     if (kind === 'video_input') {
-      setVideoDeviceId(deviceId);
+      setVideoInputDeviceId(deviceId);
       if (videoTrack) {
         videoTrack.stop();
         getUserMedia({
@@ -333,9 +333,9 @@ export default function RoomControls({
   }, [audioOutputDeviceId]);
 
   useEffect(() => {
-    if (audioInputDeviceId || videoDeviceId) {
+    if (audioInputDeviceId || videoInputDeviceId) {
       getUserMedia({
-        video: videoDeviceId ? { deviceId: videoDeviceId } : false,
+        video: videoInputDeviceId ? { deviceId: videoInputDeviceId } : false,
         audio: audioInputDeviceId ? { deviceId: audioInputDeviceId } : false,
       })
         .then((stream) => {
@@ -442,15 +442,17 @@ export default function RoomControls({
               if (videoTrack) {
                 videoTrack?.stop();
                 setVideoTrack(undefined);
-                setVideoDeviceId(undefined);
+                setVideoInputDeviceId(undefined);
               } else {
                 getUserMedia({
                   audio: false,
-                  video: videoDeviceId ? { deviceId: videoDeviceId } : true,
+                  video: videoInputDeviceId
+                    ? { deviceId: videoInputDeviceId }
+                    : true,
                 })
                   .then((stream) => {
                     setVideoTrack(stream?.getVideoTracks()[0]);
-                    setVideoDeviceId(stream?.getVideoTracks()[0].id);
+                    setVideoInputDeviceId(stream?.getVideoTracks()[0].id);
                   })
                   .catch((err) => {
                     handleMediaError(err, 'video');
@@ -578,7 +580,7 @@ export default function RoomControls({
         <DeviceSelect
           kind='video_input'
           devices={devices?.videoinput}
-          selectedDeviceId={videoDeviceId}
+          selectedDeviceId={videoInputDeviceId}
           onSelectDevice={onDeviceChange}
         />
 

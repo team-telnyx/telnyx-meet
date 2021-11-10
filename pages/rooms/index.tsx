@@ -53,7 +53,9 @@ export default function Rooms({ id }: { id: string }) {
   const [audioOutputDeviceId, setAudioOutputDeviceId] = useState<
     string | undefined
   >();
-  const [videoDeviceId, setVideoDeviceId] = useState<string | undefined>();
+  const [videoInputDeviceId, setVideoInputDeviceId] = useState<
+    string | undefined
+  >();
 
   useEffect(() => {
     setUsername(getUserName());
@@ -86,10 +88,10 @@ export default function Rooms({ id }: { id: string }) {
         value={{
           audioInputDeviceId,
           audioOutputDeviceId,
-          videoDeviceId,
+          videoInputDeviceId,
           setAudioInputDeviceId,
           setAudioOutputDeviceId,
-          setVideoDeviceId,
+          setVideoInputDeviceId,
         }}
       >
         <Main align='center' justify='center' background='light-2'>

@@ -25,8 +25,8 @@ function MediaControlBar({
   audioInputDeviceId,
   videoTrack,
   setVideoTrack,
-  setVideoDeviceId,
-  videoDeviceId,
+  setVideoInputDeviceId,
+  videoInputDeviceId,
   setError,
 }: {
   audioTrack: MediaStreamTrack | undefined;
@@ -35,9 +35,11 @@ function MediaControlBar({
   audioInputDeviceId: string | undefined;
   videoTrack: MediaStreamTrack | undefined;
   setVideoTrack: Dispatch<SetStateAction<MediaStreamTrack | undefined>>;
-  setVideoDeviceId: Dispatch<SetStateAction<string | undefined>>;
-  videoDeviceId: string | undefined;
-  setError: Dispatch<SetStateAction<{ title: string; body: string; } | undefined>>;
+  setVideoInputDeviceId: Dispatch<SetStateAction<string | undefined>>;
+  videoInputDeviceId: string | undefined;
+  setError: Dispatch<
+    SetStateAction<{ title: string; body: string } | undefined>
+  >;
 }) {
   return (
     <React.Fragment>
@@ -88,17 +90,17 @@ function MediaControlBar({
           if (videoTrack) {
             videoTrack.stop();
             setVideoTrack(undefined);
-            setVideoDeviceId(undefined);
+            setVideoInputDeviceId(undefined);
           } else {
             getUserMedia({
               audio: false,
-              video: videoDeviceId
-                ? { deviceId: videoDeviceId }
+              video: videoInputDeviceId
+                ? { deviceId: videoInputDeviceId }
                 : true,
             })
               .then((stream) => {
                 setVideoTrack(stream?.getVideoTracks()[0]);
-                setVideoDeviceId(stream?.getVideoTracks()[0].id);
+                setVideoInputDeviceId(stream?.getVideoTracks()[0].id);
               })
               .catch((err) => {
                 setError(MediaDeviceErrors.mediaBlocked);

@@ -40,8 +40,8 @@ function MediaPreview() {
   const {
     audioInputDeviceId,
     setAudioInputDeviceId,
-    videoDeviceId,
-    setVideoDeviceId,
+    videoInputDeviceId,
+    setVideoInputDeviceId,
   } = useContext(TelnyxMeetContext);
 
   const [localAudioTrack, setLocalAudioTrack] = useState<
@@ -81,7 +81,7 @@ function MediaPreview() {
         setLocalAudioTrack(localAudioTrack);
         setLocalVideoTrack(localVideoTrack);
         setAudioInputDeviceId(localAudioTrack.id);
-        setVideoDeviceId(localVideoTrack.id);
+        setVideoInputDeviceId(localVideoTrack.id);
         setError(undefined);
 
         if (videoElRef.current) {
@@ -187,8 +187,8 @@ function MediaPreview() {
             audioInputDeviceId={audioInputDeviceId}
             videoTrack={localVideoTrack}
             setVideoTrack={setLocalVideoTrack}
-            setVideoDeviceId={setVideoDeviceId}
-            videoDeviceId={videoDeviceId}
+            setVideoInputDeviceId={setVideoInputDeviceId}
+            videoInputDeviceId={videoInputDeviceId}
             setError={setError}
           />
         </div>
