@@ -7,7 +7,7 @@ export const getUserMedia = async (
 export const MediaDeviceErrors = {
   mediaBlocked: {
     title: 'Camera and microphone are blocked',
-    body: "Telnyx Meet requires access to your camera and microphone. Click the camera blocked icon in your browser's address bar.",
+    body: "Telnyx Meet requires access to your camera and microphone.",
   },
   allowMediaWarning: {
     title: 'Allow Telnyx Meet to use your camera and microphone',
