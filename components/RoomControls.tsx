@@ -75,7 +75,7 @@ function DeviceSelect({
   selectedDeviceId,
   onSelectDevice,
 }: {
-  kind: 'audio_input' | 'video' | 'audio_output';
+  kind: 'audio_input' | 'video_input' | 'audio_output';
   devices: Array<{ id: string; label: string }>;
   selectedDeviceId?: string;
   onSelectDevice: Function;
@@ -90,7 +90,7 @@ function DeviceSelect({
     case 'audio_output':
       label = 'output';
       break;
-    case 'video':
+    case 'video_input':
       label = 'camera';
       break;
     default:
@@ -197,10 +197,12 @@ export default function RoomControls({
 
       return;
     }
-    
+
     if (
-      (audioTrack || videoTrack) && 
-      (!room.state.publisher.streamsPublished['self'] || room.state.publisher.streamsPublished['self']?.status === 'published')) {
+      (audioTrack || videoTrack) &&
+      (!room.state.publisher.streamsPublished['self'] ||
+        room.state.publisher.streamsPublished['self']?.status === 'published')
+    ) {
       room.publish({ key: 'self', audioTrack, videoTrack });
     }
 
@@ -277,7 +279,7 @@ export default function RoomControls({
     kind,
     deviceId,
   }: {
-    kind: 'audio_input' | 'video' | 'audio_output';
+    kind: 'audio_input' | 'video_input' | 'audio_output';
     deviceId: string;
   }) => {
     console.log('[video-meet] onDeviceChange: ', kind, ' id: ', deviceId);
@@ -302,7 +304,7 @@ export default function RoomControls({
       }
     }
 
-    if (kind === 'video') {
+    if (kind === 'video_input') {
       setVideoDeviceId(deviceId);
       if (videoTrack) {
         videoTrack.stop();
@@ -340,21 +342,23 @@ export default function RoomControls({
           const localAudioTrack = stream?.getAudioTracks()[0];
           const localVideoTrack = stream?.getVideoTracks()[0];
 
-          room.publish({ key: 'self', audioTrack: localAudioTrack, videoTrack: localVideoTrack });
+          room.publish({
+            key: 'self',
+            audioTrack: localAudioTrack,
+            videoTrack: localVideoTrack,
+          });
 
-          if(localAudioTrack) {
+          if (localAudioTrack) {
             setAudioTrack(localAudioTrack);
           }
-          if(localVideoTrack) {
+          if (localVideoTrack) {
             setVideoTrack(localVideoTrack);
           }
-        
         })
         .catch((error) => {
           console.warn('getUserMedia', error);
         });
-    } 
-    else if (room.state.publisher.streamsPublished['self']) {
+    } else if (room.state.publisher.streamsPublished['self']) {
       room.unpublish('self');
     }
   }, []);
@@ -572,7 +576,7 @@ export default function RoomControls({
         />
 
         <DeviceSelect
-          kind='video'
+          kind='video_input'
           devices={devices?.videoinput}
           selectedDeviceId={videoDeviceId}
           onSelectDevice={onDeviceChange}
