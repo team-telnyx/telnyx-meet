@@ -128,4 +128,5 @@ function MediaControlBar({
     </React.Fragment>
   );
 }
+
 export { MediaControlBar };
