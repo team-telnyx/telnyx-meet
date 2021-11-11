@@ -39,6 +39,8 @@ export default function Rooms({ id }: { id: string }) {
 
   const [username, setUsername] = useState<string>('');
 
+  const [hasAudioPermission, setHasAudioPermission] = useState(false);
+
   const [tokens, setTokens] = useState<{
     clientToken: string;
     refreshToken: string;
@@ -77,6 +79,22 @@ export default function Rooms({ id }: { id: string }) {
     setTokens({ clientToken: '', refreshToken: '' });
   };
 
+  useEffect(() => {
+    window?.navigator?.mediaDevices
+      ?.getUserMedia({
+        audio: true,
+      })
+      .then((stream) => {
+        console.log('AUDIO', stream);
+        setHasAudioPermission(true);
+      })
+      .catch((error) => {
+        if (error instanceof DOMException && error.name === 'NotAllowedError') {
+          setHasAudioPermission(false);
+        }
+      });
+  }, []);
+
   return (
     <Fragment>
       <Head>
@@ -114,6 +132,7 @@ export default function Rooms({ id }: { id: string }) {
                 updateUsername={setUsername}
                 updateRoomId={setRoomId}
                 updateTokens={setTokens}
+                hasAudioPermission={hasAudioPermission}
               />
             </GridPreviewContainer>
           )}
