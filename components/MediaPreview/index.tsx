@@ -8,8 +8,8 @@ import { getUserMedia, MediaDeviceErrors } from './helper';
 import { TelnyxMeetContext } from '../../contexts/TelnyxMeetContext';
 import {
   getItem,
-  USER_PREFERENCE_AUDIO_ALLOWED_KEY,
-  USER_PREFERENCE_VIDEO_ALLOWED_KEY,
+  USER_PREFERENCE_AUDIO_ALLOWED,
+  USER_PREFERENCE_VIDEO_ALLOWED,
 } from '../../utils/storage';
 
 const breakpointSmall = 400;
@@ -82,12 +82,12 @@ function MediaPreview() {
         const localAudioTrack = stream?.getAudioTracks()[0];
         const localVideoTrack = stream?.getVideoTracks()[0];
 
-        if (getItem(USER_PREFERENCE_AUDIO_ALLOWED_KEY) === 'yes') {
+        if (getItem(USER_PREFERENCE_AUDIO_ALLOWED) === 'yes') {
           setLocalAudioTrack(localAudioTrack);
           setAudioInputDeviceId(localAudioTrack.id);
         }
 
-        if (getItem(USER_PREFERENCE_VIDEO_ALLOWED_KEY) === 'yes') {
+        if (getItem(USER_PREFERENCE_VIDEO_ALLOWED) === 'yes') {
           setLocalVideoTrack(localVideoTrack);
           setVideoInputDeviceId(localVideoTrack.id);
         }

@@ -1,6 +1,6 @@
 export const USERNAME_KEY = 'username';
-export const USER_PREFERENCE_AUDIO_ALLOWED_KEY = 'audioAllowed';
-export const USER_PREFERENCE_VIDEO_ALLOWED_KEY = 'videoAllowed';
+export const USER_PREFERENCE_AUDIO_ALLOWED = 'audioAllowed';
+export const USER_PREFERENCE_VIDEO_ALLOWED = 'videoAllowed';
 
 export const saveItem = (key: string, value: string) => {
   if (!key || !value) {
