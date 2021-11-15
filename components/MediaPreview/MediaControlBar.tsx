@@ -9,6 +9,11 @@ import { Box, Button, Text } from 'grommet';
 import { FontAwesomeIcon as BaseFontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import styled from 'styled-components';
 import { getUserMedia, MediaDeviceErrors } from './helper';
+import {
+  saveItem,
+  USER_PREFERENCE_AUDIO_ALLOWED,
+  USER_PREFERENCE_VIDEO_ALLOWED,
+} from '../../utils/storage';
 
 const breakpointLarge = 1450;
 
@@ -49,6 +54,7 @@ function MediaControlBar({
             audioTrack.stop();
             setAudioTrack(undefined);
             setAudioInputDeviceId(undefined);
+            saveItem(USER_PREFERENCE_AUDIO_ALLOWED, 'no');
           } else {
             getUserMedia({
               audio: audioInputDeviceId
@@ -59,6 +65,7 @@ function MediaControlBar({
               .then((stream) => {
                 setAudioTrack(stream?.getAudioTracks()[0]);
                 setAudioInputDeviceId(stream?.getAudioTracks()[0].id);
+                saveItem(USER_PREFERENCE_AUDIO_ALLOWED, 'yes');
               })
               .catch((err) => {
                 setError(MediaDeviceErrors.mediaBlocked);
@@ -91,6 +98,7 @@ function MediaControlBar({
             videoTrack.stop();
             setVideoTrack(undefined);
             setVideoInputDeviceId(undefined);
+            saveItem(USER_PREFERENCE_VIDEO_ALLOWED, 'no');
           } else {
             getUserMedia({
               audio: false,
@@ -101,6 +109,7 @@ function MediaControlBar({
               .then((stream) => {
                 setVideoTrack(stream?.getVideoTracks()[0]);
                 setVideoInputDeviceId(stream?.getVideoTracks()[0].id);
+                saveItem(USER_PREFERENCE_VIDEO_ALLOWED, 'yes');
               })
               .catch((err) => {
                 setError(MediaDeviceErrors.mediaBlocked);

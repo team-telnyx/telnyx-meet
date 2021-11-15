@@ -6,6 +6,11 @@ import ErrorDialog from '../ErrorDialog';
 import { MediaControlBar } from './MediaControlBar';
 import { getUserMedia, MediaDeviceErrors } from './helper';
 import { TelnyxMeetContext } from '../../contexts/TelnyxMeetContext';
+import {
+  getItem,
+  USER_PREFERENCE_AUDIO_ALLOWED,
+  USER_PREFERENCE_VIDEO_ALLOWED,
+} from '../../utils/storage';
 
 const breakpointSmall = 400;
 const breakpointMedium = 530;
@@ -77,10 +82,16 @@ function MediaPreview() {
         const localAudioTrack = stream?.getAudioTracks()[0];
         const localVideoTrack = stream?.getVideoTracks()[0];
 
-        setLocalAudioTrack(localAudioTrack);
-        setLocalVideoTrack(localVideoTrack);
-        setAudioInputDeviceId(localAudioTrack.id);
-        setVideoInputDeviceId(localVideoTrack.id);
+        if (getItem(USER_PREFERENCE_AUDIO_ALLOWED) === 'yes') {
+          setLocalAudioTrack(localAudioTrack);
+          setAudioInputDeviceId(localAudioTrack.id);
+        }
+
+        if (getItem(USER_PREFERENCE_VIDEO_ALLOWED) === 'yes') {
+          setLocalVideoTrack(localVideoTrack);
+          setVideoInputDeviceId(localVideoTrack.id);
+        }
+
         setError(undefined);
 
         if (videoElRef.current) {
