@@ -7,6 +7,7 @@ interface Props {
   updateRoomId?: (value: string) => void;
   updateUsername: (value: string) => void;
   updateTokens: (tokens: { clientToken: string; refreshToken: string }) => void;
+  hasAudioPermission: boolean;
 }
 
 const JoinRoom = ({
@@ -15,6 +16,7 @@ const JoinRoom = ({
   updateRoomId,
   updateUsername,
   updateTokens,
+  hasAudioPermission,
 }: Props) => {
   const joinRoom = async () => {
     const response = await fetch('/api/client_token', {
@@ -74,7 +76,7 @@ const JoinRoom = ({
       <Button
         data-testid='btn-join-room'
         primary
-        disabled={!roomId}
+        disabled={!roomId || !hasAudioPermission}
         label='Join room'
         onClick={() => {
           saveItem(USERNAME_KEY, username);
