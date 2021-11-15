@@ -85,7 +85,6 @@ export default function Rooms({ id }: { id: string }) {
         audio: true,
       })
       .then((stream) => {
-        console.log('AUDIO', stream);
         setHasAudioPermission(true);
       })
       .catch((error) => {
