@@ -80,17 +80,6 @@ function MediaPreview() {
     let audioPermissionPreference =
       getItem(USER_PREFERENCE_AUDIO_ALLOWED) || null;
 
-    console.log({
-      video:
-        videoPermissionPreference && videoPermissionPreference === 'no'
-          ? false
-          : true,
-      audio:
-        audioPermissionPreference && audioPermissionPreference === 'no'
-          ? false
-          : true,
-    });
-
     getUserMedia({
       video:
         videoPermissionPreference && videoPermissionPreference === 'no'
