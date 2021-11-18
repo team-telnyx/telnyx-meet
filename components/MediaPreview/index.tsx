@@ -74,20 +74,32 @@ function MediaPreview() {
       }
     });
 
+    let videoPermissionPreference =
+      getItem(USER_PREFERENCE_VIDEO_ALLOWED) || null;
+
+    let audioPermissionPreference =
+      getItem(USER_PREFERENCE_AUDIO_ALLOWED) || null;
+
     getUserMedia({
-      video: true,
-      audio: true,
+      video:
+        videoPermissionPreference && videoPermissionPreference === 'no'
+          ? false
+          : true,
+      audio:
+        audioPermissionPreference && audioPermissionPreference === 'no'
+          ? false
+          : true,
     })
       .then((stream) => {
         const localAudioTrack = stream?.getAudioTracks()[0];
         const localVideoTrack = stream?.getVideoTracks()[0];
 
-        if (getItem(USER_PREFERENCE_AUDIO_ALLOWED) === 'yes') {
+        if (audioPermissionPreference === 'yes') {
           setLocalAudioTrack(localAudioTrack);
           setAudioInputDeviceId(localAudioTrack.id);
         }
 
-        if (getItem(USER_PREFERENCE_VIDEO_ALLOWED) === 'yes') {
+        if (videoPermissionPreference === 'yes') {
           setLocalVideoTrack(localVideoTrack);
           setVideoInputDeviceId(localVideoTrack.id);
         }
