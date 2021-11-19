@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Box, Button, Spinner, TextInput } from 'grommet';
+import { Box, Button, TextInput } from 'grommet';
 import { saveItem, USERNAME_KEY } from '../utils/storage';
 import ErrorDialog from './ErrorDialog';
 import { MediaDeviceErrors } from './MediaPreview/helper';
