@@ -82,13 +82,13 @@ function MediaPreview() {
 
     getUserMedia({
       video:
-        videoPermissionPreference && videoPermissionPreference === 'no'
-          ? false
-          : true,
+        videoPermissionPreference && videoPermissionPreference === 'yes'
+          ? true
+          : false,
       audio:
-        audioPermissionPreference && audioPermissionPreference === 'no'
-          ? false
-          : true,
+        audioPermissionPreference && audioPermissionPreference === 'yes'
+          ? true
+          : false,
     })
       .then((stream) => {
         const localAudioTrack = stream?.getAudioTracks()[0];
