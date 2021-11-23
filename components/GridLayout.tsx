@@ -39,7 +39,7 @@ function GridLayout({
   getStatsForParticipantStream,
   dataTestId,
 }: {
-  participants: TelnyxRoom['state']['participants'];
+  participants: TelnyxRoom['participants'];
   participantsByActivity: TelnyxRoom['participantsByActivity'];
   isReady: TelnyxRoom['isReady'];
   getParticipantStream: TelnyxRoom['getParticipantStream'];
@@ -84,7 +84,7 @@ function GridLayout({
   }, [screenSize]);
 
   const feeds = [...participantsByActivity].map((id) => {
-    const participant = participants[id];
+    const participant = participants.get(id)!;
 
     return (
       <Feed

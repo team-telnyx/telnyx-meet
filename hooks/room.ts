@@ -11,18 +11,15 @@ interface Props {
     refreshToken: string;
   };
   context: {};
+  callbacks?: {
+    onConnected?: () => void;
+    onDisconnected?: () => void;
+  };
 }
 
-export type TelnyxRoom = State & {
-  localParticipantId: Room['localParticipantId'];
+export type TelnyxRoom = Room & {
   presenter?: Participant;
   participantsByActivity: ReadonlySet<Participant['id']>;
-  publishStream: Room['publishStream'];
-  unpublishStream: Room['unpublishStream'];
-  getLocalParticipant: Room['getLocalParticipant'];
-  getParticipantStream: Room['getParticipantStream'];
-  getParticipantStreams: Room['getParticipantStreams'];
-  disconnect: Room['disconnect'];
   isReady: (participantId: Participant['id'], key: Stream['key']) => boolean;
   getStatsForParticipantStream: (
     participantId: Participant['id'],
@@ -43,6 +40,7 @@ export const useRoom = ({
   roomId,
   tokens,
   context,
+  callbacks,
 }: Props): TelnyxRoom | undefined => {
   const [_, setDebugState] = useContext(DebugContext);
   const roomRef = useRef<Room>();
@@ -51,16 +49,8 @@ export const useRoom = ({
 
   const [presenter, setPresenter] = useState<Participant>();
   const [participantsByActivity, setParticipantsByActivity] = useState<
-    ReadonlySet<Participant['id']>
+    Set<Participant['id']>
   >(new Set());
-
-  const onConnected = () => {
-    setParticipantsByActivity(new Set());
-  };
-
-  const onDisconnected = () => {
-    setParticipantsByActivity(new Set());
-  };
 
   const connectAndJoinRoom = async () => {
     if (!roomRef.current) {
@@ -70,11 +60,24 @@ export const useRoom = ({
         context: JSON.stringify(context),
       });
 
-      setState(roomRef.current.state);
+      setState(roomRef.current.getState());
 
-      roomRef.current.on('connected', onConnected);
-      roomRef.current.on('disconnected', onDisconnected);
       roomRef.current.on('state_changed', setState);
+      roomRef.current.on('connected', (state) => {
+        setParticipantsByActivity(new Set([...state.participants.keys()]));
+
+        typeof callbacks?.onConnected === 'function' && callbacks.onConnected();
+      });
+      roomRef.current.on('disconnected', (state) => {
+        setParticipantsByActivity(new Set());
+        typeof callbacks?.onDisconnected === 'function' &&
+          callbacks.onDisconnected();
+      });
+      roomRef.current.on('participant_joined', (participantId) => {
+        setParticipantsByActivity((value) => {
+          return new Set([...value, participantId]);
+        });
+      });
     }
 
     roomRef.current.connect();
@@ -90,10 +93,9 @@ export const useRoom = ({
   }, []);
 
   useEffect(() => {
-    if (state?.status === 'disconnected') {
-      connectAndJoinRoom();
-    }
-  }, [state?.status]);
+    debugger;
+    console.log(participantsByActivity);
+  }, [participantsByActivity]);
 
   useEffect(() => {
     const updateClientToken = async () => {
@@ -135,18 +137,11 @@ export const useRoom = ({
     console.debug('[video-meet] React State: ', state);
   }, [state]);
 
-  return roomRef.current && state
+  return roomRef.current
     ? {
-        ...state,
-        localParticipantId: roomRef.current.localParticipantId,
+        ...roomRef.current,
         presenter,
         participantsByActivity,
-        publishStream: roomRef.current.publishStream,
-        unpublishStream: roomRef.current.unpublishStream,
-        getLocalParticipant: roomRef.current.getLocalParticipant,
-        getParticipantStream: roomRef.current.getParticipantStream,
-        getParticipantStreams: roomRef.current.getParticipantStreams,
-        disconnect: roomRef.current.disconnect,
         isReady: (participantId, key) => false,
         getStatsForParticipantStream: async (participantId, key) => {
           return {
