@@ -40,7 +40,7 @@ function ScreenSharingLayout({
   getStatsForParticipantStream,
   dataTestId,
 }: {
-  participants: TelnyxRoom['state']['participants'];
+  participants: TelnyxRoom['participants'];
   participantsByActivity: TelnyxRoom['participantsByActivity'];
   presenter: Participant;
   isReady: TelnyxRoom['isReady'];
@@ -77,7 +77,7 @@ function ScreenSharingLayout({
   }, [maxParticipantPerPage, screenSize.height]);
 
   const participantsFeeds = [...participantsByActivity].map((id) => {
-    const participant = participants[id];
+    const participant = participants.get(id) as Participant;
 
     return (
       <Feed

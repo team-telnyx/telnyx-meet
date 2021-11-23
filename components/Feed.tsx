@@ -54,18 +54,18 @@ function Feed({
     throw new Error(`No context for the participant`);
   }
 
-  useEffect(() => {
-    if (!stream) {
-      return;
-    }
+  // useEffect(() => {
+  //   if (!stream) {
+  //     return;
+  //   }
 
-    if (participant.isRemote && stream?.audioEnabled && stream?.isSpeaking) {
-      const speakingElement = document.getElementById('speaking-box');
-      if (speakingElement) {
-        speakingElement.scrollIntoView();
-      }
-    }
-  }, [stream]);
+  //   if (participant.isRemote && stream?.audioEnabled && stream?.isSpeaking) {
+  //     const speakingElement = document.getElementById('speaking-box');
+  //     if (speakingElement) {
+  //       speakingElement.scrollIntoView();
+  //     }
+  //   }
+  // }, [stream]);
 
   useEffect(() => {
     if (!stream?.audioEnabled && !stream?.videoEnabled) {
@@ -136,7 +136,7 @@ function Feed({
 
   return (
     <div
-      id={stream?.isSpeaking ? 'speaking-box' : ''}
+      // id={stream?.isSpeaking ? 'speaking-box' : ''}
       data-id={dataId}
       data-testid={`video-feed-${context.username
         ?.toLowerCase()
@@ -148,10 +148,10 @@ function Feed({
           ? 'unset'
           : `${(9 / 16) * 100}%` /* 56.25% - 16:9 Aspect Ratio */,
         overflow: 'hidden',
-        border:
-          stream?.isSpeaking && audioActivityIndicator
-            ? '3px solid yellow'
-            : 'unset',
+        // border:
+        //   stream?.isSpeaking && audioActivityIndicator
+        //     ? '3px solid yellow'
+        //     : 'unset',
         height: isPresentation ? '100%' : 'unset',
       }}
     >

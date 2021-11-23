@@ -1,36 +1,8 @@
-import {
-  createPublisher,
-  Participant,
-  Room,
-  State,
-  Stream,
-} from '@telnyx/video';
+import { initialize, Room, State, Participant, Stream } from '@telnyx/video';
 import { useEffect, useRef, useState, useContext, useMemo } from 'react';
 import { DebugContext } from '../contexts/DebugContext';
 
 const TOKEN_TTL = 50;
-const useAudioMixer = true;
-
-const createRoom = ({
-  roomId,
-  clientToken,
-  context,
-}: {
-  roomId: string;
-  clientToken: string;
-  context: {};
-}) => {
-  // @ts-ignore
-  window.__telnyx_video_log_level__ = 'INFO';
-
-  return new Room(roomId, {
-    clientToken,
-    useAudioMixer,
-    publisher: createPublisher({
-      context: JSON.stringify(context),
-    }),
-  });
-};
 
 interface Props {
   roomId: string;
@@ -41,169 +13,101 @@ interface Props {
   context: {};
 }
 
-export interface TelnyxRoom {
-  readonly state: State;
-  readonly participantsByActivity: Set<string>;
-  readonly presenter?: Participant;
-  readonly publish: Room['publish'];
-  readonly unpublish: Room['unpublish'];
-  readonly disconnect: Room['disconnect'];
-  isReady: (participantId: Participant['id'], key: string) => boolean;
-  getParticipantStream: (
+export type TelnyxRoom = State & {
+  localParticipantId: Room['localParticipantId'];
+  presenter?: Participant;
+  participantsByActivity: ReadonlySet<Participant['id']>;
+  publishStream: Room['publishStream'];
+  unpublishStream: Room['unpublishStream'];
+  getLocalParticipant: Room['getLocalParticipant'];
+  getParticipantStream: Room['getParticipantStream'];
+  getParticipantStreams: Room['getParticipantStreams'];
+  disconnect: Room['disconnect'];
+  isReady: (participantId: Participant['id'], key: Stream['key']) => boolean;
+  getStatsForParticipantStream: (
     participantId: Participant['id'],
-    key: string
-  ) => Stream | undefined;
-  getStatsForParticipantStream: Room['getStatsForParticipantStream'];
-}
+    key: Stream['key']
+  ) => Promise<{
+    senders: {
+      audio?: {};
+      video?: {};
+    };
+    receivers: {
+      audio?: {};
+      video?: {};
+    };
+  }>;
+};
 
-export const useRoom = ({ roomId, tokens, context }: Props): TelnyxRoom => {
+export const useRoom = ({
+  roomId,
+  tokens,
+  context,
+}: Props): TelnyxRoom | undefined => {
   const [_, setDebugState] = useContext(DebugContext);
-
-  const roomRef = useRef<Room>(
-    createRoom({ roomId, clientToken: tokens.clientToken, context })
-  );
+  const roomRef = useRef<Room>();
+  const [state, setState] = useState<State>();
   const [clientToken, setClientToken] = useState<string>(tokens.clientToken);
-  const [state, setState] = useState<State>(roomRef.current.state);
+
   const [presenter, setPresenter] = useState<Participant>();
   const [participantsByActivity, setParticipantsByActivity] = useState<
-    Set<string>
+    ReadonlySet<Participant['id']>
   >(new Set());
 
-  roomRef.current.updateClientToken(clientToken);
-
-  const onStateChanged = (state: State) => {
-    setState(state);
-  };
-
-  const onConnected = (state: State) => {
+  const onConnected = () => {
     setParticipantsByActivity(new Set());
   };
 
-  const onDisconnected = (state: State) => {
+  const onDisconnected = () => {
     setParticipantsByActivity(new Set());
   };
 
-  const onStreamAdded = (
-    { participantId, key }: { participantId: Participant['id']; key: string },
-    state: State
-  ) => {
-    const participant = state.participants[participantId];
-    const stream = state.streams[participant.streams[key].streamId];
-    if (participant.isRemote) {
-      if (useAudioMixer && stream.videoEnabled) {
-        roomRef.current.subscribe(participantId, key, {
-          audio: false,
-          video: true,
-        });
-      }
+  const connectAndJoinRoom = async () => {
+    if (!roomRef.current) {
+      roomRef.current = await initialize({
+        roomId,
+        clientToken,
+        context: JSON.stringify(context),
+      });
 
-      if (!useAudioMixer && (stream.audioEnabled || stream.videoEnabled)) {
-        roomRef.current.subscribe(participantId, key, {
-          audio: true,
-          video: true,
-        });
-      }
-    }
-  };
+      setState(roomRef.current.state);
 
-  const onParticipantJoined = ({
-    participantId,
-  }: {
-    participantId: Participant['id'];
-  }) => {
-    participantsByActivity.add(participantId);
-    setParticipantsByActivity(new Set([...participantsByActivity]));
-  };
-
-  const onParticipantLeft = ({
-    participantId,
-  }: {
-    participantId: Participant['id'];
-  }) => {
-    participantsByActivity.delete(participantId);
-    setParticipantsByActivity(new Set([...participantsByActivity]));
-  };
-
-  const onParticipantSpeaking = ({
-    participantId,
-    key,
-  }: {
-    participantId: Participant['id'];
-    key: string;
-  }) => {
-    if (key !== 'self') {
-      return;
+      roomRef.current.on('connected', onConnected);
+      roomRef.current.on('disconnected', onDisconnected);
+      roomRef.current.on('state_changed', setState);
     }
 
-    participantsByActivity.delete(participantId);
-    setParticipantsByActivity(
-      new Set([participantId, ...participantsByActivity])
-    );
+    roomRef.current.connect();
   };
-
-  const isReady = useMemo(() => {
-    return (participantId: Participant['id'], key: string): boolean => {
-      if (participantId === state.publisher.participantId) {
-        if (!state.publisher.streamsPublished[key]) {
-          // since no stream exists with the key we return true
-          return true;
-        }
-
-        return state.publisher.streamsPublished[key]?.status === 'published';
-      }
-
-      if (!state.subscriptions[participantId]?.[key]) {
-        // since no subscription exists with for the participant stream we return true
-        return true;
-      }
-
-      return state.subscriptions[participantId]?.[key]?.status === 'started';
-    };
-  }, [state.subscriptions, state.publisher]);
-
-  const isSubscribed = useMemo(() => {
-    return (participantId: Participant['id'], key: string): boolean => {
-      return state.subscriptions[participantId]?.[key]?.status === 'started';
-    };
-  }, [state.subscriptions]);
-
-  const isPublished = useMemo(() => {
-    return (key: string): boolean => {
-      return state.publisher.streamsPublished[key]?.status === 'published';
-    };
-  }, [state.publisher]);
-
-  const getParticipantStream = useMemo(() => {
-    return (
-      participantId: Participant['id'],
-      key: string
-    ): Stream | undefined => {
-      const streamId =
-        state.participants[participantId]?.streams[key]?.streamId;
-      if (!streamId) {
-        return undefined;
-      }
-
-      return state.streams[streamId];
-    };
-  }, [state.streams]);
 
   useEffect(() => {
-    // for 1000 participants it might take about 2ms to resolve the presenterId
-    const presenterId = Object.keys(state.participants).find(
-      (participantId) => {
-        const participant = state.participants[participantId];
+    // @ts-ignore
+    window.__telnyx_video_log_level__ = 'DEBUG';
 
-        return participant.streams['presentation'];
+    if (!roomRef.current) {
+      connectAndJoinRoom();
+    }
+  }, []);
+
+  useEffect(() => {
+    if (state?.status === 'disconnected') {
+      connectAndJoinRoom();
+    }
+  }, [state?.status]);
+
+  useEffect(() => {
+    const updateClientToken = async () => {
+      if (state?.status === 'connected') {
+        await roomRef.current?.updateClientToken(clientToken);
       }
-    );
+    };
 
-    setPresenter(presenterId ? state.participants[presenterId] : undefined);
-  }, [state.participants]);
+    updateClientToken();
+  }, [clientToken, state?.status]);
 
   useEffect(() => {
     const refreshTokenIntervalId = setInterval(async () => {
-      if (roomRef.current?.state.status !== 'connected') {
+      if (state?.status !== 'connected') {
         return;
       }
 
@@ -224,42 +128,32 @@ export const useRoom = ({ roomId, tokens, context }: Props): TelnyxRoom => {
     return () => {
       clearInterval(refreshTokenIntervalId);
     };
-  }, [tokens.refreshToken, roomRef.current?.state.status]);
+  }, [tokens.refreshToken, state?.status]);
 
   useEffect(() => {
     setDebugState(state);
     console.debug('[video-meet] React State: ', state);
   }, [state]);
 
-  useEffect(() => {
-    if (roomRef.current.state.status === 'connected') {
-      return;
-    }
-
-    roomRef.current.on('state_changed', onStateChanged);
-    roomRef.current.on('connected', onConnected);
-    roomRef.current.on('disconnected', onDisconnected);
-    roomRef.current.on('stream_added', onStreamAdded);
-    roomRef.current.on('participant_joined', onParticipantJoined);
-    roomRef.current.on('participant_left', onParticipantLeft);
-    roomRef.current.on('participant_speaking', onParticipantSpeaking);
-    roomRef.current.connect();
-
-    return () => {
-      roomRef.current.removeListeners();
-    };
-  }, []);
-
-  return {
-    state,
-    participantsByActivity,
-    presenter,
-    publish: roomRef.current.publish.bind(roomRef.current),
-    unpublish: roomRef.current.unpublish.bind(roomRef.current),
-    disconnect: roomRef.current.disconnect.bind(roomRef.current),
-    isReady,
-    getParticipantStream,
-    getStatsForParticipantStream:
-      roomRef.current.getStatsForParticipantStream.bind(roomRef.current),
-  };
+  return roomRef.current && state
+    ? {
+        ...state,
+        localParticipantId: roomRef.current.localParticipantId,
+        presenter,
+        participantsByActivity,
+        publishStream: roomRef.current.publishStream,
+        unpublishStream: roomRef.current.unpublishStream,
+        getLocalParticipant: roomRef.current.getLocalParticipant,
+        getParticipantStream: roomRef.current.getParticipantStream,
+        getParticipantStreams: roomRef.current.getParticipantStreams,
+        disconnect: roomRef.current.disconnect,
+        isReady: (participantId, key) => false,
+        getStatsForParticipantStream: async (participantId, key) => {
+          return {
+            senders: { audio: undefined, video: undefined },
+            receivers: { audio: undefined, video: undefined },
+          };
+        },
+      }
+    : undefined;
 };

@@ -1,4 +1,4 @@
-import { getDevices } from '@telnyx/video';
+import { getDevices, Stream } from '@telnyx/video';
 
 import { useContext, useEffect, useState } from 'react';
 import { Box, Button, Menu, Text } from 'grommet';
@@ -158,16 +158,17 @@ export default function RoomControls({
     audio: undefined,
     video: undefined,
   });
-  const [presentationAudioTrack, setPresentationAudioTrack] =
-    useState<MediaStreamTrack>();
-  const [presentationVideoTrack, setPresentationVideoTrack] =
-    useState<MediaStreamTrack>();
+  const [presentationTracks, setPresentationTracks] = useState<{
+    audio: MediaStreamTrack | undefined;
+    video: MediaStreamTrack | undefined;
+  }>({
+    audio: undefined,
+    video: undefined,
+  });
 
-  const publisher = room.state.publisher;
-
-  const selfStream = room.getParticipantStream(publisher.participantId, 'self');
+  const selfStream = room.getParticipantStream(room.localParticipantId, 'self');
   const presentationStream = room.getParticipantStream(
-    publisher.participantId,
+    room.localParticipantId,
     'presentation'
   );
 
@@ -190,33 +191,6 @@ export default function RoomControls({
     getAndSetDevices();
     navigator?.mediaDevices?.addEventListener('devicechange', getAndSetDevices);
 
-    return () => {
-      navigator?.mediaDevices?.removeEventListener(
-        'devicechange',
-        getAndSetDevices
-      );
-    };
-  }, []);
-
-  useEffect(() => {
-    if (selfStream && !selfTracks.audio && !selfTracks.video) {
-      room.unpublish('self');
-
-      return;
-    }
-
-    if (selfTracks.audio || selfTracks.video) {
-      room.publish({
-        key: 'self',
-        audioTrack: selfTracks.audio,
-        videoTrack: selfTracks.video,
-      });
-    }
-
-    getAndSetDevices(); // will populate the devices based on the current permissions
-  }, [selfTracks]);
-
-  useEffect(() => {
     if (audioInputDeviceId || videoInputDeviceId) {
       getUserMedia({
         video: videoInputDeviceId ? { deviceId: videoInputDeviceId } : false,
@@ -231,30 +205,32 @@ export default function RoomControls({
         .catch((error) => {
           console.warn('getUserMedia', error);
         });
-    } else if (room.state.publisher.streamsPublished['self']) {
-      room.unpublish('self');
     }
+
+    return () => {
+      navigator?.mediaDevices?.removeEventListener(
+        'devicechange',
+        getAndSetDevices
+      );
+    };
   }, []);
 
   useEffect(() => {
-    if (presentationStream && !presentationVideoTrack) {
-      room.unpublish('presentation');
+    room.publishStream('self', selfTracks);
+  }, [selfTracks]);
 
-      return;
-    }
-
-    if (presentationVideoTrack) {
-      room.publish({
-        key: 'presentation',
-        videoTrack: presentationVideoTrack,
-        audioTrack: presentationAudioTrack,
+  useEffect(() => {
+    if (presentationTracks.video) {
+      room.publishStream('presenation', {
+        audio: presentationTracks.audio,
+        video: presentationTracks.video,
       });
 
-      presentationVideoTrack.onended = () => {
-        room.unpublish('presentation');
+      presentationTracks.video.onended = () => {
+        room.unpublishStream('presentation');
       };
     }
-  }, [presentationVideoTrack, presentationAudioTrack]);
+  }, [presentationTracks]);
 
   const handleMediaError = (err: Error, kind: 'audio' | 'video' | 'screen') => {
     if (kind === 'audio') {
@@ -390,11 +366,7 @@ export default function RoomControls({
                   });
               }
             }}
-            disabled={
-              publisher.streamsPublished['self']
-                ? publisher.streamsPublished['self'].status === 'pending'
-                : false
-            }
+            disabled={false}
           >
             <Box align='center' gap='xsmall'>
               <Box>
@@ -449,11 +421,7 @@ export default function RoomControls({
                   });
               }
             }}
-            disabled={
-              publisher.streamsPublished['self']
-                ? publisher.streamsPublished['self'].status === 'pending'
-                : false
-            }
+            disabled={false}
             data-e2e='toggle video'
           >
             <Box align='center' gap='xsmall'>
@@ -481,22 +449,20 @@ export default function RoomControls({
           <Button
             data-testid='btn-toggle-screen-sharing'
             size='large'
-            disabled={
-              disableScreenshare ||
-              publisher.streamsPublished['presentation']?.status === 'pending'
-            }
+            disabled={disableScreenshare}
             onClick={() => {
-              if (presentationAudioTrack || presentationVideoTrack) {
-                presentationAudioTrack?.stop();
-                presentationVideoTrack?.stop();
+              if (presentationTracks.audio || presentationTracks.video) {
+                presentationTracks.audio?.stop();
+                presentationTracks.video?.stop();
 
-                setPresentationAudioTrack(undefined);
-                setPresentationVideoTrack(undefined);
+                setPresentationTracks({ audio: undefined, video: undefined });
               } else {
                 getDisplayMedia()
                   .then((stream) => {
-                    setPresentationAudioTrack(stream?.getAudioTracks()[0]);
-                    setPresentationVideoTrack(stream?.getVideoTracks()[0]);
+                    setPresentationTracks({
+                      audio: stream?.getAudioTracks()[0],
+                      video: stream?.getVideoTracks()[0],
+                    });
                   })
                   .catch((err) => {
                     handleMediaError(err, 'screen');

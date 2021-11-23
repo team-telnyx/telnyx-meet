@@ -36,10 +36,10 @@ function Room({
   });
 
   useEffect(() => {
-    if (room.state.status === 'disconnected') {
+    if (room?.status === 'disconnected') {
       onDisconnected();
     }
-  }, [room.state.status]);
+  }, [room?.status]);
 
   return (
     <Box fill background='#1b1b1b' overflow='hidden'>
@@ -51,7 +51,7 @@ function Room({
           id='room-container'
           style={{ position: 'relative', margin: '16px' }}
         >
-          {room.state.status === 'connecting' && (
+          {room?.status === 'connecting' && (
             <Box align='center' justify='center' fill>
               <Text
                 data-testid='loading-joining-room'
@@ -63,7 +63,7 @@ function Room({
             </Box>
           )}
 
-          {room.state.status === 'disconnecting' && (
+          {/* {room?.status === 'disconnecting' && (
             <Box align='center' justify='center' fill>
               <Text
                 data-testid='loading-leaving-room'
@@ -73,12 +73,12 @@ function Room({
                 Leaving room...
               </Text>
             </Box>
-          )}
+          )} */}
 
-          {room.state.status === 'connected' && (
+          {room?.status === 'connected' && (
             <Feeds
               dataTestId='feeds'
-              participants={room.state.participants}
+              participants={room.participants}
               participantsByActivity={room.participantsByActivity}
               presenter={room.presenter}
               isReady={room.isReady}
@@ -89,18 +89,18 @@ function Room({
           )}
         </Box>
 
-        {room.state.status === 'connected' && isParticipantsListVisible && (
+        {room?.status === 'connected' && isParticipantsListVisible && (
           <Box width='medium' fill='vertical'>
             <ParticipantsList
-              publisher={room.state.publisher}
-              participants={room.state.participants}
+              publisher={room.getLocalParticipant()}
+              participants={room.participants}
               getParticipantStream={room.getParticipantStream}
               onChangeParticipantsListVisible={setIsParticipantsListVisible}
             />
           </Box>
         )}
       </Box>
-      {room.state.status === 'connected' && (
+      {room?.status === 'connected' && (
         <>
           <RoomControls
             isParticipantsListVisible={isParticipantsListVisible}
@@ -108,17 +108,17 @@ function Room({
             room={room}
             disableScreenshare={
               room.presenter
-                ? room.presenter.id !== room.state.publisher.participantId
+                ? room.presenter.id !== room.localParticipantId
                 : false
             }
             onAudioOutputDeviceChange={setAudioOutputDeviceId}
           />
           <RoomAudio
-            participants={room.state.participants}
-            publisher={room.state.publisher}
-            streams={room.state.streams}
-            useAudioMixer={room.state.audioMixer.isEnabled}
-            mixedAudioTrack={room.state.audioMixer.track}
+            useAudioMixer={true}
+            participants={room.participants}
+            localParticipantId={room.localParticipantId}
+            streams={room.streams}
+            mixedAudioTrack={room.mixedAudioTrack}
             audioOutputDeviceId={audioOutputDeviceId}
           />
         </>

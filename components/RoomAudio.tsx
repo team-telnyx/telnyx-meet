@@ -4,15 +4,15 @@ import AudioTrack from './AudioTrack';
 
 export default function RoomAudio({
   participants,
-  publisher,
+  localParticipantId,
   streams,
   useAudioMixer,
   mixedAudioTrack,
   audioOutputDeviceId,
 }: {
-  participants: TelnyxRoom['state']['participants'];
-  publisher: TelnyxRoom['state']['publisher'];
-  streams: TelnyxRoom['state']['streams'];
+  participants: TelnyxRoom['participants'];
+  localParticipantId: TelnyxRoom['localParticipantId'];
+  streams: TelnyxRoom['streams'];
   useAudioMixer: boolean;
   mixedAudioTrack?: MediaStreamTrack;
   audioOutputDeviceId?: MediaDeviceInfo['deviceId'];
@@ -24,16 +24,12 @@ export default function RoomAudio({
 
     const audioTracks: Array<{ id: string; track: MediaStreamTrack }> = [];
 
-    Object.keys(participants).forEach((participantId) => {
-      const participant = participants[participantId];
-      if (participant.id === publisher.participantId) {
+    participants.forEach((participant) => {
+      if (participant.id === localParticipantId) {
         return;
       }
 
-      Object.keys(participant.streams).forEach((key) => {
-        const streamId = participant.streams[key].streamId;
-
-        const stream = streams[streamId];
+      participant.streams.forEach((stream) => {
         if (!stream.audioTrack) {
           return;
         }
