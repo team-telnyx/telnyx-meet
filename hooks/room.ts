@@ -64,8 +64,7 @@ export const useRoom = ({
 
       roomRef.current.on('state_changed', setState);
       roomRef.current.on('connected', (state) => {
-        setParticipantsByActivity(new Set([...state.participants.keys()]));
-
+        setParticipantsByActivity(new Set(state.participants.keys()));
         typeof callbacks?.onConnected === 'function' && callbacks.onConnected();
       });
       roomRef.current.on('disconnected', (state) => {
@@ -93,7 +92,6 @@ export const useRoom = ({
   }, []);
 
   useEffect(() => {
-    debugger;
     console.log(participantsByActivity);
   }, [participantsByActivity]);
 
