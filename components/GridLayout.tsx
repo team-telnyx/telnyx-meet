@@ -3,6 +3,7 @@ import Feed from './Feed';
 import { TelnyxRoom } from '../hooks/room';
 import { useWindowSize, getWindowSize } from '../hooks/windowSize';
 import { Pagination } from './Pagination';
+import { State } from '@telnyx/video';
 
 function GridView({
   children,
@@ -39,7 +40,7 @@ function GridLayout({
   getStatsForParticipantStream,
   dataTestId,
 }: {
-  participants: TelnyxRoom['participants'];
+  participants: State['participants'];
   participantsByActivity: TelnyxRoom['participantsByActivity'];
   isReady: TelnyxRoom['isReady'];
   getParticipantStream: TelnyxRoom['getParticipantStream'];
@@ -84,7 +85,10 @@ function GridLayout({
   }, [screenSize]);
 
   const feeds = [...participantsByActivity].map((id) => {
-    const participant = participants.get(id)!;
+    const participant = participants.get(id);
+    if (!participant) {
+      return <></>;
+    }
 
     return (
       <Feed

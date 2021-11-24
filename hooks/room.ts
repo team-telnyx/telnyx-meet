@@ -77,6 +77,12 @@ export const useRoom = ({
           return new Set([...value, participantId]);
         });
       });
+      roomRef.current.on('participant_left', (participantId) => {
+        setParticipantsByActivity((value) => {
+          value.delete(participantId);
+          return new Set([...value]);
+        });
+      });
     }
 
     roomRef.current.connect();
