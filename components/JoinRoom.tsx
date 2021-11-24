@@ -1,13 +1,14 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Box, Button, TextInput } from 'grommet';
 import { saveItem, USERNAME_KEY } from '../utils/storage';
+import ErrorDialog from './ErrorDialog';
+import { MediaDeviceErrors } from './MediaPreview/helper';
 interface Props {
   roomId: string;
   username: string;
   updateRoomId?: (value: string) => void;
   updateUsername: (value: string) => void;
   updateTokens: (tokens: { clientToken: string; refreshToken: string }) => void;
-  hasAudioPermission: boolean;
 }
 
 const JoinRoom = ({
@@ -16,8 +17,28 @@ const JoinRoom = ({
   updateRoomId,
   updateUsername,
   updateTokens,
-  hasAudioPermission,
 }: Props) => {
+  const [error, setError] = useState<
+    { title: string; body: string } | undefined
+  >(undefined);
+
+  const checkAudioBrowserPermission = async () => {
+    const result = await window?.navigator?.mediaDevices
+      ?.getUserMedia({
+        audio: true,
+      })
+      .then((stream) => {
+        return true;
+      })
+      .catch((error) => {
+        if (error instanceof DOMException && error.name === 'NotAllowedError') {
+          return false;
+        }
+      });
+
+    return result;
+  };
+
   const joinRoom = async () => {
     const response = await fetch('/api/client_token', {
       method: 'POST',
@@ -39,6 +60,10 @@ const JoinRoom = ({
     }
   };
 
+  const onClose = () => {
+    setError(undefined);
+  };
+
   return (
     <Box
       pad='small'
@@ -47,6 +72,9 @@ const JoinRoom = ({
         justifySelf: 'center',
       }}
     >
+      {error && (
+        <ErrorDialog onClose={onClose} title={error.title} body={error.body} />
+      )}
       <Box
         background={{ color: 'white', opacity: 'weak' }}
         round='xsmall'
@@ -76,11 +104,16 @@ const JoinRoom = ({
       <Button
         data-testid='btn-join-room'
         primary
-        disabled={!roomId || !hasAudioPermission}
+        disabled={!roomId}
         label='Join room'
-        onClick={() => {
+        onClick={async () => {
           saveItem(USERNAME_KEY, username);
-          joinRoom();
+          const hasAudioPermission = await checkAudioBrowserPermission();
+          if (hasAudioPermission) {
+            joinRoom();
+          } else {
+            setError(MediaDeviceErrors.mediaBlocked);
+          }
         }}
       />
     </Box>
