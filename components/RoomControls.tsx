@@ -166,9 +166,12 @@ export default function RoomControls({
     video: undefined,
   });
 
-  const selfStream = room.getParticipantStream(room.localParticipantId, 'self');
+  const selfStream = room.getParticipantStream(
+    room.getLocalParticipant().id,
+    'self'
+  );
   const presentationStream = room.getParticipantStream(
-    room.localParticipantId,
+    room.getLocalParticipant().id,
     'presentation'
   );
 
