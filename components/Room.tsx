@@ -119,6 +119,7 @@ function Room({
             isParticipantsListVisible={isParticipantsListVisible}
             onChangeParticipantsListVisible={setIsParticipantsListVisible}
             room={room}
+            streams={room.getLocalStreams()}
             disableScreenshare={
               room.presenter
                 ? room.presenter.id !== room.getLocalParticipant().id

@@ -1,4 +1,4 @@
-import { getDevices, Stream } from '@telnyx/video';
+import { getDevices, Participant, Stream } from '@telnyx/video';
 
 import { useContext, useEffect, useState } from 'react';
 import { Box, Button, Menu, Text } from 'grommet';
@@ -128,12 +128,14 @@ export default function RoomControls({
   isParticipantsListVisible,
   onChangeParticipantsListVisible,
   room,
+  streams,
   disableScreenshare,
   onAudioOutputDeviceChange,
 }: {
   isParticipantsListVisible: boolean;
   onChangeParticipantsListVisible: Function;
   room: TelnyxRoom;
+  streams: { [key: string]: Stream };
   disableScreenshare: boolean;
   onAudioOutputDeviceChange: (deviceId?: MediaDeviceInfo['deviceId']) => void;
 }) {
@@ -166,14 +168,8 @@ export default function RoomControls({
     video: undefined,
   });
 
-  const selfStream = room.getParticipantStream(
-    room.getLocalParticipant().id,
-    'self'
-  );
-  const presentationStream = room.getParticipantStream(
-    room.getLocalParticipant().id,
-    'presentation'
-  );
+  const selfStream = streams.self;
+  const presentationStream = streams.presentation;
 
   const participantCount = room.participantsByActivity.size;
 

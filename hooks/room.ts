@@ -18,6 +18,7 @@ interface Props {
 }
 
 export type TelnyxRoom = Room & {
+  state: State;
   presenter?: Participant;
   participantsByActivity: ReadonlySet<Participant['id']>;
   isReady: (participantId: Participant['id'], key: Stream['key']) => boolean;
@@ -141,9 +142,10 @@ export const useRoom = ({
     console.debug('[video-meet] React State: ', state);
   }, [state]);
 
-  return roomRef.current
+  return roomRef.current && state
     ? {
         ...roomRef.current,
+        state,
         presenter,
         participantsByActivity,
         isReady: (participantId, key) => false,
