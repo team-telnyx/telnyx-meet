@@ -18,22 +18,18 @@ const allowedBrowsers = ['Chrome', 'Safari'];
 function Feed({
   participant,
   streamKey,
-  isReady,
   getParticipantStream,
   muteAudio = true,
   mirrorVideo = false,
-  audioOutputDeviceId,
   getStatsForParticipantStream,
   dataId,
 }: {
   participant: Participant;
   streamKey: string;
-  isReady: TelnyxRoom['isReady'];
   getParticipantStream: TelnyxRoom['getParticipantStream'];
   getStatsForParticipantStream: TelnyxRoom['getStatsForParticipantStream'];
   muteAudio: boolean;
   mirrorVideo: boolean;
-  audioOutputDeviceId?: MediaDeviceInfo['deviceId'];
   dataId?: string;
 }) {
   const audioActivityIndicator = streamKey === 'self';
@@ -48,7 +44,7 @@ function Feed({
   const context = participant.context
     ? JSON.parse(participant.context)
     : undefined;
-  const showSpinner = stream ? !stream.isConfigured : false;
+  const showSpinner = stream ? !stream.transceiver.isConfigured : false;
 
   if (!context) {
     throw new Error(`No context for the participant`);
@@ -59,7 +55,7 @@ function Feed({
   //     return;
   //   }
 
-  //   if (participant.isRemote && stream?.audioEnabled && stream?.isSpeaking) {
+  //   if (participant.isRemote && stream?.hasAudio && stream?.isSpeaking) {
   //     const speakingElement = document.getElementById('speaking-box');
   //     if (speakingElement) {
   //       speakingElement.scrollIntoView();
@@ -68,10 +64,10 @@ function Feed({
   // }, [stream]);
 
   useEffect(() => {
-    if (!stream?.audioEnabled && !stream?.videoEnabled) {
+    if (!stream?.hasAudio && !stream?.hasVideo) {
       resetWebRTCStats();
     }
-  }, [stream?.audioEnabled, stream?.videoEnabled]);
+  }, [stream?.hasAudio, stream?.hasVideo]);
 
   useEffect(() => {
     const browser = Bowser.getParser(window.navigator.userAgent);
@@ -189,7 +185,7 @@ function Feed({
         {(stream?.videoTrack || stream?.audioTrack) && (
           <VideoTrack
             dataTestId={`video-feed-${streamKey}-${
-              stream?.videoEnabled ? 'enabled' : 'notEnabled'
+              stream?.hasVideo ? 'enabled' : 'notEnabled'
             }`}
             stream={stream}
             muteAudio={muteAudio}
@@ -199,7 +195,7 @@ function Feed({
         )}
 
         {/* Large center text: */}
-        {!stream?.videoEnabled && (
+        {!stream?.hasVideo && (
           <>
             <Box
               style={{ position: 'absolute', top: 0, left: 0 }}
@@ -209,7 +205,7 @@ function Feed({
             >
               <Box
                 background={{
-                  color: participant.isRemote ? 'dark-1' : 'brand',
+                  color: participant.origin === 'remote' ? 'dark-1' : 'brand',
                   opacity: 'medium',
                 }}
                 pad='xsmall'
@@ -217,7 +213,7 @@ function Feed({
               >
                 <Text size='large'>
                   {context?.username}
-                  {!participant.isRemote && <strong> (me)</strong>}
+                  {participant.origin === 'local' && <strong> (me)</strong>}
                 </Text>
               </Box>
             </Box>
@@ -241,19 +237,19 @@ function Feed({
             {!isPresentation && (
               <Text
                 size='small'
-                color={!stream?.audioEnabled ? 'status-error' : 'accent-1'}
+                color={!stream?.hasAudio ? 'status-error' : 'accent-1'}
               >
                 <FontAwesomeIcon
                   data-testid='icon-mic-status'
-                  icon={stream?.audioEnabled ? faMicrophone : faMicrophoneSlash}
+                  icon={stream?.hasAudio ? faMicrophone : faMicrophoneSlash}
                   fixedWidth
                 />
               </Text>
             )}
-            {stream?.videoEnabled && (
+            {stream?.hasVideo && (
               <Text>
                 {context?.username}
-                {!participant.isRemote && <strong> (me)</strong>}
+                {participant.origin === 'local' && <strong> (me)</strong>}
               </Text>
             )}
           </Box>

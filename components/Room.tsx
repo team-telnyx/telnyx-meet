@@ -130,7 +130,6 @@ function Room({
           <RoomAudio
             useAudioMixer={true}
             participants={state.participants}
-            localParticipantId={room.getLocalParticipant().id}
             streams={state.streams}
             mixedAudioTrack={state.mixedAudioTrack}
             audioOutputDeviceId={audioOutputDeviceId}

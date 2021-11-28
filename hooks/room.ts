@@ -1,5 +1,5 @@
 import { initialize, Room, State, Participant, Stream } from '@telnyx/video';
-import { useEffect, useRef, useState, useContext, useMemo } from 'react';
+import { useEffect, useRef, useState, useContext } from 'react';
 import { DebugContext } from '../contexts/DebugContext';
 
 const TOKEN_TTL = 50;
@@ -84,6 +84,36 @@ export const useRoom = ({
           return new Set([...value]);
         });
       });
+      roomRef.current.on(
+        'stream_published',
+        (participantId, streamKey, state) => {
+          debugger;
+        }
+      );
+      roomRef.current.on(
+        'stream_unpublished',
+        (participantId, streamKey, state) => {
+          debugger;
+        }
+      );
+      roomRef.current.on(
+        'track_enabled',
+        (participantId, streamKey, kind, state) => {
+          debugger;
+        }
+      );
+      roomRef.current.on(
+        'track_disabled',
+        (participantId, streamKey, kind, state) => {
+          debugger;
+        }
+      );
+      roomRef.current.on(
+        'audio_activity',
+        (participantId, streamKey, state) => {
+          debugger;
+        }
+      );
     }
 
     roomRef.current.connect();

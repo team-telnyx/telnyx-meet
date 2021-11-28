@@ -96,11 +96,9 @@ function GridLayout({
         key={`${participant.id}_self`}
         participant={participant}
         streamKey='self'
-        isReady={isReady}
         getParticipantStream={getParticipantStream}
         muteAudio={!participant.isRemote}
         mirrorVideo={!participant.isRemote}
-        audioOutputDeviceId={audioOutputDeviceId}
         getStatsForParticipantStream={getStatsForParticipantStream}
       />
     );

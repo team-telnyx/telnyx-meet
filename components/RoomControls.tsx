@@ -215,7 +215,14 @@ export default function RoomControls({
   }, []);
 
   useEffect(() => {
-    room.publishStream('self', selfTracks);
+    debugger;
+    if (!selfStream) {
+      room.publishStream('self', selfTracks);
+
+      return;
+    }
+
+    room.updateStream('self', selfTracks);
   }, [selfTracks]);
 
   useEffect(() => {
@@ -371,22 +378,18 @@ export default function RoomControls({
               <Box>
                 <Text
                   size='40.3px' // kinda hacky, make fa icon 48px
-                  color={
-                    !selfStream?.audioEnabled ? 'status-error' : 'accent-1'
-                  }
+                  color={!selfStream?.hasAudio ? 'status-error' : 'accent-1'}
                 >
                   <FontAwesomeIconStyled
                     icon={
-                      !selfStream?.audioEnabled
-                        ? faMicrophoneSlash
-                        : faMicrophone
+                      !selfStream?.hasAudio ? faMicrophoneSlash : faMicrophone
                     }
                     fixedWidth
                   />
                 </Text>
               </Box>
               <Text size='xsmall' color='light-6'>
-                {!selfStream?.audioEnabled ? 'Unmute mic' : 'Mute mic'}
+                {!selfStream?.hasAudio ? 'Unmute mic' : 'Mute mic'}
               </Text>
             </Box>
           </Button>
@@ -427,18 +430,16 @@ export default function RoomControls({
               <Box>
                 <Text
                   size='40.3px' // kinda hacky, make fa icon 48px
-                  color={
-                    !selfStream?.videoEnabled ? 'status-error' : 'accent-1'
-                  }
+                  color={!selfStream?.hasVideo ? 'status-error' : 'accent-1'}
                 >
                   <FontAwesomeIconStyled
-                    icon={!selfStream?.videoEnabled ? faVideoSlash : faVideo}
+                    icon={!selfStream?.hasVideo ? faVideoSlash : faVideo}
                     fixedWidth
                   />
                 </Text>
               </Box>
               <Text size='xsmall' color='light-6'>
-                {!selfStream?.videoEnabled ? 'Start video' : 'Stop video'}
+                {!selfStream?.hasVideo ? 'Start video' : 'Stop video'}
               </Text>
             </Box>
           </Button>
@@ -474,18 +475,14 @@ export default function RoomControls({
                 <Text
                   size='40.3px' // kinda hacky, make fa icon 48px
                   color={
-                    presentationStream?.videoEnabled
-                      ? 'accent-1'
-                      : 'status-error'
+                    presentationStream?.hasVideo ? 'accent-1' : 'status-error'
                   }
                 >
                   <FontAwesomeIconStyled icon={faLaptop} fixedWidth />
                 </Text>
               </Box>
               <Text size='xsmall' color='light-6'>
-                {presentationStream?.videoEnabled
-                  ? 'Stop share'
-                  : 'Start share'}
+                {presentationStream?.hasVideo ? 'Stop share' : 'Start share'}
               </Text>
             </Box>
           </Button>

@@ -15,7 +15,7 @@ function Feeds({
   getStatsForParticipantStream,
   dataTestId,
 }: {
-  participants: TelnyxRoom['participants'];
+  participants: TelnyxRoom['state']['participants'];
   participantsByActivity: TelnyxRoom['participantsByActivity'];
   presenter?: Participant;
   isReady: TelnyxRoom['isReady'];

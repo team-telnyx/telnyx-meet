@@ -40,7 +40,7 @@ function ScreenSharingLayout({
   getStatsForParticipantStream,
   dataTestId,
 }: {
-  participants: TelnyxRoom['participants'];
+  participants: TelnyxRoom['state']['participants'];
   participantsByActivity: TelnyxRoom['participantsByActivity'];
   presenter: Participant;
   isReady: TelnyxRoom['isReady'];
@@ -85,11 +85,9 @@ function ScreenSharingLayout({
         key={`${participant.id}_self`}
         participant={participant}
         streamKey='self'
-        isReady={isReady}
         getParticipantStream={getParticipantStream}
-        muteAudio={!participant.isRemote}
-        mirrorVideo={!participant.isRemote}
-        audioOutputDeviceId={audioOutputDeviceId}
+        muteAudio={participant.origin === 'local'}
+        mirrorVideo={participant.origin === 'local'}
         getStatsForParticipantStream={getStatsForParticipantStream}
       />
     );
@@ -124,7 +122,6 @@ function ScreenSharingLayout({
         <Feed
           participant={presenter}
           streamKey='presentation'
-          isReady={isReady}
           getParticipantStream={getParticipantStream}
           getStatsForParticipantStream={getStatsForParticipantStream}
           muteAudio={true}

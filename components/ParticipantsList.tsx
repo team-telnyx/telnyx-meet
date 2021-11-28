@@ -11,12 +11,10 @@ import { Participant, Stream } from '@telnyx/video';
 import { TelnyxRoom } from '../hooks/room';
 
 export default function ParticipantsList({
-  publisher,
   participants,
   getParticipantStream,
   onChangeParticipantsListVisible,
 }: {
-  publisher: TelnyxRoom['state']['publisher'];
   participants: TelnyxRoom['state']['participants'];
   getParticipantStream: TelnyxRoom['getParticipantStream'];
   onChangeParticipantsListVisible: Function;
@@ -40,9 +38,7 @@ export default function ParticipantsList({
       </Box>
 
       <Box pad={{ horizontal: 'small' }} fill overflow='auto'>
-        {Object.keys(participants).map((id) => {
-          const participant = participants[id];
-
+        {Array.from(participants.values()).map((participant) => {
           const context: {
             id: string;
             username: string;
@@ -62,34 +58,26 @@ export default function ParticipantsList({
             >
               <div>
                 {context.username}&nbsp;
-                {participant.id === publisher.participantId && (
-                  <strong> (me)</strong>
-                )}
+                {participant.origin === 'local' && <strong> (me)</strong>}
               </div>
               <Box direction='row' gap='xsmall'>
                 <Text
                   size='small'
-                  color={
-                    !selfStream?.audioEnabled ? 'status-disabled' : 'accent-1'
-                  }
+                  color={!selfStream?.hasAudio ? 'status-disabled' : 'accent-1'}
                 >
                   <FontAwesomeIcon
                     icon={
-                      !selfStream?.audioEnabled
-                        ? faMicrophoneSlash
-                        : faMicrophone
+                      !selfStream?.hasAudio ? faMicrophoneSlash : faMicrophone
                     }
                     fixedWidth
                   />
                 </Text>
                 <Text
                   size='small'
-                  color={
-                    !selfStream?.videoEnabled ? 'status-disabled' : 'accent-1'
-                  }
+                  color={!selfStream?.hasVideo ? 'status-disabled' : 'accent-1'}
                 >
                   <FontAwesomeIcon
-                    icon={!selfStream?.videoEnabled ? faVideoSlash : faVideo}
+                    icon={!selfStream?.hasVideo ? faVideoSlash : faVideo}
                     fixedWidth
                   />
                 </Text>
