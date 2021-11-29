@@ -55,7 +55,7 @@ function Feed({
   //     return;
   //   }
 
-  //   if (participant.isRemote && stream?.hasAudio && stream?.isSpeaking) {
+  //   if (participant.isRemote && stream?.isAudioEnabled && stream?.isSpeaking) {
   //     const speakingElement = document.getElementById('speaking-box');
   //     if (speakingElement) {
   //       speakingElement.scrollIntoView();
@@ -64,10 +64,10 @@ function Feed({
   // }, [stream]);
 
   useEffect(() => {
-    if (!stream?.hasAudio && !stream?.hasVideo) {
+    if (!stream?.isAudioEnabled && !stream?.isVideoEnabled) {
       resetWebRTCStats();
     }
-  }, [stream?.hasAudio, stream?.hasVideo]);
+  }, [stream?.isAudioEnabled, stream?.isVideoEnabled]);
 
   useEffect(() => {
     const browser = Bowser.getParser(window.navigator.userAgent);
@@ -185,7 +185,7 @@ function Feed({
         {(stream?.videoTrack || stream?.audioTrack) && (
           <VideoTrack
             dataTestId={`video-feed-${streamKey}-${
-              stream?.hasVideo ? 'enabled' : 'notEnabled'
+              stream?.isVideoEnabled ? 'enabled' : 'notEnabled'
             }`}
             stream={stream}
             muteAudio={muteAudio}
@@ -195,7 +195,7 @@ function Feed({
         )}
 
         {/* Large center text: */}
-        {!stream?.hasVideo && (
+        {!stream?.isVideoEnabled && (
           <>
             <Box
               style={{ position: 'absolute', top: 0, left: 0 }}
@@ -237,16 +237,18 @@ function Feed({
             {!isPresentation && (
               <Text
                 size='small'
-                color={!stream?.hasAudio ? 'status-error' : 'accent-1'}
+                color={!stream?.isAudioEnabled ? 'status-error' : 'accent-1'}
               >
                 <FontAwesomeIcon
                   data-testid='icon-mic-status'
-                  icon={stream?.hasAudio ? faMicrophone : faMicrophoneSlash}
+                  icon={
+                    stream?.isAudioEnabled ? faMicrophone : faMicrophoneSlash
+                  }
                   fixedWidth
                 />
               </Text>
             )}
-            {stream?.hasVideo && (
+            {stream?.isVideoEnabled && (
               <Text>
                 {context?.username}
                 {participant.origin === 'local' && <strong> (me)</strong>}

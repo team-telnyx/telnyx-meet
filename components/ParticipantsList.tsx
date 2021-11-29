@@ -63,21 +63,27 @@ export default function ParticipantsList({
               <Box direction='row' gap='xsmall'>
                 <Text
                   size='small'
-                  color={!selfStream?.hasAudio ? 'status-disabled' : 'accent-1'}
+                  color={
+                    !selfStream?.isAudioEnabled ? 'status-disabled' : 'accent-1'
+                  }
                 >
                   <FontAwesomeIcon
                     icon={
-                      !selfStream?.hasAudio ? faMicrophoneSlash : faMicrophone
+                      !selfStream?.isAudioEnabled
+                        ? faMicrophoneSlash
+                        : faMicrophone
                     }
                     fixedWidth
                   />
                 </Text>
                 <Text
                   size='small'
-                  color={!selfStream?.hasVideo ? 'status-disabled' : 'accent-1'}
+                  color={
+                    !selfStream?.isVideoEnabled ? 'status-disabled' : 'accent-1'
+                  }
                 >
                   <FontAwesomeIcon
-                    icon={!selfStream?.hasVideo ? faVideoSlash : faVideo}
+                    icon={!selfStream?.isVideoEnabled ? faVideoSlash : faVideo}
                     fixedWidth
                   />
                 </Text>

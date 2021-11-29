@@ -51,7 +51,7 @@ export default function VideoTrack({
         muted={true}
         style={{
           transform: mirrorVideo ? 'scaleX(-1)' : 'unset',
-          visibility: stream.hasVideo ? 'visible' : 'hidden',
+          visibility: stream.isVideoEnabled ? 'visible' : 'hidden',
           height: '100%',
           width: '100%',
           objectFit: isPortrait || isPresentation ? 'contain' : 'cover',

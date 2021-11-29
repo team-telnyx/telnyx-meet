@@ -105,7 +105,6 @@ function Room({
         {state.status === 'connected' && isParticipantsListVisible && (
           <Box width='medium' fill='vertical'>
             <ParticipantsList
-              publisher={room.getLocalParticipant()}
               participants={state.participants}
               getParticipantStream={room.getParticipantStream}
               onChangeParticipantsListVisible={setIsParticipantsListVisible}
