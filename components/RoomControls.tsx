@@ -216,7 +216,7 @@ export default function RoomControls({
 
   useEffect(() => {
     if (!selfStream) {
-      room.publishStream('self', selfTracks);
+      room.addStream('self', selfTracks);
 
       return;
     }
@@ -226,14 +226,19 @@ export default function RoomControls({
 
   useEffect(() => {
     if (presentationTracks.video) {
-      room.publishStream('presenation', {
-        audio: presentationTracks.audio,
-        video: presentationTracks.video,
-      });
+      if (!presentationStream) {
+        room.addStream('presentation', presentationTracks);
+      } else {
+        room.updateStream('presentation', presentationTracks);
+      }
 
       presentationTracks.video.onended = () => {
-        room.unpublishStream('presentation');
+        room.removeStream('presentation');
       };
+    } else {
+      if (presentationStream) {
+        room.removeStream('presentation');
+      }
     }
   }, [presentationTracks]);
 

@@ -65,7 +65,24 @@ export const useRoom = ({
 
       roomRef.current.on('state_changed', setState);
       roomRef.current.on('connected', (state) => {
+        debugger;
         setParticipantsByActivity(new Set(state.participants.keys()));
+        state.streams.forEach((stream) => {
+          if (stream.key === 'presentation') {
+            setPresenter(state.participants.get(stream.participantId));
+          }
+
+          if (
+            stream.participantId === roomRef.current?.getLocalParticipant().id
+          ) {
+            return;
+          }
+
+          roomRef.current?.addSubscription(stream.participantId, stream.key, {
+            audio: true,
+            video: true,
+          });
+        });
         typeof callbacks?.onConnected === 'function' && callbacks.onConnected();
       });
       roomRef.current.on('disconnected', (state) => {
@@ -74,46 +91,76 @@ export const useRoom = ({
           callbacks.onDisconnected();
       });
       roomRef.current.on('participant_joined', (participantId) => {
+        debugger;
         setParticipantsByActivity((value) => {
           return new Set([...value, participantId]);
         });
       });
       roomRef.current.on('participant_left', (participantId) => {
+        debugger;
+        if (presenter?.id === participantId) {
+          setPresenter(undefined);
+        }
+
         setParticipantsByActivity((value) => {
           value.delete(participantId);
           return new Set([...value]);
         });
       });
-      roomRef.current.on(
-        'stream_published',
-        (participantId, streamKey, state) => {
-          debugger;
+      roomRef.current.on('stream_published', (participantId, key, state) => {
+        debugger;
+        if (key === 'presentation') {
+          setPresenter(state.participants.get(participantId));
         }
-      );
-      roomRef.current.on(
-        'stream_unpublished',
-        (participantId, streamKey, state) => {
-          debugger;
+
+        if (participantId === roomRef.current?.getLocalParticipant().id) {
+          return;
         }
-      );
-      roomRef.current.on(
-        'track_enabled',
-        (participantId, streamKey, kind, state) => {
-          debugger;
+
+        roomRef.current?.addSubscription(participantId, key, {
+          audio: true,
+          video: true,
+        });
+      });
+      roomRef.current.on('stream_unpublished', (participantId, key, state) => {
+        debugger;
+        if (key === 'presentation') {
+          setPresenter(undefined);
         }
-      );
+
+        if (participantId === roomRef.current?.getLocalParticipant().id) {
+          return;
+        }
+
+        roomRef.current?.removeSubscription(participantId, key);
+      });
+      roomRef.current.on('track_enabled', (participantId, key, kind, state) => {
+        debugger;
+      });
       roomRef.current.on(
         'track_disabled',
-        (participantId, streamKey, kind, state) => {
+        (participantId, key, kind, state) => {
+          debugger;
+        }
+      );
+      roomRef.current.on('audio_activity', (participantId, key, state) => {
+        debugger;
+      });
+      roomRef.current.on(
+        'subscription_started',
+        (participantId, key, state) => {
           debugger;
         }
       );
       roomRef.current.on(
-        'audio_activity',
-        (participantId, streamKey, state) => {
+        'subscription_reconfigured',
+        (participantId, key, state) => {
           debugger;
         }
       );
+      roomRef.current.on('subscription_ended', (participantId, key, state) => {
+        debugger;
+      });
     }
 
     roomRef.current.connect();

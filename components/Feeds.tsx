@@ -31,9 +31,7 @@ function Feeds({
         participants={participants}
         participantsByActivity={participantsByActivity}
         presenter={presenter}
-        isReady={isReady}
         getParticipantStream={getParticipantStream}
-        audioOutputDeviceId={audioOutputDeviceId}
         getStatsForParticipantStream={getStatsForParticipantStream}
       />
     );
@@ -44,9 +42,7 @@ function Feeds({
       dataTestId={dataTestId}
       participants={participants}
       participantsByActivity={participantsByActivity}
-      isReady={isReady}
       getParticipantStream={getParticipantStream}
-      audioOutputDeviceId={audioOutputDeviceId}
       getStatsForParticipantStream={getStatsForParticipantStream}
     />
   );

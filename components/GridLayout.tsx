@@ -34,17 +34,13 @@ function GridView({
 function GridLayout({
   participants,
   participantsByActivity,
-  isReady,
   getParticipantStream,
-  audioOutputDeviceId,
   getStatsForParticipantStream,
   dataTestId,
 }: {
   participants: State['participants'];
   participantsByActivity: TelnyxRoom['participantsByActivity'];
-  isReady: TelnyxRoom['isReady'];
   getParticipantStream: TelnyxRoom['getParticipantStream'];
-  audioOutputDeviceId?: MediaDeviceInfo['deviceId'];
   getStatsForParticipantStream: TelnyxRoom['getStatsForParticipantStream'];
   dataTestId: string;
 }) {

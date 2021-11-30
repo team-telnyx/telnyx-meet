@@ -34,18 +34,14 @@ function ScreenSharingLayout({
   participants,
   participantsByActivity,
   presenter,
-  isReady,
   getParticipantStream,
-  audioOutputDeviceId,
   getStatsForParticipantStream,
   dataTestId,
 }: {
   participants: TelnyxRoom['state']['participants'];
   participantsByActivity: TelnyxRoom['participantsByActivity'];
   presenter: Participant;
-  isReady: TelnyxRoom['isReady'];
   getParticipantStream: TelnyxRoom['getParticipantStream'];
-  audioOutputDeviceId?: MediaDeviceInfo['deviceId'];
   getStatsForParticipantStream: TelnyxRoom['getStatsForParticipantStream'];
   dataTestId: string;
 }) {

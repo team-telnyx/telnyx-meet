@@ -44,7 +44,7 @@ function Feed({
   const context = participant.context
     ? JSON.parse(participant.context)
     : undefined;
-  const showSpinner = stream ? !stream.transceiver.isConfigured : false;
+  const showSpinner = stream ? !stream.isConfigured : false;
 
   if (!context) {
     throw new Error(`No context for the participant`);
