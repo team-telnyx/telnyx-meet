@@ -221,8 +221,14 @@ export default function RoomControls({
       return;
     }
 
-    room.updateStream('self', selfTracks);
-  }, [selfTracks]);
+    if (
+      selfStream.isConfigured &&
+      (selfStream.audioTrack !== selfTracks.audio ||
+        selfStream.videoTrack !== selfTracks.video)
+    ) {
+      room.updateStream('self', selfTracks);
+    }
+  }, [selfStream, selfTracks]);
 
   useEffect(() => {
     if (presentationTracks.video) {
@@ -376,7 +382,7 @@ export default function RoomControls({
                   });
               }
             }}
-            disabled={false}
+            disabled={!selfStream?.isConfigured}
           >
             <Box align='center' gap='xsmall'>
               <Box>
@@ -431,7 +437,7 @@ export default function RoomControls({
                   });
               }
             }}
-            disabled={false}
+            disabled={!selfStream?.isConfigured}
             data-e2e='toggle video'
           >
             <Box align='center' gap='xsmall'>

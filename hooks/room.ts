@@ -132,7 +132,7 @@ export const useRoom = ({
           return;
         }
 
-        roomRef.current?.removeSubscription(participantId, key);
+        // roomRef.current?.removeSubscription(participantId, key);
       });
       roomRef.current.on('track_enabled', (participantId, key, kind, state) => {
         debugger;
