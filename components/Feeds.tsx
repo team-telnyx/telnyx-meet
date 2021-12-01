@@ -8,6 +8,7 @@ import { TelnyxRoom } from '../hooks/room';
 function Feeds({
   participants,
   participantsByActivity,
+  dominantSpeakerId,
   presenter,
   isReady,
   getParticipantStream,
@@ -18,6 +19,7 @@ function Feeds({
   participants: TelnyxRoom['state']['participants'];
   participantsByActivity: TelnyxRoom['participantsByActivity'];
   presenter?: Participant;
+  dominantSpeakerId?: Participant['id'];
   isReady: TelnyxRoom['isReady'];
   getParticipantStream: TelnyxRoom['getParticipantStream'];
   audioOutputDeviceId?: MediaDeviceInfo['deviceId'];
@@ -31,6 +33,7 @@ function Feeds({
         participants={participants}
         participantsByActivity={participantsByActivity}
         presenter={presenter}
+        dominantSpeakerId={dominantSpeakerId}
         getParticipantStream={getParticipantStream}
         getStatsForParticipantStream={getStatsForParticipantStream}
       />
@@ -42,6 +45,7 @@ function Feeds({
       dataTestId={dataTestId}
       participants={participants}
       participantsByActivity={participantsByActivity}
+      dominantSpeakerId={dominantSpeakerId}
       getParticipantStream={getParticipantStream}
       getStatsForParticipantStream={getStatsForParticipantStream}
     />

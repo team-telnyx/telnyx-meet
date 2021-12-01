@@ -93,6 +93,7 @@ function Room({
               dataTestId='feeds'
               participants={state.participants}
               participantsByActivity={room.participantsByActivity}
+              dominantSpeakerId={room.dominantSpeakerId}
               presenter={room.presenter}
               isReady={room.isReady}
               getParticipantStream={room.getParticipantStream}

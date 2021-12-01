@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { ReactElement, useEffect, useState } from 'react';
 import Feed from './Feed';
 import { Participant } from '@telnyx/video';
 import { TelnyxRoom } from '../hooks/room';
@@ -34,6 +34,7 @@ function ScreenSharingLayout({
   participants,
   participantsByActivity,
   presenter,
+  dominantSpeakerId,
   getParticipantStream,
   getStatsForParticipantStream,
   dataTestId,
@@ -41,6 +42,7 @@ function ScreenSharingLayout({
   participants: TelnyxRoom['state']['participants'];
   participantsByActivity: TelnyxRoom['participantsByActivity'];
   presenter: Participant;
+  dominantSpeakerId?: Participant['id'];
   getParticipantStream: TelnyxRoom['getParticipantStream'];
   getStatsForParticipantStream: TelnyxRoom['getStatsForParticipantStream'];
   dataTestId: string;
@@ -72,22 +74,29 @@ function ScreenSharingLayout({
     }
   }, [maxParticipantPerPage, screenSize.height]);
 
-  const participantsFeeds = [...participantsByActivity].map((id) => {
-    const participant = participants.get(id) as Participant;
+  const participantsFeeds = [...participantsByActivity]
+    .map((id) => {
+      const participant = participants.get(id) as Participant;
 
-    return (
-      <Feed
-        dataId='video-feed-sidebar'
-        key={`${participant.id}_self`}
-        participant={participant}
-        streamKey='self'
-        getParticipantStream={getParticipantStream}
-        muteAudio={participant.origin === 'local'}
-        mirrorVideo={participant.origin === 'local'}
-        getStatsForParticipantStream={getStatsForParticipantStream}
-      />
-    );
-  });
+      if (!participant) {
+        return null;
+      }
+
+      return (
+        <Feed
+          dataId='video-feed-sidebar'
+          key={`${participant.id}_self`}
+          participant={participant}
+          streamKey='self'
+          getParticipantStream={getParticipantStream}
+          isSpeaking={dominantSpeakerId === participant.id}
+          muteAudio={participant.origin === 'local'}
+          mirrorVideo={participant.origin === 'local'}
+          getStatsForParticipantStream={getStatsForParticipantStream}
+        />
+      );
+    })
+    .filter((value) => value !== null);
 
   return (
     <div
@@ -104,7 +113,7 @@ function ScreenSharingLayout({
         <Pagination
           viewType='screen-sharing'
           RenderComponent={NewSideBar}
-          data={participantsFeeds}
+          data={participantsFeeds as ReactElement[]}
           dataLimit={maxParticipantPerPage}
         />
       ) : null}
@@ -119,6 +128,7 @@ function ScreenSharingLayout({
           participant={presenter}
           streamKey='presentation'
           getParticipantStream={getParticipantStream}
+          isSpeaking={false}
           getStatsForParticipantStream={getStatsForParticipantStream}
           muteAudio={true}
           mirrorVideo={false}

@@ -19,6 +19,7 @@ function Feed({
   participant,
   streamKey,
   getParticipantStream,
+  isSpeaking,
   muteAudio = true,
   mirrorVideo = false,
   getStatsForParticipantStream,
@@ -26,13 +27,14 @@ function Feed({
 }: {
   participant: Participant;
   streamKey: string;
+  isSpeaking: boolean;
   getParticipantStream: TelnyxRoom['getParticipantStream'];
   getStatsForParticipantStream: TelnyxRoom['getStatsForParticipantStream'];
   muteAudio: boolean;
   mirrorVideo: boolean;
   dataId?: string;
 }) {
-  const audioActivityIndicator = streamKey === 'self';
+  const showAudioActivityIndicator = isSpeaking && streamKey === 'self';
   const [showStatsOverlay, setShowStatsOverlay] = useState(false);
   const [stats, setStats] = useState<any>(null);
   const [allowedBrowser, setAllowedBrowser] = useState(false);
@@ -49,19 +51,6 @@ function Feed({
   if (!context) {
     throw new Error(`No context for the participant`);
   }
-
-  // useEffect(() => {
-  //   if (!stream) {
-  //     return;
-  //   }
-
-  //   if (participant.isRemote && stream?.isAudioEnabled && stream?.isSpeaking) {
-  //     const speakingElement = document.getElementById('speaking-box');
-  //     if (speakingElement) {
-  //       speakingElement.scrollIntoView();
-  //     }
-  //   }
-  // }, [stream]);
 
   useEffect(() => {
     if (!stream?.isAudioEnabled && !stream?.isVideoEnabled) {
@@ -144,10 +133,7 @@ function Feed({
           ? 'unset'
           : `${(9 / 16) * 100}%` /* 56.25% - 16:9 Aspect Ratio */,
         overflow: 'hidden',
-        // border:
-        //   stream?.isSpeaking && audioActivityIndicator
-        //     ? '3px solid yellow'
-        //     : 'unset',
+        border: showAudioActivityIndicator ? '3px solid yellow' : 'unset',
         height: isPresentation ? '100%' : 'unset',
       }}
     >

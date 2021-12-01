@@ -1,9 +1,9 @@
-import React, { ReactChild, useEffect } from 'react';
+import React, { ReactChild, ReactElement, useEffect } from 'react';
 import Feed from './Feed';
 import { TelnyxRoom } from '../hooks/room';
 import { useWindowSize, getWindowSize } from '../hooks/windowSize';
 import { Pagination } from './Pagination';
-import { State } from '@telnyx/video';
+import { Participant, State } from '@telnyx/video';
 
 function GridView({
   children,
@@ -33,12 +33,14 @@ function GridView({
 
 function GridLayout({
   participants,
+  dominantSpeakerId,
   participantsByActivity,
   getParticipantStream,
   getStatsForParticipantStream,
   dataTestId,
 }: {
   participants: State['participants'];
+  dominantSpeakerId?: Participant['id'];
   participantsByActivity: TelnyxRoom['participantsByActivity'];
   getParticipantStream: TelnyxRoom['getParticipantStream'];
   getStatsForParticipantStream: TelnyxRoom['getStatsForParticipantStream'];
@@ -80,25 +82,28 @@ function GridLayout({
     }
   }, [screenSize]);
 
-  const feeds = [...participantsByActivity].map((id) => {
-    const participant = participants.get(id);
-    if (!participant) {
-      return <></>;
-    }
+  const feeds = [...participantsByActivity]
+    .map((id) => {
+      const participant = participants.get(id);
+      if (!participant) {
+        return null;
+      }
 
-    return (
-      <Feed
-        dataId='video-feed-grid'
-        key={`${participant.id}_self`}
-        participant={participant}
-        streamKey='self'
-        getParticipantStream={getParticipantStream}
-        muteAudio={!participant.isRemote}
-        mirrorVideo={!participant.isRemote}
-        getStatsForParticipantStream={getStatsForParticipantStream}
-      />
-    );
-  });
+      return (
+        <Feed
+          dataId='video-feed-grid'
+          key={`${participant.id}_self`}
+          participant={participant}
+          streamKey='self'
+          getParticipantStream={getParticipantStream}
+          isSpeaking={dominantSpeakerId === participant.id}
+          muteAudio={!participant.isRemote}
+          mirrorVideo={!participant.isRemote}
+          getStatsForParticipantStream={getStatsForParticipantStream}
+        />
+      );
+    })
+    .filter((value) => value !== null);
 
   const xlarge = {
     size: 5,
@@ -135,7 +140,7 @@ function GridLayout({
       {feeds.length > 0 ? (
         <Pagination
           viewType='grid'
-          data={feeds}
+          data={feeds as ReactElement[]}
           dataLimit={maxParticipantPerPage}
           RenderComponent={GridView}
           layoutProps={layoutProps}

@@ -19,6 +19,7 @@ interface Props {
 
 export type TelnyxRoom = Room & {
   state: State;
+  dominantSpeakerId?: Participant['id'];
   presenter?: Participant;
   participantsByActivity: ReadonlySet<Participant['id']>;
   isReady: (participantId: Participant['id'], key: Stream['key']) => boolean;
@@ -52,6 +53,8 @@ export const useRoom = ({
   const [participantsByActivity, setParticipantsByActivity] = useState<
     Set<Participant['id']>
   >(new Set());
+  const [dominantSpeakerId, setDominantSpeakerId] =
+    useState<Participant['id']>();
 
   const connectAndJoinRoom = async () => {
     if (!roomRef.current) {
@@ -65,8 +68,12 @@ export const useRoom = ({
 
       roomRef.current.on('state_changed', setState);
       roomRef.current.on('connected', (state) => {
-        debugger;
-        setParticipantsByActivity(new Set(state.participants.keys()));
+        setParticipantsByActivity((value) => {
+          return new Set([
+            roomRef.current!.getLocalParticipant().id,
+            ...state.participants.keys(),
+          ]);
+        });
         state.streams.forEach((stream) => {
           if (stream.key === 'presentation') {
             setPresenter(state.participants.get(stream.participantId));
@@ -91,24 +98,29 @@ export const useRoom = ({
           callbacks.onDisconnected();
       });
       roomRef.current.on('participant_joined', (participantId) => {
-        debugger;
         setParticipantsByActivity((value) => {
-          return new Set([...value, participantId]);
+          return new Set([
+            roomRef.current!.getLocalParticipant().id,
+            ...value,
+            participantId,
+          ]);
         });
       });
       roomRef.current.on('participant_left', (participantId) => {
-        debugger;
         if (presenter?.id === participantId) {
           setPresenter(undefined);
         }
 
+        if (dominantSpeakerId === participantId) {
+          setDominantSpeakerId(undefined);
+        }
+
         setParticipantsByActivity((value) => {
           value.delete(participantId);
-          return new Set([...value]);
+          return new Set([roomRef.current!.getLocalParticipant().id, ...value]);
         });
       });
       roomRef.current.on('stream_published', (participantId, key, state) => {
-        debugger;
         if (key === 'presentation') {
           setPresenter(state.participants.get(participantId));
         }
@@ -123,44 +135,53 @@ export const useRoom = ({
         });
       });
       roomRef.current.on('stream_unpublished', (participantId, key, state) => {
-        debugger;
         if (key === 'presentation') {
           setPresenter(undefined);
+        }
+
+        if (dominantSpeakerId === participantId && key === 'self') {
+          setDominantSpeakerId(undefined);
         }
 
         if (participantId === roomRef.current?.getLocalParticipant().id) {
           return;
         }
-
-        // roomRef.current?.removeSubscription(participantId, key);
-      });
-      roomRef.current.on('track_enabled', (participantId, key, kind, state) => {
-        debugger;
       });
       roomRef.current.on(
+        'track_enabled',
+        (participantId, key, kind, state) => {}
+      );
+      roomRef.current.on(
         'track_disabled',
-        (participantId, key, kind, state) => {
-          debugger;
-        }
+        (participantId, key, kind, state) => {}
       );
       roomRef.current.on('audio_activity', (participantId, key, state) => {
-        debugger;
+        if (
+          key === 'self' &&
+          participantId !== roomRef.current?.getLocalParticipant().id
+        ) {
+          setDominantSpeakerId(participantId);
+          setParticipantsByActivity((value) => {
+            return new Set([
+              roomRef.current!.getLocalParticipant().id,
+              participantId,
+              ...value,
+            ]);
+          });
+        }
       });
       roomRef.current.on(
         'subscription_started',
-        (participantId, key, state) => {
-          debugger;
-        }
+        (participantId, key, state) => {}
       );
       roomRef.current.on(
         'subscription_reconfigured',
-        (participantId, key, state) => {
-          debugger;
-        }
+        (participantId, key, state) => {}
       );
-      roomRef.current.on('subscription_ended', (participantId, key, state) => {
-        debugger;
-      });
+      roomRef.current.on(
+        'subscription_ended',
+        (participantId, key, state) => {}
+      );
     }
 
     roomRef.current.connect();
@@ -178,6 +199,16 @@ export const useRoom = ({
   useEffect(() => {
     console.log(participantsByActivity);
   }, [participantsByActivity]);
+
+  useEffect(() => {
+    const timerId = setTimeout(() => {
+      setDominantSpeakerId(undefined);
+    }, 5000);
+
+    return () => {
+      clearTimeout(timerId);
+    };
+  }, [dominantSpeakerId]);
 
   useEffect(() => {
     const updateClientToken = async () => {
@@ -223,6 +254,7 @@ export const useRoom = ({
     ? {
         ...roomRef.current,
         state,
+        dominantSpeakerId,
         presenter,
         participantsByActivity,
         isReady: (participantId, key) => false,
