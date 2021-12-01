@@ -62,6 +62,7 @@ export const useRoom = ({
         roomId,
         clientToken,
         context: JSON.stringify(context),
+        logLevel: 'DEBUG',
       });
 
       setState(roomRef.current.getState());
@@ -188,9 +189,6 @@ export const useRoom = ({
   };
 
   useEffect(() => {
-    // @ts-ignore
-    window.__telnyx_video_log_level__ = 'DEBUG';
-
     if (!roomRef.current) {
       connectAndJoinRoom();
     }
