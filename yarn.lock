@@ -401,15 +401,14 @@
   resolved "https://registry.yarnpkg.com/@opentelemetry/context-base/-/context-base-0.14.0.tgz#c67fc20a4d891447ca1a855d7d70fa79a3533001"
   integrity sha512-sDOAZcYwynHFTbLo6n8kIbLiVF3a3BLkrmehJUyEbT9F+Smbi47kLGS2gG2g0fjBLR/Lr1InPD7kXL7FaTqEkw==
 
-"@telnyx/video@0.2.0-alpha.1":
-  version "0.2.0-alpha.1"
-  resolved "https://registry.yarnpkg.com/@telnyx/video/-/video-0.2.0-alpha.1.tgz#99192bdbe1b95e725a4b9c9234946d7a1e20d550"
-  integrity sha512-oeoxFiLIgOTim4Vrt3lJdLT3LZYCdkx+UJIGsABE7bProXzpuWuy/0Rr1CE1paLJ/L67A4K6lWUv6VD8ON9HUA==
+"@telnyx/video@0.2.0-alpha.2":
+  version "0.2.0-alpha.2"
+  resolved "https://registry.yarnpkg.com/@telnyx/video/-/video-0.2.0-alpha.2.tgz#1b164cf13f285ed9743a0ad65b2612becc00cf86"
+  integrity sha512-GkU7VdYHYMMb16PcXyPZpglitbemJ5+zu618Fwu+Z2OxB+Jap8xIXwdsPG7cOfvqMOvxH1uTlevu1nxkdNCYKQ==
   dependencies:
     "@types/uuid" "^8.3.0"
     events "^3.3.0"
     immer "^9.0.2"
-    janus-gateway "https://github.com/meetecho/janus-gateway.git"
     js-logger "^1.6.1"
     nanoevents "^5.1.13"
     sdp-transform "^2.14.1"
@@ -3170,12 +3169,6 @@ isobject@^3.0.0, isobject@^3.0.1:
   resolved "https://registry.yarnpkg.com/isobject/-/isobject-3.0.1.tgz#4e431e92b11a9731636aa1f9c8d1ccbcfdab78df"
   integrity sha1-TkMekrEalzFjaqH5yNHMvP2reN8=
 
-"janus-gateway@https://github.com/meetecho/janus-gateway.git":
-  version "0.7.5"
-  resolved "https://github.com/meetecho/janus-gateway.git#4522515bf33b969069ebcad1e115c7365c5d7c68"
-  dependencies:
-    webrtc-adapter "8.1.0"
-
 jest-worker@24.9.0:
   version "24.9.0"
   resolved "https://registry.yarnpkg.com/jest-worker/-/jest-worker-24.9.0.tgz#5dbfdb5b2d322e98567898238a9697bcce67b3e5"
@@ -4848,11 +4841,6 @@ sdp@^2.12.0, sdp@^2.6.0:
   resolved "https://registry.yarnpkg.com/sdp/-/sdp-2.12.0.tgz#338a106af7560c86e4523f858349680350d53b22"
   integrity sha512-jhXqQAQVM+8Xj5EjJGVweuEzgtGWb3tmEEpl3CLP3cStInSbVHSg0QWOGQzNq8pSID4JkpeV2mPqlMDLrm0/Vw==
 
-sdp@^3.0.2:
-  version "3.0.3"
-  resolved "https://registry.yarnpkg.com/sdp/-/sdp-3.0.3.tgz#669958d54663ea9f4a46cc66518c9d980c52c61e"
-  integrity sha512-8EkfckS+XZQaPLyChu4ey7PghrdcraCVNpJe2Gfdi2ON1ylQ7OasuKX+b37R9slnRChwIAiQgt+oj8xXGD8x+A==
-
 "semver@2 || 3 || 4 || 5", semver@^5.4.1, semver@^5.6.0:
   version "5.7.1"
   resolved "https://registry.yarnpkg.com/semver/-/semver-5.7.1.tgz#a954f931aeba508d307bbf069eff0c01c96116f7"
@@ -5859,13 +5847,6 @@ webpack@4.44.1:
     terser-webpack-plugin "^1.4.3"
     watchpack "^1.7.4"
     webpack-sources "^1.4.1"
-
-webrtc-adapter@8.1.0:
-  version "8.1.0"
-  resolved "https://registry.yarnpkg.com/webrtc-adapter/-/webrtc-adapter-8.1.0.tgz#89429d837eb43c7a2885a0eb66390af6c552bba6"
-  integrity sha512-I+y/LWBiGYPVhIb8Ww7nyoNWhrCYENeGoRvZuyytLn/h+ahDBgItvuIfMdzT+xhOnjLIMVkOykttGJPv1dr6kA==
-  dependencies:
-    sdp "^3.0.2"
 
 webrtc-adapter@^7.7.0:
   version "7.7.1"
