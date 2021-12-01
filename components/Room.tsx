@@ -33,21 +33,50 @@ function Room({
     roomId,
     tokens,
     context,
+    callbacks: {
+      onDisconnected,
+    },
   });
 
-  useEffect(() => {
-    if (room.state.status === 'disconnected') {
-      onDisconnected();
-    }
-  }, [room.state.status]);
+  if (!room) {
+    return (
+      <Box fill background='#1b1b1b' overflow='hidden'>
+        <RoomInfo roomId={roomId} />
+
+        <Box direction='row' flex>
+          <Box
+            flex
+            id='room-container'
+            style={{ position: 'relative', margin: '16px' }}
+          >
+            <Box align='center' justify='center' fill>
+              <Text
+                data-testid='loading-joining-room'
+                size='xxlarge'
+                color='status-disabled'
+              >
+                Joining room...
+              </Text>
+            </Box>
+          </Box>
+        </Box>
+      </Box>
+    );
+  }
+
+  const state = room.getState();
 
   return (
     <Box fill background='#1b1b1b' overflow='hidden'>
       <RoomInfo roomId={roomId} />
 
-      <Box direction='row' flex >
-        <Box flex id="room-container" style={{ position: 'relative', margin: '16px' }}>
-          {room.state.status === 'connecting' && (
+      <Box direction='row' flex>
+        <Box
+          flex
+          id='room-container'
+          style={{ position: 'relative', margin: '16px' }}
+        >
+          {state.status === 'connecting' && (
             <Box align='center' justify='center' fill>
               <Text
                 data-testid='loading-joining-room'
@@ -59,25 +88,14 @@ function Room({
             </Box>
           )}
 
-          {room.state.status === 'disconnecting' && (
-            <Box align='center' justify='center' fill>
-              <Text
-                data-testid='loading-leaving-room'
-                size='xxlarge'
-                color='status-disabled'
-              >
-                Leaving room...
-              </Text>
-            </Box>
-          )}
-
-          {room.state.status === 'connected' && (
+          {state.status === 'connected' && (
             <Feeds
               dataTestId='feeds'
-              participants={room.state.participants}
+              participants={state.participants}
+              participantsByActivity={room.participantsByActivity}
+              dominantSpeakerId={room.dominantSpeakerId}
               presenter={room.presenter}
-              isPublished={room.isPublished}
-              isSubscribed={room.isSubscribed}
+              isReady={room.isReady}
               getParticipantStream={room.getParticipantStream}
               audioOutputDeviceId={audioOutputDeviceId}
               getStatsForParticipantStream={room.getStatsForParticipantStream}
@@ -85,34 +103,35 @@ function Room({
           )}
         </Box>
 
-        {room.state.status === 'connected' && isParticipantsListVisible && (
+        {state.status === 'connected' && isParticipantsListVisible && (
           <Box width='medium' fill='vertical'>
             <ParticipantsList
-              publisher={room.state.publisher}
-              participants={room.state.participants}
+              participants={state.participants}
               getParticipantStream={room.getParticipantStream}
               onChangeParticipantsListVisible={setIsParticipantsListVisible}
             />
           </Box>
         )}
       </Box>
-      {room.state.status === 'connected' && (
+      {state.status === 'connected' && (
         <>
           <RoomControls
             isParticipantsListVisible={isParticipantsListVisible}
             onChangeParticipantsListVisible={setIsParticipantsListVisible}
             room={room}
+            streams={room.getLocalStreams()}
             disableScreenshare={
               room.presenter
-                ? room.presenter.id !== room.state.publisher.participantId
+                ? room.presenter.id !== room.getLocalParticipant().id
                 : false
             }
             onAudioOutputDeviceChange={setAudioOutputDeviceId}
           />
           <RoomAudio
-            participants={room.state.participants}
-            publisher={room.state.publisher}
-            streams={room.state.streams}
+            useAudioMixer={true}
+            participants={state.participants}
+            streams={state.streams}
+            mixedAudioTrack={state.mixedAudioTrack}
             audioOutputDeviceId={audioOutputDeviceId}
           />
         </>

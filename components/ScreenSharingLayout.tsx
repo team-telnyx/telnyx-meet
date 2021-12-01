@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { ReactElement, useEffect, useState } from 'react';
 import Feed from './Feed';
 import { Participant } from '@telnyx/video';
 import { TelnyxRoom } from '../hooks/room';
@@ -32,24 +32,21 @@ function NewSideBar({ children }: { children: ReactChild }) {
 
 function ScreenSharingLayout({
   participants,
+  participantsByActivity,
   presenter,
-  isPublished,
-  isSubscribed,
+  dominantSpeakerId,
   getParticipantStream,
-  audioOutputDeviceId,
   getStatsForParticipantStream,
   dataTestId,
 }: {
   participants: TelnyxRoom['state']['participants'];
+  participantsByActivity: TelnyxRoom['participantsByActivity'];
   presenter: Participant;
-  isPublished: TelnyxRoom['isPublished'];
-  isSubscribed: TelnyxRoom['isSubscribed'];
+  dominantSpeakerId?: Participant['id'];
   getParticipantStream: TelnyxRoom['getParticipantStream'];
-  audioOutputDeviceId?: MediaDeviceInfo['deviceId'];
   getStatsForParticipantStream: TelnyxRoom['getStatsForParticipantStream'];
   dataTestId: string;
 }) {
-
   const USERS_PER_PAGE = 3;
   const NAVIGATION_BUTTONS_HEIGHT = 48;
   const FEED_MIN_HEIGHT = 154;
@@ -62,42 +59,48 @@ function ScreenSharingLayout({
   useEffect(() => {
     const feeds = document.getElementById('feeds');
     const feed = document.querySelectorAll('[data-id="video-feed-sidebar"]')[0];
-  
-    if (feeds) {
-      let feedHeight = feed && feed.clientHeight ? feed.clientHeight : FEED_MIN_HEIGHT;
 
-      const maxPerPage = Math.floor((feeds.clientHeight - NAVIGATION_BUTTONS_HEIGHT) / feedHeight);
- 
-      if(maxPerPage > 0) {
+    if (feeds) {
+      let feedHeight =
+        feed && feed.clientHeight ? feed.clientHeight : FEED_MIN_HEIGHT;
+
+      const maxPerPage = Math.floor(
+        (feeds.clientHeight - NAVIGATION_BUTTONS_HEIGHT) / feedHeight
+      );
+
+      if (maxPerPage > 0) {
         setMaxParticipantPerPage(maxPerPage);
       }
     }
-
   }, [maxParticipantPerPage, screenSize.height]);
 
-  const participantsFeeds = Object.keys(participants).map((id) => {
-    const participant = participants[id];
-  
-    return (
-      <Feed
-        dataId="video-feed-sidebar"
-        key={`${participant.id}_self`}
-        participant={participant}
-        streamKey='self'
-        isPublished={isPublished}
-        isSubscribed={isSubscribed}
-        getParticipantStream={getParticipantStream}
-        muteAudio={!participant.isRemote}
-        mirrorVideo={!participant.isRemote}
-        audioOutputDeviceId={audioOutputDeviceId}
-        getStatsForParticipantStream={getStatsForParticipantStream}
-      />
-    );
-  });
+  const participantsFeeds = [...participantsByActivity]
+    .map((id) => {
+      const participant = participants.get(id) as Participant;
+
+      if (!participant) {
+        return null;
+      }
+
+      return (
+        <Feed
+          dataId='video-feed-sidebar'
+          key={`${participant.id}_self`}
+          participant={participant}
+          streamKey='self'
+          getParticipantStream={getParticipantStream}
+          isSpeaking={dominantSpeakerId === participant.id}
+          muteAudio={participant.origin === 'local'}
+          mirrorVideo={participant.origin === 'local'}
+          getStatsForParticipantStream={getStatsForParticipantStream}
+        />
+      );
+    })
+    .filter((value) => value !== null);
 
   return (
     <div
-      id="feeds"
+      id='feeds'
       data-testid={dataTestId}
       style={{
         display: 'flex',
@@ -110,7 +113,7 @@ function ScreenSharingLayout({
         <Pagination
           viewType='screen-sharing'
           RenderComponent={NewSideBar}
-          data={participantsFeeds}
+          data={participantsFeeds as ReactElement[]}
           dataLimit={maxParticipantPerPage}
         />
       ) : null}
@@ -124,9 +127,8 @@ function ScreenSharingLayout({
         <Feed
           participant={presenter}
           streamKey='presentation'
-          isPublished={isPublished}
-          isSubscribed={isSubscribed}
           getParticipantStream={getParticipantStream}
+          isSpeaking={false}
           getStatsForParticipantStream={getStatsForParticipantStream}
           muteAudio={true}
           mirrorVideo={false}

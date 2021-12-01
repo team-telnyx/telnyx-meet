@@ -1,4 +1,4 @@
-import { getDevices } from '@telnyx/video';
+import { getDevices, Participant, Stream } from '@telnyx/video';
 
 import { useContext, useEffect, useState } from 'react';
 import { Box, Button, Menu, Text } from 'grommet';
@@ -62,10 +62,12 @@ const isSinkIdSupported = (): boolean => {
 const getUserMedia = async (
   constraints: MediaStreamConstraints
 ): Promise<MediaStream> => {
+  // @ts-ignore
   return navigator?.mediaDevices?.getUserMedia(constraints);
 };
 
 const getDisplayMedia = async (): Promise<MediaStream> => {
+  // @ts-ignore
   return navigator?.mediaDevices?.getDisplayMedia({ audio: true, video: true });
 };
 
@@ -126,12 +128,14 @@ export default function RoomControls({
   isParticipantsListVisible,
   onChangeParticipantsListVisible,
   room,
+  streams,
   disableScreenshare,
   onAudioOutputDeviceChange,
 }: {
   isParticipantsListVisible: boolean;
   onChangeParticipantsListVisible: Function;
   room: TelnyxRoom;
+  streams: { [key: string]: Stream };
   disableScreenshare: boolean;
   onAudioOutputDeviceChange: (deviceId?: MediaDeviceInfo['deviceId']) => void;
 }) {
@@ -156,20 +160,18 @@ export default function RoomControls({
     audio: undefined,
     video: undefined,
   });
-  const [presentationAudioTrack, setPresentationAudioTrack] =
-    useState<MediaStreamTrack>();
-  const [presentationVideoTrack, setPresentationVideoTrack] =
-    useState<MediaStreamTrack>();
+  const [presentationTracks, setPresentationTracks] = useState<{
+    audio: MediaStreamTrack | undefined;
+    video: MediaStreamTrack | undefined;
+  }>({
+    audio: undefined,
+    video: undefined,
+  });
 
-  const publisher = room.state.publisher;
+  const selfStream = streams.self;
+  const presentationStream = streams.presentation;
 
-  const selfStream = room.getParticipantStream(publisher.participantId, 'self');
-  const presentationStream = room.getParticipantStream(
-    publisher.participantId,
-    'presentation'
-  );
-
-  const participantCount = Object.keys(room.state.participants).length;
+  const participantCount = room.participantsByActivity.size;
 
   const getAndSetDevices = () => {
     getDevices()
@@ -188,33 +190,6 @@ export default function RoomControls({
     getAndSetDevices();
     navigator?.mediaDevices?.addEventListener('devicechange', getAndSetDevices);
 
-    return () => {
-      navigator?.mediaDevices?.removeEventListener(
-        'devicechange',
-        getAndSetDevices
-      );
-    };
-  }, []);
-
-  useEffect(() => {
-    if (selfStream && !selfTracks.audio && !selfTracks.video) {
-      room.unpublish('self');
-
-      return;
-    }
-
-    if (selfTracks.audio || selfTracks.video) {
-      room.publish({
-        key: 'self',
-        audioTrack: selfTracks.audio,
-        videoTrack: selfTracks.video,
-      });
-    }
-
-    getAndSetDevices(); // will populate the devices based on the current permissions
-  }, [selfTracks]);
-
-  useEffect(() => {
     if (audioInputDeviceId || videoInputDeviceId) {
       getUserMedia({
         video: videoInputDeviceId ? { deviceId: videoInputDeviceId } : false,
@@ -229,30 +204,49 @@ export default function RoomControls({
         .catch((error) => {
           console.warn('getUserMedia', error);
         });
-    } else if (room.state.publisher.streamsPublished['self']) {
-      room.unpublish('self');
     }
+
+    return () => {
+      navigator?.mediaDevices?.removeEventListener(
+        'devicechange',
+        getAndSetDevices
+      );
+    };
   }, []);
 
   useEffect(() => {
-    if (presentationStream && !presentationVideoTrack) {
-      room.unpublish('presentation');
+    if (!selfStream) {
+      room.addStream('self', selfTracks);
 
       return;
     }
 
-    if (presentationVideoTrack) {
-      room.publish({
-        key: 'presentation',
-        videoTrack: presentationVideoTrack,
-        audioTrack: presentationAudioTrack,
-      });
-
-      presentationVideoTrack.onended = () => {
-        room.unpublish('presentation');
-      };
+    if (
+      selfStream.isConfigured &&
+      (selfStream.audioTrack !== selfTracks.audio ||
+        selfStream.videoTrack !== selfTracks.video)
+    ) {
+      room.updateStream('self', selfTracks);
     }
-  }, [presentationVideoTrack, presentationAudioTrack]);
+  }, [selfStream, selfTracks]);
+
+  useEffect(() => {
+    if (presentationTracks.video) {
+      if (!presentationStream) {
+        room.addStream('presentation', presentationTracks);
+      } else {
+        room.updateStream('presentation', presentationTracks);
+      }
+
+      presentationTracks.video.onended = () => {
+        room.removeStream('presentation');
+      };
+    } else {
+      if (presentationStream) {
+        room.removeStream('presentation');
+      }
+    }
+  }, [presentationTracks]);
 
   const handleMediaError = (err: Error, kind: 'audio' | 'video' | 'screen') => {
     if (kind === 'audio') {
@@ -388,23 +382,19 @@ export default function RoomControls({
                   });
               }
             }}
-            disabled={
-              publisher.streamsPublished['self']
-                ? publisher.streamsPublished['self'].status === 'pending'
-                : false
-            }
+            disabled={!selfStream?.isConfigured}
           >
             <Box align='center' gap='xsmall'>
               <Box>
                 <Text
                   size='40.3px' // kinda hacky, make fa icon 48px
                   color={
-                    !selfStream?.audioEnabled ? 'status-error' : 'accent-1'
+                    !selfStream?.isAudioEnabled ? 'status-error' : 'accent-1'
                   }
                 >
                   <FontAwesomeIconStyled
                     icon={
-                      !selfStream?.audioEnabled
+                      !selfStream?.isAudioEnabled
                         ? faMicrophoneSlash
                         : faMicrophone
                     }
@@ -413,7 +403,7 @@ export default function RoomControls({
                 </Text>
               </Box>
               <Text size='xsmall' color='light-6'>
-                {!selfStream?.audioEnabled ? 'Unmute mic' : 'Mute mic'}
+                {!selfStream?.isAudioEnabled ? 'Unmute mic' : 'Mute mic'}
               </Text>
             </Box>
           </Button>
@@ -447,11 +437,7 @@ export default function RoomControls({
                   });
               }
             }}
-            disabled={
-              publisher.streamsPublished['self']
-                ? publisher.streamsPublished['self'].status === 'pending'
-                : false
-            }
+            disabled={!selfStream?.isConfigured}
             data-e2e='toggle video'
           >
             <Box align='center' gap='xsmall'>
@@ -459,17 +445,17 @@ export default function RoomControls({
                 <Text
                   size='40.3px' // kinda hacky, make fa icon 48px
                   color={
-                    !selfStream?.videoEnabled ? 'status-error' : 'accent-1'
+                    !selfStream?.isVideoEnabled ? 'status-error' : 'accent-1'
                   }
                 >
                   <FontAwesomeIconStyled
-                    icon={!selfStream?.videoEnabled ? faVideoSlash : faVideo}
+                    icon={!selfStream?.isVideoEnabled ? faVideoSlash : faVideo}
                     fixedWidth
                   />
                 </Text>
               </Box>
               <Text size='xsmall' color='light-6'>
-                {!selfStream?.videoEnabled ? 'Start video' : 'Stop video'}
+                {!selfStream?.isVideoEnabled ? 'Start video' : 'Stop video'}
               </Text>
             </Box>
           </Button>
@@ -479,22 +465,20 @@ export default function RoomControls({
           <Button
             data-testid='btn-toggle-screen-sharing'
             size='large'
-            disabled={
-              disableScreenshare ||
-              publisher.streamsPublished['presentation']?.status === 'pending'
-            }
+            disabled={disableScreenshare}
             onClick={() => {
-              if (presentationAudioTrack || presentationVideoTrack) {
-                presentationAudioTrack?.stop();
-                presentationVideoTrack?.stop();
+              if (presentationTracks.audio || presentationTracks.video) {
+                presentationTracks.audio?.stop();
+                presentationTracks.video?.stop();
 
-                setPresentationAudioTrack(undefined);
-                setPresentationVideoTrack(undefined);
+                setPresentationTracks({ audio: undefined, video: undefined });
               } else {
                 getDisplayMedia()
                   .then((stream) => {
-                    setPresentationAudioTrack(stream?.getAudioTracks()[0]);
-                    setPresentationVideoTrack(stream?.getVideoTracks()[0]);
+                    setPresentationTracks({
+                      audio: stream?.getAudioTracks()[0],
+                      video: stream?.getVideoTracks()[0],
+                    });
                   })
                   .catch((err) => {
                     handleMediaError(err, 'screen');
@@ -507,7 +491,7 @@ export default function RoomControls({
                 <Text
                   size='40.3px' // kinda hacky, make fa icon 48px
                   color={
-                    presentationStream?.videoEnabled
+                    presentationStream?.isVideoEnabled
                       ? 'accent-1'
                       : 'status-error'
                   }
@@ -516,7 +500,7 @@ export default function RoomControls({
                 </Text>
               </Box>
               <Text size='xsmall' color='light-6'>
-                {presentationStream?.videoEnabled
+                {presentationStream?.isVideoEnabled
                   ? 'Stop share'
                   : 'Start share'}
               </Text>

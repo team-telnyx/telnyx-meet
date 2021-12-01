@@ -7,18 +7,20 @@ import { TelnyxRoom } from '../hooks/room';
 
 function Feeds({
   participants,
+  participantsByActivity,
+  dominantSpeakerId,
   presenter,
-  isPublished,
-  isSubscribed,
+  isReady,
   getParticipantStream,
   audioOutputDeviceId,
   getStatsForParticipantStream,
   dataTestId,
 }: {
   participants: TelnyxRoom['state']['participants'];
+  participantsByActivity: TelnyxRoom['participantsByActivity'];
   presenter?: Participant;
-  isSubscribed: TelnyxRoom['isSubscribed'];
-  isPublished: TelnyxRoom['isPublished'];
+  dominantSpeakerId?: Participant['id'];
+  isReady: TelnyxRoom['isReady'];
   getParticipantStream: TelnyxRoom['getParticipantStream'];
   audioOutputDeviceId?: MediaDeviceInfo['deviceId'];
   getStatsForParticipantStream: TelnyxRoom['getStatsForParticipantStream'];
@@ -29,11 +31,10 @@ function Feeds({
       <ScreenSharingLayout
         dataTestId={dataTestId}
         participants={participants}
+        participantsByActivity={participantsByActivity}
         presenter={presenter}
-        isPublished={isPublished}
-        isSubscribed={isSubscribed}
+        dominantSpeakerId={dominantSpeakerId}
         getParticipantStream={getParticipantStream}
-        audioOutputDeviceId={audioOutputDeviceId}
         getStatsForParticipantStream={getStatsForParticipantStream}
       />
     );
@@ -43,10 +44,9 @@ function Feeds({
     <GridLayout
       dataTestId={dataTestId}
       participants={participants}
-      isPublished={isPublished}
-      isSubscribed={isSubscribed}
+      participantsByActivity={participantsByActivity}
+      dominantSpeakerId={dominantSpeakerId}
       getParticipantStream={getParticipantStream}
-      audioOutputDeviceId={audioOutputDeviceId}
       getStatsForParticipantStream={getStatsForParticipantStream}
     />
   );

@@ -1,8 +1,9 @@
-import React, { ReactChild, useEffect } from 'react';
+import React, { ReactChild, ReactElement, useEffect } from 'react';
 import Feed from './Feed';
 import { TelnyxRoom } from '../hooks/room';
 import { useWindowSize, getWindowSize } from '../hooks/windowSize';
 import { Pagination } from './Pagination';
+import { Participant, State } from '@telnyx/video';
 
 function GridView({
   children,
@@ -32,18 +33,16 @@ function GridView({
 
 function GridLayout({
   participants,
-  isPublished,
-  isSubscribed,
+  dominantSpeakerId,
+  participantsByActivity,
   getParticipantStream,
-  audioOutputDeviceId,
   getStatsForParticipantStream,
   dataTestId,
 }: {
-  participants: TelnyxRoom['state']['participants'];
-  isPublished: TelnyxRoom['isPublished'];
-  isSubscribed: TelnyxRoom['isSubscribed'];
+  participants: State['participants'];
+  dominantSpeakerId?: Participant['id'];
+  participantsByActivity: TelnyxRoom['participantsByActivity'];
   getParticipantStream: TelnyxRoom['getParticipantStream'];
-  audioOutputDeviceId?: MediaDeviceInfo['deviceId'];
   getStatsForParticipantStream: TelnyxRoom['getStatsForParticipantStream'];
   dataTestId: string;
 }) {
@@ -64,7 +63,8 @@ function GridLayout({
     const mainFeedWidth = mainFeeds!.clientWidth || MAIN_FEEDS_MIN_WIDTH;
     const mainFeedHeight = mainFeeds!.clientHeight || MAIN_FEEDS_MIN_HEIGHT;
     const mainFeedsArea =
-      mainFeedWidth * (mainFeedHeight - NAVIGATION_BUTTONS_HEIGHT - REPORT_BUTTON_HEIGHT);
+      mainFeedWidth *
+      (mainFeedHeight - NAVIGATION_BUTTONS_HEIGHT - REPORT_BUTTON_HEIGHT);
     const feed = document.querySelectorAll('[data-id="video-feed-grid"]')[0];
 
     let feedArea;
@@ -82,25 +82,28 @@ function GridLayout({
     }
   }, [screenSize]);
 
-  const feeds = Object.keys(participants).map((id) => {
-    const participant = participants[id];
+  const feeds = [...participantsByActivity]
+    .map((id) => {
+      const participant = participants.get(id);
+      if (!participant) {
+        return null;
+      }
 
-    return (
-      <Feed
-        dataId='video-feed-grid'
-        key={`${participant.id}_self`}
-        participant={participant}
-        streamKey='self'
-        isPublished={isPublished}
-        isSubscribed={isSubscribed}
-        getParticipantStream={getParticipantStream}
-        muteAudio={!participant.isRemote}
-        mirrorVideo={!participant.isRemote}
-        audioOutputDeviceId={audioOutputDeviceId}
-        getStatsForParticipantStream={getStatsForParticipantStream}
-      />
-    );
-  });
+      return (
+        <Feed
+          dataId='video-feed-grid'
+          key={`${participant.id}_self`}
+          participant={participant}
+          streamKey='self'
+          getParticipantStream={getParticipantStream}
+          isSpeaking={dominantSpeakerId === participant.id}
+          muteAudio={!participant.isRemote}
+          mirrorVideo={!participant.isRemote}
+          getStatsForParticipantStream={getStatsForParticipantStream}
+        />
+      );
+    })
+    .filter((value) => value !== null);
 
   const xlarge = {
     size: 5,
@@ -137,7 +140,7 @@ function GridLayout({
       {feeds.length > 0 ? (
         <Pagination
           viewType='grid'
-          data={feeds}
+          data={feeds as ReactElement[]}
           dataLimit={maxParticipantPerPage}
           RenderComponent={GridView}
           layoutProps={layoutProps}
