@@ -95,10 +95,9 @@ function Room({
               participantsByActivity={room.participantsByActivity}
               dominantSpeakerId={room.dominantSpeakerId}
               presenter={room.presenter}
-              isReady={room.isReady}
+              streams={room.state.streams}
               getParticipantStream={room.getParticipantStream}
-              audioOutputDeviceId={audioOutputDeviceId}
-              getStatsForParticipantStream={room.getStatsForParticipantStream}
+              getStatsForParticipantStream={room.getWebRTCStatsForStream}
             />
           )}
         </Box>

@@ -32,6 +32,7 @@ function NewSideBar({ children }: { children: ReactChild }) {
 
 function ScreenSharingLayout({
   participants,
+  streams,
   participantsByActivity,
   presenter,
   dominantSpeakerId,
@@ -40,11 +41,12 @@ function ScreenSharingLayout({
   dataTestId,
 }: {
   participants: TelnyxRoom['state']['participants'];
+  streams: TelnyxRoom['state']['streams'];
   participantsByActivity: TelnyxRoom['participantsByActivity'];
   presenter: Participant;
   dominantSpeakerId?: Participant['id'];
   getParticipantStream: TelnyxRoom['getParticipantStream'];
-  getStatsForParticipantStream: TelnyxRoom['getStatsForParticipantStream'];
+  getStatsForParticipantStream: TelnyxRoom['getWebRTCStatsForStream'];
   dataTestId: string;
 }) {
   const USERS_PER_PAGE = 3;
@@ -87,7 +89,7 @@ function ScreenSharingLayout({
           dataId='video-feed-sidebar'
           key={`${participant.id}_self`}
           participant={participant}
-          streamKey='self'
+          stream={getParticipantStream(participant.id, 'self')}
           getParticipantStream={getParticipantStream}
           isSpeaking={dominantSpeakerId === participant.id}
           muteAudio={participant.origin === 'local'}
@@ -126,7 +128,7 @@ function ScreenSharingLayout({
       >
         <Feed
           participant={presenter}
-          streamKey='presentation'
+          stream={getParticipantStream(presenter.id, 'presentation')}
           getParticipantStream={getParticipantStream}
           isSpeaking={false}
           getStatsForParticipantStream={getStatsForParticipantStream}
