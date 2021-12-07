@@ -22,8 +22,7 @@ export type TelnyxRoom = Room & {
   dominantSpeakerId?: Participant['id'];
   presenter?: Participant;
   participantsByActivity: ReadonlySet<Participant['id']>;
-  isReady: (participantId: Participant['id'], key: Stream['key']) => boolean;
-  getStatsForParticipantStream: (
+  getWebRTCStatsForStream: (
     participantId: Participant['id'],
     key: Stream['key']
   ) => Promise<{
@@ -255,13 +254,6 @@ export const useRoom = ({
         dominantSpeakerId,
         presenter,
         participantsByActivity,
-        isReady: (participantId, key) => false,
-        getStatsForParticipantStream: async (participantId, key) => {
-          return {
-            senders: { audio: undefined, video: undefined },
-            receivers: { audio: undefined, video: undefined },
-          };
-        },
       }
     : undefined;
 };

@@ -6,7 +6,7 @@ import {
   faMicrophoneSlash,
 } from '@fortawesome/free-solid-svg-icons';
 import VideoTrack from './VideoTrack';
-import { Participant } from '@telnyx/video';
+import { Participant, Stream } from '@telnyx/video';
 import { TelnyxRoom } from '../hooks/room';
 import { WebRTCStats } from './WebRTCStats';
 import Bowser from 'bowser';
@@ -17,7 +17,7 @@ const allowedBrowsers = ['Chrome', 'Safari'];
 
 function Feed({
   participant,
-  streamKey,
+  stream,
   getParticipantStream,
   isSpeaking,
   muteAudio = true,
@@ -26,23 +26,22 @@ function Feed({
   dataId,
 }: {
   participant: Participant;
-  streamKey: string;
+  stream?: Stream;
   isSpeaking: boolean;
   getParticipantStream: TelnyxRoom['getParticipantStream'];
-  getStatsForParticipantStream: TelnyxRoom['getStatsForParticipantStream'];
+  getStatsForParticipantStream: TelnyxRoom['getWebRTCStatsForStream'];
   muteAudio: boolean;
   mirrorVideo: boolean;
   dataId?: string;
 }) {
-  const showAudioActivityIndicator = isSpeaking && streamKey === 'self';
+  const showAudioActivityIndicator = isSpeaking && stream?.key === 'self';
   const [showStatsOverlay, setShowStatsOverlay] = useState(false);
   const [stats, setStats] = useState<any>(null);
   const [allowedBrowser, setAllowedBrowser] = useState(false);
 
   const intervalStatsId = useRef<any>();
 
-  const stream = getParticipantStream(participant.id, streamKey);
-  const isPresentation = streamKey === 'presentation';
+  const isPresentation = stream?.key === 'presentation';
   const context = participant.context
     ? JSON.parse(participant.context)
     : undefined;
@@ -71,7 +70,7 @@ function Feed({
   }
 
   function renderStats() {
-    if (!allowedBrowser) {
+    if (!stream || !allowedBrowser) {
       return null;
     }
 
@@ -83,7 +82,7 @@ function Feed({
               try {
                 const stats = await getStatsForParticipantStream(
                   participant.id,
-                  streamKey
+                  stream.key
                 );
 
                 if (stats) {
@@ -170,7 +169,7 @@ function Feed({
         )}
         {(stream?.videoTrack || stream?.audioTrack) && (
           <VideoTrack
-            dataTestId={`video-feed-${streamKey}-${
+            dataTestId={`video-feed-${stream.key}-${
               stream?.isVideoEnabled ? 'enabled' : 'notEnabled'
             }`}
             stream={stream}

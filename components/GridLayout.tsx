@@ -33,6 +33,7 @@ function GridView({
 
 function GridLayout({
   participants,
+  streams,
   dominantSpeakerId,
   participantsByActivity,
   getParticipantStream,
@@ -40,10 +41,11 @@ function GridLayout({
   dataTestId,
 }: {
   participants: State['participants'];
+  streams: TelnyxRoom['state']['streams'];
   dominantSpeakerId?: Participant['id'];
   participantsByActivity: TelnyxRoom['participantsByActivity'];
   getParticipantStream: TelnyxRoom['getParticipantStream'];
-  getStatsForParticipantStream: TelnyxRoom['getStatsForParticipantStream'];
+  getStatsForParticipantStream: TelnyxRoom['getWebRTCStatsForStream'];
   dataTestId: string;
 }) {
   const NAVIGATION_BUTTONS_HEIGHT = 96;
@@ -94,7 +96,7 @@ function GridLayout({
           dataId='video-feed-grid'
           key={`${participant.id}_self`}
           participant={participant}
-          streamKey='self'
+          stream={getParticipantStream(participant.id, 'self')}
           getParticipantStream={getParticipantStream}
           isSpeaking={dominantSpeakerId === participant.id}
           muteAudio={!participant.isRemote}

@@ -7,23 +7,21 @@ import { TelnyxRoom } from '../hooks/room';
 
 function Feeds({
   participants,
+  streams,
   participantsByActivity,
   dominantSpeakerId,
   presenter,
-  isReady,
   getParticipantStream,
-  audioOutputDeviceId,
   getStatsForParticipantStream,
   dataTestId,
 }: {
   participants: TelnyxRoom['state']['participants'];
+  streams: TelnyxRoom['state']['streams'];
   participantsByActivity: TelnyxRoom['participantsByActivity'];
   presenter?: Participant;
   dominantSpeakerId?: Participant['id'];
-  isReady: TelnyxRoom['isReady'];
   getParticipantStream: TelnyxRoom['getParticipantStream'];
-  audioOutputDeviceId?: MediaDeviceInfo['deviceId'];
-  getStatsForParticipantStream: TelnyxRoom['getStatsForParticipantStream'];
+  getStatsForParticipantStream: TelnyxRoom['getWebRTCStatsForStream'];
   dataTestId: string;
 }) {
   if (presenter) {
@@ -31,6 +29,7 @@ function Feeds({
       <ScreenSharingLayout
         dataTestId={dataTestId}
         participants={participants}
+        streams={streams}
         participantsByActivity={participantsByActivity}
         presenter={presenter}
         dominantSpeakerId={dominantSpeakerId}
@@ -44,6 +43,7 @@ function Feeds({
     <GridLayout
       dataTestId={dataTestId}
       participants={participants}
+      streams={streams}
       participantsByActivity={participantsByActivity}
       dominantSpeakerId={dominantSpeakerId}
       getParticipantStream={getParticipantStream}
