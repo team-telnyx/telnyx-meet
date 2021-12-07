@@ -13,7 +13,7 @@
     "@fortawesome/fontawesome-svg-core": "^1.2.34",
     "@fortawesome/free-solid-svg-icons": "^5.15.2",
     "@fortawesome/react-fontawesome": "^0.1.14",
-    "@telnyx/video": "0.2.0-alpha.2",
+    "@telnyx/video": "0.2.0-alpha.4",
     "@zeit/next-source-maps": "0.0.4-canary.1",
     "bowser": "^2.11.0",
     "generate-unique-id": "^2.0.1",
