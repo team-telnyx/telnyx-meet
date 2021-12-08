@@ -142,10 +142,6 @@ export const useRoom = ({
         if (dominantSpeakerId === participantId && key === 'self') {
           setDominantSpeakerId(undefined);
         }
-
-        if (participantId === roomRef.current?.getLocalParticipant().id) {
-          return;
-        }
       });
       roomRef.current.on(
         'track_enabled',
@@ -155,9 +151,9 @@ export const useRoom = ({
         'track_disabled',
         (participantId, key, kind, state) => {}
       );
-      roomRef.current.on('audio_activity', (participantId, key, state) => {
+      roomRef.current.on('audio_activity', (participantId, key) => {
         if (
-          key === 'self' &&
+          key !== 'presentation' &&
           participantId !== roomRef.current?.getLocalParticipant().id
         ) {
           setDominantSpeakerId(participantId);
