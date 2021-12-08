@@ -120,6 +120,18 @@ export const useRoom = ({
           return new Set([roomRef.current!.getLocalParticipant().id, ...value]);
         });
       });
+      roomRef.current.on('participant_speaking', (participantId) => {
+        if (participantId !== roomRef.current?.getLocalParticipant().id) {
+          setDominantSpeakerId(participantId);
+          setParticipantsByActivity((value) => {
+            return new Set([
+              roomRef.current!.getLocalParticipant().id,
+              participantId,
+              ...value,
+            ]);
+          });
+        }
+      });
       roomRef.current.on('stream_published', (participantId, key, state) => {
         if (key === 'presentation') {
           setPresenter(state.participants.get(participantId));
@@ -155,21 +167,21 @@ export const useRoom = ({
         'track_disabled',
         (participantId, key, kind, state) => {}
       );
-      roomRef.current.on('audio_activity', (participantId, key, state) => {
-        if (
-          key === 'self' &&
-          participantId !== roomRef.current?.getLocalParticipant().id
-        ) {
-          setDominantSpeakerId(participantId);
-          setParticipantsByActivity((value) => {
-            return new Set([
-              roomRef.current!.getLocalParticipant().id,
-              participantId,
-              ...value,
-            ]);
-          });
-        }
-      });
+      // roomRef.current.on('audio_activity', (participantId, key, state) => {
+      //   if (
+      //     key === 'self' &&
+      //     participantId !== roomRef.current?.getLocalParticipant().id
+      //   ) {
+      //     setDominantSpeakerId(participantId);
+      //     setParticipantsByActivity((value) => {
+      //       return new Set([
+      //         roomRef.current!.getLocalParticipant().id,
+      //         participantId,
+      //         ...value,
+      //       ]);
+      //     });
+      //   }
+      // });
       roomRef.current.on(
         'subscription_started',
         (participantId, key, state) => {}
