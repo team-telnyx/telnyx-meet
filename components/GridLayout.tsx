@@ -40,8 +40,8 @@ function GridLayout({
   getStatsForParticipantStream,
   dataTestId,
 }: {
-  participants: State['participants'];
-  streams: TelnyxRoom['state']['streams'];
+  participants: TelnyxRoom['state']['participants'];
+  streams: TelnyxRoom['state']['streams']; // if this is removed, the feeds will not rerender when the streams update
   dominantSpeakerId?: Participant['id'];
   participantsByActivity: TelnyxRoom['participantsByActivity'];
   getParticipantStream: TelnyxRoom['getParticipantStream'];
@@ -86,7 +86,7 @@ function GridLayout({
 
   const feeds = [...participantsByActivity]
     .map((id) => {
-      const participant = participants.get(id);
+      const participant = participants.get(id) as Participant | undefined;
       if (!participant) {
         return null;
       }
@@ -99,8 +99,8 @@ function GridLayout({
           stream={getParticipantStream(participant.id, 'self')}
           getParticipantStream={getParticipantStream}
           isSpeaking={dominantSpeakerId === participant.id}
-          muteAudio={!participant.isRemote}
-          mirrorVideo={!participant.isRemote}
+          muteAudio={participant.origin === 'local'}
+          mirrorVideo={participant.origin === 'local'}
           getStatsForParticipantStream={getStatsForParticipantStream}
         />
       );

@@ -78,8 +78,7 @@ function ScreenSharingLayout({
 
   const participantsFeeds = [...participantsByActivity]
     .map((id) => {
-      const participant = participants.get(id) as Participant;
-
+      const participant = participants.get(id) as Participant | undefined;
       if (!participant) {
         return null;
       }
