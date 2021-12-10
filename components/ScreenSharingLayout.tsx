@@ -41,7 +41,7 @@ function ScreenSharingLayout({
   dataTestId,
 }: {
   participants: TelnyxRoom['state']['participants'];
-  streams: TelnyxRoom['state']['streams'];
+  streams: TelnyxRoom['state']['streams']; // if this is removed, the feeds will not rerender when the streams update
   participantsByActivity: TelnyxRoom['participantsByActivity'];
   presenter: Participant;
   dominantSpeakerId?: Participant['id'];
@@ -89,9 +89,7 @@ function ScreenSharingLayout({
           key={`${participant.id}_self`}
           participant={participant}
           stream={getParticipantStream(participant.id, 'self')}
-          getParticipantStream={getParticipantStream}
           isSpeaking={dominantSpeakerId === participant.id}
-          muteAudio={participant.origin === 'local'}
           mirrorVideo={participant.origin === 'local'}
           getStatsForParticipantStream={getStatsForParticipantStream}
         />
@@ -128,10 +126,8 @@ function ScreenSharingLayout({
         <Feed
           participant={presenter}
           stream={getParticipantStream(presenter.id, 'presentation')}
-          getParticipantStream={getParticipantStream}
           isSpeaking={false}
           getStatsForParticipantStream={getStatsForParticipantStream}
-          muteAudio={true}
           mirrorVideo={false}
         />
       </div>

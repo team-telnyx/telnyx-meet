@@ -18,9 +18,7 @@ const allowedBrowsers = ['Chrome', 'Safari'];
 function Feed({
   participant,
   stream,
-  getParticipantStream,
   isSpeaking,
-  muteAudio = true,
   mirrorVideo = false,
   getStatsForParticipantStream,
   dataId,
@@ -28,9 +26,7 @@ function Feed({
   participant: Participant;
   stream?: Stream;
   isSpeaking: boolean;
-  getParticipantStream: TelnyxRoom['getParticipantStream'];
   getStatsForParticipantStream: TelnyxRoom['getWebRTCStatsForStream'];
-  muteAudio: boolean;
   mirrorVideo: boolean;
   dataId?: string;
 }) {
@@ -173,7 +169,6 @@ function Feed({
               stream?.isVideoEnabled ? 'enabled' : 'notEnabled'
             }`}
             stream={stream}
-            muteAudio={muteAudio}
             mirrorVideo={mirrorVideo}
             isPresentation={isPresentation}
           />

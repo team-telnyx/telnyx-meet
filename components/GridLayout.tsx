@@ -97,9 +97,7 @@ function GridLayout({
           key={`${participant.id}_self`}
           participant={participant}
           stream={getParticipantStream(participant.id, 'self')}
-          getParticipantStream={getParticipantStream}
           isSpeaking={dominantSpeakerId === participant.id}
-          muteAudio={participant.origin === 'local'}
           mirrorVideo={participant.origin === 'local'}
           getStatsForParticipantStream={getStatsForParticipantStream}
         />
