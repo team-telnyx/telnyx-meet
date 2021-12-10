@@ -1,8 +1,9 @@
 import React, { useContext } from 'react';
 import { Button, Layer, Box } from 'grommet';
 import { CopyToClipboard } from 'react-copy-to-clipboard';
-import { DebugContext } from '../contexts/DebugContext';
 import styled from 'styled-components';
+
+import { DebugContext } from 'contexts/DebugContext';
 
 const StyledLayer = styled(Layer)`
   @media only screen and (max-width: 768px) {

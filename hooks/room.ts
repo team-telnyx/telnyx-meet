@@ -1,6 +1,7 @@
-import { initialize, Room, State, Participant, Stream } from '@telnyx/video';
 import { useEffect, useRef, useState, useContext } from 'react';
-import { DebugContext } from '../contexts/DebugContext';
+import { initialize, Room, State, Participant, Stream } from '@telnyx/video';
+
+import { DebugContext } from 'contexts/DebugContext';
 
 const TOKEN_TTL = 50;
 

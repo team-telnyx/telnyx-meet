@@ -1,6 +1,5 @@
-import { getDevices, Stream } from '@telnyx/video';
-
 import { useContext, useEffect, useState } from 'react';
+import { getDevices, Stream } from '@telnyx/video';
 import { Box, Button, Menu, Text } from 'grommet';
 import { Group as GroupIcon } from 'grommet-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -12,11 +11,13 @@ import {
   faLaptop,
   faCheck,
 } from '@fortawesome/free-solid-svg-icons';
-import ErrorDialog from './ErrorDialog';
-import { TelnyxRoom } from '../hooks/room';
-
 import styled from 'styled-components';
-import { TelnyxMeetContext } from '../contexts/TelnyxMeetContext';
+
+import { TelnyxRoom } from 'hooks/room';
+import { TelnyxMeetContext } from 'contexts/TelnyxMeetContext';
+
+import ErrorDialog from './ErrorDialog';
+
 
 const breakpointMedium = 1023;
 

@@ -8,12 +8,14 @@ import {
 import { Box, Button, Text } from 'grommet';
 import { FontAwesomeIcon as BaseFontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import styled from 'styled-components';
-import { getUserMedia, MediaDeviceErrors } from './helper';
+
 import {
   saveItem,
   USER_PREFERENCE_AUDIO_ALLOWED,
   USER_PREFERENCE_VIDEO_ALLOWED,
-} from '../../utils/storage';
+} from 'utils/storage';
+
+import { getUserMedia, MediaDeviceErrors } from './helper';
 
 const breakpointLarge = 1450;
 

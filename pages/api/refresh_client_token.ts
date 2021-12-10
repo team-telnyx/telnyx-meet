@@ -1,6 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 
-import { notify } from '../../lib/bugsnag';
+import { notify } from 'lib/bugsnag';
 
 type Data = {};
 

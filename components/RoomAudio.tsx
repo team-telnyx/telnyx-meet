@@ -1,5 +1,7 @@
 import React, { useMemo } from 'react';
-import { TelnyxRoom } from '../hooks/room';
+
+import { TelnyxRoom } from 'hooks/room';
+
 import AudioTrack from './AudioTrack';
 
 export default function RoomAudio({

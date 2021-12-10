@@ -1,7 +1,8 @@
 import { Fragment } from 'react';
 import Head from 'next/head';
 import { Box, Button, Main } from 'grommet';
-import AppHeader from '../components/AppHeader';
+
+import AppHeader from 'components/AppHeader';
 
 export default function Home() {
   return (

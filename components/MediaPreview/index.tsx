@@ -2,15 +2,16 @@ import React, { useEffect, useState, useRef, useContext } from 'react';
 import { Text } from 'grommet';
 import styled from 'styled-components';
 
-import ErrorDialog from '../ErrorDialog';
-import { MediaControlBar } from './MediaControlBar';
-import { getUserMedia, MediaDeviceErrors } from './helper';
-import { TelnyxMeetContext } from '../../contexts/TelnyxMeetContext';
+import { TelnyxMeetContext } from 'contexts/TelnyxMeetContext';
 import {
   getItem,
   USER_PREFERENCE_AUDIO_ALLOWED,
   USER_PREFERENCE_VIDEO_ALLOWED,
-} from '../../utils/storage';
+} from 'utils/storage';
+import ErrorDialog from 'components/ErrorDialog';
+
+import { MediaControlBar } from './MediaControlBar';
+import { getUserMedia, MediaDeviceErrors } from './helper';
 
 const breakpointSmall = 400;
 const breakpointMedium = 530;

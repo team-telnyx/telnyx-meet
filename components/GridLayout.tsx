@@ -1,9 +1,11 @@
 import React, { ReactChild, ReactElement, useEffect } from 'react';
+import { Participant } from '@telnyx/video';
+
+import { TelnyxRoom } from 'hooks/room';
+import { useWindowSize, getWindowSize } from 'hooks/windowSize';
+
 import Feed from './Feed';
-import { TelnyxRoom } from '../hooks/room';
-import { useWindowSize, getWindowSize } from '../hooks/windowSize';
 import { Pagination } from './Pagination';
-import { Participant, State } from '@telnyx/video';
 
 function GridView({
   children,

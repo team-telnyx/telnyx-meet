@@ -1,8 +1,11 @@
 import React, { useState } from 'react';
 import { Box, Button, TextInput } from 'grommet';
-import { saveItem, USERNAME_KEY } from '../utils/storage';
+
+import { saveItem, USERNAME_KEY } from 'utils/storage';
+
 import ErrorDialog from './ErrorDialog';
 import { MediaDeviceErrors } from './MediaPreview/helper';
+
 interface Props {
   roomId: string;
   username: string;

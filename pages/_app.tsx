@@ -1,15 +1,16 @@
 import React from 'react';
 import dynamic from 'next/dynamic';
+import type { AppProps } from 'next/app';
 import { Grommet } from 'grommet';
 import { config } from '@fortawesome/fontawesome-svg-core';
-import type { AppProps } from 'next/app';
+
+import { createErrorBoundary } from 'lib/bugsnag';
+import { DebugContext } from 'contexts/DebugContext';
 
 import '@fortawesome/fontawesome-svg-core/styles.css';
-import '../styles/globals.css';
+import 'styles/globals.css';
 
-import { createErrorBoundary } from '../lib/bugsnag';
 import ErrorView from './_error';
-import { DebugContext } from '../contexts/DebugContext';
 
 config.autoAddCss = false;
 
@@ -17,7 +18,7 @@ const ErrorBoundary = createErrorBoundary();
 
 const ReportIssueModal = dynamic(
   () =>
-    import('../components/ReportIssueModal').then(
+    import('components/ReportIssueModal').then(
       (mod) => mod.ReportIssueModal as any
     ),
   { ssr: false }
