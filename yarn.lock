@@ -401,10 +401,10 @@
   resolved "https://registry.yarnpkg.com/@opentelemetry/context-base/-/context-base-0.14.0.tgz#c67fc20a4d891447ca1a855d7d70fa79a3533001"
   integrity sha512-sDOAZcYwynHFTbLo6n8kIbLiVF3a3BLkrmehJUyEbT9F+Smbi47kLGS2gG2g0fjBLR/Lr1InPD7kXL7FaTqEkw==
 
-"@telnyx/video@0.2.0-alpha.5":
-  version "0.2.0-alpha.5"
-  resolved "https://registry.yarnpkg.com/@telnyx/video/-/video-0.2.0-alpha.5.tgz#ff38fe15ba1c7a5a3dd980fa8c9ad8459e2ce2d6"
-  integrity sha512-vyY1+g/Pc10cVJwWXheFlUK+61cDk2bMunXWGz16H6T6aH2ok3Mw7+Yy6YbKLqSoWHo6J+wJNGYzEiyP6Scabw==
+"@telnyx/video@0.2.0-alpha.6":
+  version "0.2.0-alpha.6"
+  resolved "https://registry.yarnpkg.com/@telnyx/video/-/video-0.2.0-alpha.6.tgz#8fb0fcd0ff1b2776925c50e97edbb5baf9278dbc"
+  integrity sha512-U3/qn+5R8caYWIQUM9XzaGCDDXwFvaVv6n5HPMkKgwBgyKFJGqTI7BVHKRfQWqALp6RmSheWMgNXIL1F9fwhBQ==
   dependencies:
     "@types/uuid" "^8.3.0"
     events "^3.3.0"
