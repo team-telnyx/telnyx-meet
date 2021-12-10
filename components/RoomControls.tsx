@@ -1,4 +1,4 @@
-import { getDevices, Participant, Stream } from '@telnyx/video';
+import { getDevices, Stream } from '@telnyx/video';
 
 import { useContext, useEffect, useState } from 'react';
 import { Box, Button, Menu, Text } from 'grommet';
@@ -127,14 +127,22 @@ function DeviceSelect({
 export default function RoomControls({
   isParticipantsListVisible,
   onChangeParticipantsListVisible,
-  room,
   streams,
   disableScreenshare,
   onAudioOutputDeviceChange,
+  participantsByActivity,
+  addStream,
+  removeStream,
+  updateStream,
+  disconnect,
 }: {
   isParticipantsListVisible: boolean;
+  participantsByActivity: TelnyxRoom['participantsByActivity'];
+  addStream: TelnyxRoom['addStream'];
+  removeStream: TelnyxRoom['removeStream'];
+  updateStream: TelnyxRoom['updateStream'];
+  disconnect: TelnyxRoom['disconnect'];
   onChangeParticipantsListVisible: Function;
-  room: TelnyxRoom;
   streams: { [key: string]: Stream };
   disableScreenshare: boolean;
   onAudioOutputDeviceChange: (deviceId?: MediaDeviceInfo['deviceId']) => void;
@@ -171,7 +179,7 @@ export default function RoomControls({
   const selfStream = streams.self;
   const presentationStream = streams.presentation;
 
-  const participantCount = room.participantsByActivity.size;
+  const participantCount = participantsByActivity.size;
 
   const getAndSetDevices = () => {
     getDevices()
@@ -216,7 +224,7 @@ export default function RoomControls({
 
   useEffect(() => {
     if (!selfStream) {
-      room.addStream('self', selfTracks);
+      addStream('self', selfTracks);
 
       return;
     }
@@ -226,24 +234,24 @@ export default function RoomControls({
       (selfStream.audioTrack !== selfTracks.audio ||
         selfStream.videoTrack !== selfTracks.video)
     ) {
-      room.updateStream('self', selfTracks);
+      updateStream('self', selfTracks);
     }
   }, [selfStream, selfTracks]);
 
   useEffect(() => {
     if (presentationTracks.video) {
       if (!presentationStream) {
-        room.addStream('presentation', presentationTracks);
+        addStream('presentation', presentationTracks);
       } else {
-        room.updateStream('presentation', presentationTracks);
+        updateStream('presentation', presentationTracks);
       }
 
       presentationTracks.video.onended = () => {
-        room.removeStream('presentation');
+        removeStream('presentation');
       };
     } else {
       if (presentationStream) {
-        room.removeStream('presentation');
+        removeStream('presentation');
       }
     }
   }, [presentationTracks]);
@@ -429,7 +437,6 @@ export default function RoomControls({
                       ...value,
                       video: stream?.getVideoTracks()[0],
                     }));
-
                     setVideoInputDeviceId(stream?.getVideoTracks()[0].id);
                   })
                   .catch((err) => {
@@ -569,7 +576,7 @@ export default function RoomControls({
             data-testid='btn-leave-room'
             label='Leave'
             onClick={() => {
-              room.disconnect();
+              disconnect();
             }}
             color='status-error'
           />
@@ -580,7 +587,7 @@ export default function RoomControls({
         data-testid='btn-leave-room'
         label='Leave'
         onClick={() => {
-          room.disconnect();
+          disconnect();
         }}
         color='status-error'
       />

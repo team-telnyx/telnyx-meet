@@ -10,7 +10,6 @@ export default function VideoTrack({
   isPresentation,
 }: {
   stream: Stream;
-  muteAudio: boolean;
   mirrorVideo: boolean;
   dataTestId: string;
   isPresentation: boolean;

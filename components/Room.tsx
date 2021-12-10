@@ -117,7 +117,11 @@ function Room({
           <RoomControls
             isParticipantsListVisible={isParticipantsListVisible}
             onChangeParticipantsListVisible={setIsParticipantsListVisible}
-            room={room}
+            participantsByActivity={room.participantsByActivity}
+            addStream={room.addStream}
+            removeStream={room.removeStream}
+            updateStream={room.updateStream}
+            disconnect={room.disconnect}
             streams={room.getLocalStreams()}
             disableScreenshare={
               room.presenter
