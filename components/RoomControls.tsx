@@ -15,8 +15,7 @@ import styled from 'styled-components';
 
 import { TelnyxRoom } from 'hooks/room';
 import { TelnyxMeetContext } from 'contexts/TelnyxMeetContext';
-
-import ErrorDialog from './ErrorDialog';
+import ErrorDialog from 'components/ErrorDialog';
 
 
 const breakpointMedium = 1023;

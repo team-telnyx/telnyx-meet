@@ -3,9 +3,8 @@ import { Participant } from '@telnyx/video';
 
 import { TelnyxRoom } from 'hooks/room';
 import { useWindowSize, getWindowSize } from 'hooks/windowSize';
-
-import Feed from './Feed';
-import { Pagination } from './Pagination';
+import Feed from 'components/Feed';
+import { Pagination } from 'components/Pagination';
 
 function GridView({
   children,

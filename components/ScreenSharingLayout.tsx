@@ -4,9 +4,8 @@ import styled from 'styled-components';
 
 import { TelnyxRoom } from 'hooks/room';
 import { useWindowSize } from 'hooks/windowSize';
-
-import Feed from './Feed';
-import { Pagination } from './Pagination';
+import Feed from 'components/Feed';
+import { Pagination } from 'components/Pagination';
 
 const breakpointMedium = 1023;
 

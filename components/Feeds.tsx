@@ -1,9 +1,9 @@
 import React from 'react';
 import { Participant } from '@telnyx/video';
-import { TelnyxRoom } from 'hooks/room';
 
-import GridLayout from './GridLayout';
-import ScreenSharingLayout from './ScreenSharingLayout';
+import { TelnyxRoom } from 'hooks/room';
+import GridLayout from 'components/GridLayout';
+import ScreenSharingLayout from 'components/ScreenSharingLayout';
 
 function Feeds({
   participants,
