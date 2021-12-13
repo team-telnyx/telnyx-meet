@@ -38,6 +38,7 @@
     "@types/react": "^17.0.1",
     "@types/react-copy-to-clipboard": "^5.0.1",
     "@types/styled-components": "^5.1.11",
+    "babel-plugin-styled-components": "^2.0.2",
     "bugsnag-build-reporter": "^2.0.0",
     "eslint": "^7.18.0",
     "eslint-plugin-react": "^7.22.0",
