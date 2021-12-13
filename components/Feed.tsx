@@ -30,6 +30,8 @@ function Feed({
   mirrorVideo: boolean;
   dataId?: string;
 }) {
+  const isTelephonyEngineParticipant =
+    participant.origin === 'telephony_engine';
   const showAudioActivityIndicator = isSpeaking && stream?.key === 'self';
   const [showStatsOverlay, setShowStatsOverlay] = useState(false);
   const [stats, setStats] = useState<any>(null);
@@ -185,7 +187,7 @@ function Feed({
             >
               <Box
                 background={{
-                  color: participant.origin === 'remote' ? 'dark-1' : 'brand',
+                  color: participant.origin !== 'local' ? 'dark-1' : 'brand',
                   opacity: 'medium',
                 }}
                 pad='xsmall'
@@ -217,12 +219,18 @@ function Feed({
             {!isPresentation && (
               <Text
                 size='small'
-                color={!stream?.isAudioEnabled ? 'status-error' : 'accent-1'}
+                color={
+                  !isTelephonyEngineParticipant && !stream?.isAudioEnabled
+                    ? 'status-error'
+                    : 'accent-1'
+                }
               >
                 <FontAwesomeIcon
                   data-testid='icon-mic-status'
                   icon={
-                    stream?.isAudioEnabled ? faMicrophone : faMicrophoneSlash
+                    isTelephonyEngineParticipant || stream?.isAudioEnabled
+                      ? faMicrophone
+                      : faMicrophoneSlash
                   }
                   fixedWidth
                 />
