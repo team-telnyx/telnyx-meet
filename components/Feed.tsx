@@ -10,8 +10,8 @@ import { Participant, Stream } from '@telnyx/video';
 
 import { TelnyxRoom } from 'hooks/room';
 
-import VideoTrack from './VideoTrack';
-import { WebRTCStats } from './WebRTCStats';
+import VideoTrack from 'components/VideoTrack';
+import { WebRTCStats } from 'components/WebRTCStats';
 
 const VIDEO_BG_COLOR = '#111';
 
