@@ -38,7 +38,16 @@ export default class MyDocument extends Document {
   render() {
     return (
       <Html lang="en-US">
-        <Head />
+        <Head>
+        <title>Telnyx meet</title>
+        <link rel="shortcut icon" href="/logo_telnyx.ico" />
+        <link rel="apple-touch-icon" href="/logo_telnyx.ico" />
+        <meta
+          name="description"
+          content="Telnyx Meet application to make conferences"
+        />
+        <link rel="manifest" href="/manifest.json" />
+        </Head>
         <body>
           <Main />
           <NextScript />

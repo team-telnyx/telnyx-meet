@@ -1,8 +1,11 @@
 const WorkerPlugin = require('worker-plugin');
 const withSourceMaps = require('@zeit/next-source-maps')();
 const { BugsnagSourceMapUploaderPlugin } = require('webpack-bugsnag-plugins');
+const withPWA = require('next-pwa')
 
-module.exports = withSourceMaps({
+const isProd = process.env.NODE_ENV === 'production'
+
+const bugsnagConfig = withSourceMaps({
   // productionBrowserSourceMaps: true,
   serverRuntimeConfig: {
     // Will only be available on the server side
@@ -40,3 +43,10 @@ module.exports = withSourceMaps({
     return config;
   },
 });
+
+
+module.exports = withPWA({...bugsnagConfig, pwa: {
+  dest: 'public',
+  disable: !isProd
+}})
+
