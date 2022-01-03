@@ -1,12 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Box, Text } from 'grommet';
-import Feeds from './Feeds';
-import RoomInfo from './RoomInfo';
-import RoomControls from './RoomControls';
-import ParticipantsList from './ParticipantsList';
+import { useRoom } from 'hooks/room';
 
-import { useRoom } from '../hooks/room';
-import RoomAudio from './RoomAudio';
+import Feeds from 'components/Feeds';
+import RoomInfo from 'components/RoomInfo';
+import RoomControls from 'components/RoomControls';
+import ParticipantsList from 'components/ParticipantsList';
+import RoomAudio from 'components/RoomAudio';
 
 function Room({
   roomId,

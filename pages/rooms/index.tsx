@@ -4,13 +4,13 @@ import Head from 'next/head';
 import { Main } from 'grommet';
 import styled from 'styled-components';
 
-import Room from '../../components/Room';
-import JoinRoom from '../../components/JoinRoom';
-import MediaPreview from '../../components/MediaPreview';
+import Room from 'components/Room';
+import JoinRoom from 'components/JoinRoom';
+import MediaPreview from 'components/MediaPreview';
 
-import { generateUsername, generateId } from '../../utils/helpers';
-import { getItem, USERNAME_KEY } from '../../utils/storage';
-import { TelnyxMeetContext } from '../../contexts/TelnyxMeetContext';
+import { generateUsername, generateId } from 'utils/helpers';
+import { getItem, USERNAME_KEY } from 'utils/storage';
+import { TelnyxMeetContext } from 'contexts/TelnyxMeetContext';
 
 const breakpointMedium = 1021;
 

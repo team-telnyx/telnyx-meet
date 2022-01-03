@@ -1,7 +1,8 @@
 import { Fragment, useEffect, useState } from 'react';
 import Head from 'next/head';
 import { Box, DataTable, Main, Text } from 'grommet';
-import AppHeader from '../../components/AppHeader';
+
+import AppHeader from 'components/AppHeader';
 
 type Data = {
   id: string;

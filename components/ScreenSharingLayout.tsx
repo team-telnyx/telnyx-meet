@@ -1,11 +1,11 @@
-import React, { ReactElement, useEffect, useState } from 'react';
-import Feed from './Feed';
+import React, { ReactElement, useEffect, useState, ReactChild } from 'react';
 import { Participant } from '@telnyx/video';
-import { TelnyxRoom } from '../hooks/room';
 import styled from 'styled-components';
-import { Pagination } from './Pagination';
-import { ReactChild } from 'react';
-import { useWindowSize } from '../hooks/windowSize';
+
+import { TelnyxRoom } from 'hooks/room';
+import { useWindowSize } from 'hooks/windowSize';
+import Feed from 'components/Feed';
+import { Pagination } from 'components/Pagination';
 
 const breakpointMedium = 1023;
 

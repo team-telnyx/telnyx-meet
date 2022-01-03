@@ -7,8 +7,8 @@ import {
   faVideo,
   faVideoSlash,
 } from '@fortawesome/free-solid-svg-icons';
-import { Participant, Stream } from '@telnyx/video';
-import { TelnyxRoom } from '../hooks/room';
+
+import { TelnyxRoom } from 'hooks/room';
 
 export default function ParticipantsList({
   participants,

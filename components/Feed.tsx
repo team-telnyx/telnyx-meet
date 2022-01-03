@@ -5,11 +5,13 @@ import {
   faMicrophone,
   faMicrophoneSlash,
 } from '@fortawesome/free-solid-svg-icons';
-import VideoTrack from './VideoTrack';
-import { Participant, Stream } from '@telnyx/video';
-import { TelnyxRoom } from '../hooks/room';
-import { WebRTCStats } from './WebRTCStats';
 import Bowser from 'bowser';
+import { Participant, Stream } from '@telnyx/video';
+
+import { TelnyxRoom } from 'hooks/room';
+
+import VideoTrack from 'components/VideoTrack';
+import { WebRTCStats } from 'components/WebRTCStats';
 
 const VIDEO_BG_COLOR = '#111';
 
