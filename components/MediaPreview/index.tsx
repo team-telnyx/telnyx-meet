@@ -117,11 +117,11 @@ function MediaPreview() {
   useEffect(() => {
     if (localVideoTrack) {
       const stream = new MediaStream();
-        stream.addTrack(localVideoTrack);
+      stream.addTrack(localVideoTrack);
 
-        if (videoElRef.current) {
-          videoElRef.current.srcObject = stream;
-        }
+      if (videoElRef.current) {
+        videoElRef.current.srcObject = stream;
+      }
     } else {
       if (videoElRef.current) {
         videoElRef.current.srcObject = null;

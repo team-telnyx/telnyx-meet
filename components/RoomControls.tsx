@@ -17,7 +17,6 @@ import { TelnyxRoom } from 'hooks/room';
 import { TelnyxMeetContext } from 'contexts/TelnyxMeetContext';
 import ErrorDialog from 'components/ErrorDialog';
 
-
 const breakpointMedium = 1023;
 
 const RightBoxMenu = styled(Box)`
@@ -360,12 +359,12 @@ export default function RoomControls({
     setAudioInputDeviceId(undefined);
     setAudioOutputDeviceId(undefined);
     setVideoInputDeviceId(undefined);
-  }
+  };
 
   const handleLeaveRoom = () => {
     removeMediaTracks();
     disconnect();
-  }
+  };
 
   return (
     <Box
@@ -387,10 +386,9 @@ export default function RoomControls({
             data-testid='btn-toggle-audio'
             size='large'
             onClick={() => {
-              
               if (selfTracks.audio) {
                 selfTracks.audio.stop();
-                if(selfStream?.audioTrack) {
+                if (selfStream?.audioTrack) {
                   selfStream?.audioTrack.stop();
                 }
                 setAudioInputDeviceId('');
@@ -449,7 +447,7 @@ export default function RoomControls({
               if (selfTracks.video) {
                 setVideoInputDeviceId('');
                 selfTracks.video.stop();
-                if(selfStream?.videoTrack) {
+                if (selfStream?.videoTrack) {
                   selfStream?.videoTrack.stop();
                 }
                 setSelfTracks((value) => ({ ...value, video: undefined }));
