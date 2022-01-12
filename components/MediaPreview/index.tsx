@@ -106,10 +106,6 @@ function MediaPreview() {
         }
 
         setError(undefined);
-
-        if (videoElRef.current) {
-          videoElRef.current.srcObject = stream;
-        }
       })
       .catch((error) => {
         if (error instanceof DOMException && error.name === 'NotAllowedError') {
@@ -119,11 +115,16 @@ function MediaPreview() {
   }, []);
 
   useEffect(() => {
-    if (videoElRef.current) {
-      if (localVideoTrack) {
-        const stream = new MediaStream();
+    if (localVideoTrack) {
+      const stream = new MediaStream();
         stream.addTrack(localVideoTrack);
-        videoElRef.current.srcObject = stream;
+
+        if (videoElRef.current) {
+          videoElRef.current.srcObject = stream;
+        }
+    } else {
+      if (videoElRef.current) {
+        videoElRef.current.srcObject = null;
       }
     }
   }, [localVideoTrack]);

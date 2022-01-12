@@ -348,6 +348,25 @@ export default function RoomControls({
     onAudioOutputDeviceChange(audioOutputDeviceId);
   }, [audioOutputDeviceId]);
 
+  const removeMediaTracks = () => {
+    selfTracks?.audio?.stop();
+    selfTracks?.video?.stop();
+    selfStream?.audioTrack?.stop();
+    selfStream?.videoTrack?.stop();
+    presentationTracks?.audio?.stop();
+    presentationTracks?.video?.stop();
+    presentationStream?.audioTrack?.stop();
+    presentationStream?.videoTrack?.stop();
+    setAudioInputDeviceId(undefined);
+    setAudioOutputDeviceId(undefined);
+    setVideoInputDeviceId(undefined);
+  }
+
+  const handleLeaveRoom = () => {
+    removeMediaTracks();
+    disconnect();
+  }
+
   return (
     <Box
       gridArea='controls'
@@ -368,8 +387,13 @@ export default function RoomControls({
             data-testid='btn-toggle-audio'
             size='large'
             onClick={() => {
+              
               if (selfTracks.audio) {
                 selfTracks.audio.stop();
+                if(selfStream?.audioTrack) {
+                  selfStream?.audioTrack.stop();
+                }
+                setAudioInputDeviceId('');
                 setSelfTracks((value) => ({ ...value, audio: undefined }));
               } else {
                 getUserMedia({
@@ -423,7 +447,11 @@ export default function RoomControls({
             size='large'
             onClick={() => {
               if (selfTracks.video) {
+                setVideoInputDeviceId('');
                 selfTracks.video.stop();
+                if(selfStream?.videoTrack) {
+                  selfStream?.videoTrack.stop();
+                }
                 setSelfTracks((value) => ({ ...value, video: undefined }));
               } else {
                 getUserMedia({
@@ -575,9 +603,7 @@ export default function RoomControls({
           <Button
             data-testid='btn-leave-room'
             label='Leave'
-            onClick={() => {
-              disconnect();
-            }}
+            onClick={() => handleLeaveRoom()}
             color='status-error'
           />
         </Box>
@@ -586,9 +612,7 @@ export default function RoomControls({
       <LeaveButton
         data-testid='btn-leave-room'
         label='Leave'
-        onClick={() => {
-          disconnect();
-        }}
+        onClick={() => handleLeaveRoom()}
         color='status-error'
       />
     </Box>
