@@ -10,7 +10,10 @@ import MediaPreview from 'components/MediaPreview';
 
 import { generateUsername, generateId } from 'utils/helpers';
 import { TelnyxMeetContext } from 'contexts/TelnyxMeetContext';
-import { getUserMedia, MediaDeviceErrors } from 'components/MediaPreview/helper';
+import {
+  getUserMedia,
+  MediaDeviceErrors,
+} from 'components/MediaPreview/helper';
 import {
   getItem,
   USERNAME_KEY,
@@ -91,55 +94,59 @@ export default function Rooms({ id }: { id: string }) {
   }, [roomId, username, tokens]);
 
   useEffect(() => {
-    navigator.mediaDevices.enumerateDevices().then((devices) => {
-      const mic = devices.filter((mic) => mic.kind === 'audioinput')[0];
-      const webcam = devices.filter(
-        (webcam) => webcam.kind === 'videoinput'
-      )[0];
+    if (!isReady) {
+      navigator.mediaDevices.enumerateDevices().then((devices) => {
+        const mic = devices.filter((mic) => mic.kind === 'audioinput')[0];
+        const webcam = devices.filter(
+          (webcam) => webcam.kind === 'videoinput'
+        )[0];
 
-      if (!mic.label && !webcam.label) {
-        setError(MediaDeviceErrors.allowMediaWarning);
-      }
-    });
-
-    let videoPermissionPreference =
-      getItem(USER_PREFERENCE_VIDEO_ALLOWED) || null;
-
-    let audioPermissionPreference =
-      getItem(USER_PREFERENCE_AUDIO_ALLOWED) || null;
-
-    getUserMedia({
-      video:
-        videoPermissionPreference && videoPermissionPreference === 'yes'
-          ? true
-          : false,
-      audio:
-        audioPermissionPreference && audioPermissionPreference === 'yes'
-          ? true
-          : false,
-    })
-      .then((stream) => {
-        debugger
-        if (audioPermissionPreference === 'yes') {
-          const localAudioTrack = stream?.getAudioTracks()[0];
-          setLocalAudioTrack(localAudioTrack);
-          setAudioInputDeviceId(localAudioTrack.id);
-        }
-
-        if (videoPermissionPreference === 'yes') {
-          const localVideoTrack = stream?.getVideoTracks()[0];
-          setLocalVideoTrack(localVideoTrack);
-          setVideoInputDeviceId(localVideoTrack.id);
-        }
-
-        setError(undefined);
-      })
-      .catch((error) => {
-        if (error instanceof DOMException && error.name === 'NotAllowedError') {
-          setError(MediaDeviceErrors.mediaBlocked);
+        if (!mic.label && !webcam.label) {
+          setError(MediaDeviceErrors.allowMediaWarning);
         }
       });
-  }, []);
+
+      let videoPermissionPreference =
+        getItem(USER_PREFERENCE_VIDEO_ALLOWED) || null;
+
+      let audioPermissionPreference =
+        getItem(USER_PREFERENCE_AUDIO_ALLOWED) || null;
+
+      getUserMedia({
+        video:
+          videoPermissionPreference && videoPermissionPreference === 'yes'
+            ? true
+            : false,
+        audio:
+          audioPermissionPreference && audioPermissionPreference === 'yes'
+            ? true
+            : false,
+      })
+        .then((stream) => {
+          if (audioPermissionPreference === 'yes') {
+            const localAudioTrack = stream?.getAudioTracks()[0];
+            setLocalAudioTrack(localAudioTrack);
+            setAudioInputDeviceId(localAudioTrack.id);
+          }
+
+          if (videoPermissionPreference === 'yes') {
+            const localVideoTrack = stream?.getVideoTracks()[0];
+            setLocalVideoTrack(localVideoTrack);
+            setVideoInputDeviceId(localVideoTrack.id);
+          }
+
+          setError(undefined);
+        })
+        .catch((error) => {
+          if (
+            error instanceof DOMException &&
+            error.name === 'NotAllowedError'
+          ) {
+            setError(MediaDeviceErrors.mediaBlocked);
+          }
+        });
+    }
+  }, [isReady]);
 
   const onDisconnected = () => {
     setTokens({ clientToken: '', refreshToken: '' });
@@ -163,7 +170,7 @@ export default function Rooms({ id }: { id: string }) {
           localAudioTrack,
           setLocalAudioTrack,
           localVideoTrack,
-          setLocalVideoTrack
+          setLocalVideoTrack,
         }}
       >
         <Main align='center' justify='center' background='light-2'>
@@ -179,7 +186,7 @@ export default function Rooms({ id }: { id: string }) {
             />
           ) : (
             <GridPreviewContainer>
-              <MediaPreview error={error} setError={setError}/>
+              <MediaPreview error={error} setError={setError} />
               <JoinRoom
                 roomId={roomId || ''}
                 username={username}

@@ -200,11 +200,12 @@ export default function RoomControls({
     // get devices if permissions are already granted
     getAndSetDevices();
     navigator?.mediaDevices?.addEventListener('devicechange', getAndSetDevices);
-    
-    localAudioTrack?.stop()
-    localVideoTrack?.stop()
-    // setLocalAudioTrack(undefined)
-    // setLocalVideoTrack(undefined)
+
+    // Remove MediaStream from preview component
+    localAudioTrack?.stop();
+    localVideoTrack?.stop();
+    setLocalAudioTrack(undefined);
+    setLocalVideoTrack(undefined);
 
     if (audioInputDeviceId || videoInputDeviceId) {
       getUserMedia({
