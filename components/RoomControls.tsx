@@ -153,6 +153,10 @@ export default function RoomControls({
     setAudioInputDeviceId,
     setAudioOutputDeviceId,
     setVideoInputDeviceId,
+    localAudioTrack,
+    localVideoTrack,
+    setLocalAudioTrack,
+    setLocalVideoTrack,
   } = useContext(TelnyxMeetContext);
 
   const [devices, setDevices] = useState<any>({});
@@ -196,6 +200,11 @@ export default function RoomControls({
     // get devices if permissions are already granted
     getAndSetDevices();
     navigator?.mediaDevices?.addEventListener('devicechange', getAndSetDevices);
+    
+    localAudioTrack?.stop()
+    localVideoTrack?.stop()
+    // setLocalAudioTrack(undefined)
+    // setLocalVideoTrack(undefined)
 
     if (audioInputDeviceId || videoInputDeviceId) {
       getUserMedia({
@@ -212,7 +221,6 @@ export default function RoomControls({
           console.warn('getUserMedia', error);
         });
     }
-
     return () => {
       navigator?.mediaDevices?.removeEventListener(
         'devicechange',
