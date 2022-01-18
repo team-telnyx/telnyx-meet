@@ -33,8 +33,6 @@ const JoinRoom = ({
         stream.getTracks().forEach(function(track) {
           track.stop();
         });
-         //@ts-ignore
-        stream = null;
         return true;
       })
       .catch((error) => {
