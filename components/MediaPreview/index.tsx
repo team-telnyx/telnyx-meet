@@ -37,7 +37,7 @@ const VideoPreview = styled.div`
   }
 `;
 
-function MediaPreview({error, setError}: {error: any, setError: any}) {
+function MediaPreview({ error, setError }: { error: any; setError: any }) {
   const {
     audioInputDeviceId,
     setAudioInputDeviceId,
@@ -49,22 +49,17 @@ function MediaPreview({error, setError}: {error: any, setError: any}) {
     setLocalVideoTrack,
   } = useContext(TelnyxMeetContext);
 
-
   const videoElRef = useRef<HTMLVideoElement>(null);
 
-
   useEffect(() => {
+    if (!videoElRef.current) {
+      return;
+    }
     if (localVideoTrack) {
       const stream = new MediaStream();
       stream.addTrack(localVideoTrack);
 
-      if (videoElRef.current) {
-        videoElRef.current.srcObject = stream;
-      }
-    } else {
-      if (videoElRef.current) {
-        videoElRef.current.srcObject = null;
-      }
+      videoElRef.current.srcObject = stream;
     }
   }, [localVideoTrack]);
 
