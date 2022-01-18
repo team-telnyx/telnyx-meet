@@ -222,6 +222,7 @@ export default function RoomControls({
           console.warn('getUserMedia', error);
         });
     }
+
     return () => {
       navigator?.mediaDevices?.removeEventListener(
         'devicechange',
@@ -359,12 +360,8 @@ export default function RoomControls({
   const removeMediaTracks = () => {
     selfTracks?.audio?.stop();
     selfTracks?.video?.stop();
-    selfStream?.audioTrack?.stop();
-    selfStream?.videoTrack?.stop();
     presentationTracks?.audio?.stop();
     presentationTracks?.video?.stop();
-    presentationStream?.audioTrack?.stop();
-    presentationStream?.videoTrack?.stop();
     setAudioInputDeviceId(undefined);
     setAudioOutputDeviceId(undefined);
     setVideoInputDeviceId(undefined);
