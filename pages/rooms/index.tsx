@@ -17,8 +17,8 @@ import {
 import {
   getItem,
   USERNAME_KEY,
-  USER_PREFERENCE_AUDIO_ALLOWED,
-  USER_PREFERENCE_VIDEO_ALLOWED,
+  USER_PREFERENCE_AUDIO_ENABLED,
+  USER_PREFERENCE_VIDEO_ENABLED,
 } from 'utils/storage';
 
 const breakpointMedium = 1021;
@@ -107,30 +107,30 @@ export default function Rooms({ id }: { id: string }) {
         }
       });
 
-      let videoPermissionPreference =
-        getItem(USER_PREFERENCE_VIDEO_ALLOWED) || null;
+      let isVideoEnabled =
+        getItem(USER_PREFERENCE_VIDEO_ENABLED) || null;
 
-      let audioPermissionPreference =
-        getItem(USER_PREFERENCE_AUDIO_ALLOWED) || null;
+      let isAudioEnabled =
+        getItem(USER_PREFERENCE_AUDIO_ENABLED) || null;
 
       getUserMedia({
         video:
-          videoPermissionPreference && videoPermissionPreference === 'yes'
+          isVideoEnabled && isVideoEnabled === 'yes'
             ? true
             : false,
         audio:
-          audioPermissionPreference && audioPermissionPreference === 'yes'
+          isAudioEnabled && isAudioEnabled === 'yes'
             ? true
             : false,
       })
         .then((stream) => {
-          if (audioPermissionPreference === 'yes') {
+          if (isAudioEnabled === 'yes') {
             const localAudioTrack = stream?.getAudioTracks()[0];
             setLocalTracks((value) => ({ ...value, audio: localAudioTrack }));
             setAudioInputDeviceId(localAudioTrack.id);
           }
 
-          if (videoPermissionPreference === 'yes') {
+          if (isVideoEnabled === 'yes') {
             const localVideoTrack = stream?.getVideoTracks()[0];
             setLocalTracks((value) => ({ ...value, video: localVideoTrack }));
             setVideoInputDeviceId(localVideoTrack.id);

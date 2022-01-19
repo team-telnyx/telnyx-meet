@@ -11,8 +11,8 @@ import styled from 'styled-components';
 
 import {
   saveItem,
-  USER_PREFERENCE_AUDIO_ALLOWED,
-  USER_PREFERENCE_VIDEO_ALLOWED,
+  USER_PREFERENCE_AUDIO_ENABLED,
+  USER_PREFERENCE_VIDEO_ENABLED,
 } from 'utils/storage';
 
 import { getUserMedia, MediaDeviceErrors } from './helper';
@@ -60,7 +60,7 @@ function MediaControlBar({
             localTracks.audio.stop();
             setLocalTracks((value) => ({ ...value, audio: undefined }));
             setAudioInputDeviceId(undefined);
-            saveItem(USER_PREFERENCE_AUDIO_ALLOWED, 'no');
+            saveItem(USER_PREFERENCE_AUDIO_ENABLED, 'no');
           } else {
             getUserMedia({
               audio: audioInputDeviceId
@@ -74,7 +74,7 @@ function MediaControlBar({
                   audio: stream?.getAudioTracks()[0],
                 }));
                 setAudioInputDeviceId(stream?.getAudioTracks()[0].id);
-                saveItem(USER_PREFERENCE_AUDIO_ALLOWED, 'yes');
+                saveItem(USER_PREFERENCE_AUDIO_ENABLED, 'yes');
               })
               .catch((err) => {
                 setError(MediaDeviceErrors.mediaBlocked);
@@ -109,7 +109,7 @@ function MediaControlBar({
             localTracks.video.stop();
             setLocalTracks((value) => ({ ...value, video: undefined }));
             setVideoInputDeviceId(undefined);
-            saveItem(USER_PREFERENCE_VIDEO_ALLOWED, 'no');
+            saveItem(USER_PREFERENCE_VIDEO_ENABLED, 'no');
           } else {
             getUserMedia({
               audio: false,
@@ -124,7 +124,7 @@ function MediaControlBar({
                 }));
 
                 setVideoInputDeviceId(stream?.getVideoTracks()[0].id);
-                saveItem(USER_PREFERENCE_VIDEO_ALLOWED, 'yes');
+                saveItem(USER_PREFERENCE_VIDEO_ENABLED, 'yes');
               })
               .catch((err) => {
                 setError(MediaDeviceErrors.mediaBlocked);
