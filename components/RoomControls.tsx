@@ -201,28 +201,10 @@ export default function RoomControls({
     getAndSetDevices();
     navigator?.mediaDevices?.addEventListener('devicechange', getAndSetDevices);
 
-    // Remove MediaStream from preview component
-    localAudioTrack?.stop();
-    localVideoTrack?.stop();
-    setLocalAudioTrack(undefined);
-    setLocalVideoTrack(undefined);
-
-    if (audioInputDeviceId || videoInputDeviceId) {
-      getUserMedia({
-        video: videoInputDeviceId ? { deviceId: videoInputDeviceId } : false,
-        audio: audioInputDeviceId ? { deviceId: audioInputDeviceId } : false,
-      })
-        .then((stream) => {
-          const localAudioTrack = stream?.getAudioTracks()[0];
-          const localVideoTrack = stream?.getVideoTracks()[0];
-
-          setSelfTracks({ audio: localAudioTrack, video: localVideoTrack });
-        })
-        .catch((error) => {
-          console.warn('getUserMedia', error);
-        });
+    if(localAudioTrack || localVideoTrack) {
+      setSelfTracks({ audio: localAudioTrack, video: localVideoTrack });
     }
-
+    
     return () => {
       navigator?.mediaDevices?.removeEventListener(
         'devicechange',
@@ -238,6 +220,7 @@ export default function RoomControls({
       return;
     }
 
+    
     if (
       selfStream.isConfigured &&
       (selfStream.audioTrack !== selfTracks.audio ||
