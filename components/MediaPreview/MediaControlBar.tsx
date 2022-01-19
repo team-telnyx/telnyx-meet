@@ -26,22 +26,26 @@ const FontAwesomeIcon = styled(BaseFontAwesomeIcon)`
 `;
 
 function MediaControlBar({
-  audioTrack,
-  setAudioTrack,
   setAudioInputDeviceId,
   audioInputDeviceId,
-  videoTrack,
-  setVideoTrack,
   setVideoInputDeviceId,
   videoInputDeviceId,
   setError,
+  localTracks,
+  setLocalTracks,
 }: {
-  audioTrack: MediaStreamTrack | undefined;
-  setAudioTrack: Dispatch<SetStateAction<MediaStreamTrack | undefined>>;
+  localTracks: {
+    audio: MediaStreamTrack | undefined;
+    video: MediaStreamTrack | undefined;
+  };
+  setLocalTracks: Dispatch<
+    SetStateAction<{
+      audio: MediaStreamTrack | undefined;
+      video: MediaStreamTrack | undefined;
+    }>
+  >;
   setAudioInputDeviceId: Dispatch<SetStateAction<string | undefined>>;
   audioInputDeviceId: string | undefined;
-  videoTrack: MediaStreamTrack | undefined;
-  setVideoTrack: Dispatch<SetStateAction<MediaStreamTrack | undefined>>;
   setVideoInputDeviceId: Dispatch<SetStateAction<string | undefined>>;
   videoInputDeviceId: string | undefined;
   setError: Dispatch<
@@ -52,9 +56,9 @@ function MediaControlBar({
     <React.Fragment>
       <Button
         onClick={() => {
-          if (audioTrack) {
-            audioTrack.stop();
-            setAudioTrack(undefined);
+          if (localTracks?.audio) {
+            localTracks.audio.stop();
+            setLocalTracks((value) => ({ ...value, audio: undefined }));
             setAudioInputDeviceId(undefined);
             saveItem(USER_PREFERENCE_AUDIO_ALLOWED, 'no');
           } else {
@@ -65,7 +69,10 @@ function MediaControlBar({
               video: false,
             })
               .then((stream) => {
-                setAudioTrack(stream?.getAudioTracks()[0]);
+                setLocalTracks((value) => ({
+                  ...value,
+                  audio: stream?.getAudioTracks()[0],
+                }));
                 setAudioInputDeviceId(stream?.getAudioTracks()[0].id);
                 saveItem(USER_PREFERENCE_AUDIO_ALLOWED, 'yes');
               })
@@ -80,25 +87,27 @@ function MediaControlBar({
           <Box>
             <Text
               size='40.3px' // kinda hacky, make fa icon 48px
-              color={!audioTrack?.enabled ? 'status-error' : 'accent-1'}
+              color={!localTracks?.audio?.enabled ? 'status-error' : 'accent-1'}
             >
               <FontAwesomeIcon
-                icon={!audioTrack?.enabled ? faMicrophoneSlash : faMicrophone}
+                icon={
+                  !localTracks?.audio?.enabled ? faMicrophoneSlash : faMicrophone
+                }
                 fixedWidth
               />
             </Text>
           </Box>
           <Text size='xsmall' color='light-6'>
-            {!audioTrack?.enabled ? 'Unmute mic' : 'Mute mic'}
+            {!localTracks?.audio?.enabled ? 'Unmute mic' : 'Mute mic'}
           </Text>
         </Box>
       </Button>
 
       <Button
         onClick={() => {
-          if (videoTrack) {
-            videoTrack.stop();
-            setVideoTrack(undefined);
+          if (localTracks?.video) {
+            localTracks.video.stop();
+            setLocalTracks((value) => ({ ...value, video: undefined }));
             setVideoInputDeviceId(undefined);
             saveItem(USER_PREFERENCE_VIDEO_ALLOWED, 'no');
           } else {
@@ -109,7 +118,11 @@ function MediaControlBar({
                 : true,
             })
               .then((stream) => {
-                setVideoTrack(stream?.getVideoTracks()[0]);
+                setLocalTracks((value) => ({
+                  ...value,
+                  video: stream?.getVideoTracks()[0],
+                }));
+
                 setVideoInputDeviceId(stream?.getVideoTracks()[0].id);
                 saveItem(USER_PREFERENCE_VIDEO_ALLOWED, 'yes');
               })
@@ -123,16 +136,16 @@ function MediaControlBar({
           <Box>
             <Text
               size='40.3px' // kinda hacky, make fa icon 48px
-              color={!videoTrack?.enabled ? 'status-error' : 'accent-1'}
+              color={!localTracks?.video?.enabled ? 'status-error' : 'accent-1'}
             >
               <FontAwesomeIcon
-                icon={!videoTrack?.enabled ? faVideoSlash : faVideo}
+                icon={!localTracks?.video?.enabled ? faVideoSlash : faVideo}
                 fixedWidth
               />
             </Text>
           </Box>
           <Text size='xsmall' color='light-6'>
-            {!videoTrack?.enabled ? 'Start video' : 'Stop video'}
+            {!localTracks?.video?.enabled ? 'Start video' : 'Stop video'}
           </Text>
         </Box>
       </Button>

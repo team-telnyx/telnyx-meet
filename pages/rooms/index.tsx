@@ -66,12 +66,13 @@ export default function Rooms({ id }: { id: string }) {
     string | undefined
   >();
 
-  const [localAudioTrack, setLocalAudioTrack] = useState<
-    MediaStreamTrack | undefined
-  >();
-  const [localVideoTrack, setLocalVideoTrack] = useState<
-    MediaStreamTrack | undefined
-  >();
+  const [localTracks, setLocalTracks] = useState<{
+    audio: MediaStreamTrack | undefined;
+    video: MediaStreamTrack | undefined;
+  }>({
+    audio: undefined,
+    video: undefined,
+  });
 
   const [error, setError] = useState<
     { title: string; body: string } | undefined
@@ -125,13 +126,13 @@ export default function Rooms({ id }: { id: string }) {
         .then((stream) => {
           if (audioPermissionPreference === 'yes') {
             const localAudioTrack = stream?.getAudioTracks()[0];
-            setLocalAudioTrack(localAudioTrack);
+            setLocalTracks((value) => ({ ...value, audio: localAudioTrack }));
             setAudioInputDeviceId(localAudioTrack.id);
           }
 
           if (videoPermissionPreference === 'yes') {
             const localVideoTrack = stream?.getVideoTracks()[0];
-            setLocalVideoTrack(localVideoTrack);
+            setLocalTracks((value) => ({ ...value, video: localVideoTrack }));
             setVideoInputDeviceId(localVideoTrack.id);
           }
 
@@ -167,10 +168,8 @@ export default function Rooms({ id }: { id: string }) {
           setAudioInputDeviceId,
           setAudioOutputDeviceId,
           setVideoInputDeviceId,
-          localAudioTrack,
-          setLocalAudioTrack,
-          localVideoTrack,
-          setLocalVideoTrack,
+          localTracks,
+          setLocalTracks,
         }}
       >
         <Main align='center' justify='center' background='light-2'>

@@ -171,6 +171,7 @@ export default function RoomControls({
     audio: undefined,
     video: undefined,
   });
+  
   const [presentationTracks, setPresentationTracks] = useState<{
     audio: MediaStreamTrack | undefined;
     video: MediaStreamTrack | undefined;
@@ -220,7 +221,6 @@ export default function RoomControls({
       return;
     }
 
-    
     if (
       selfStream.isConfigured &&
       (selfStream.audioTrack !== selfTracks.audio ||

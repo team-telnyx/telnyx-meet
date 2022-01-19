@@ -43,10 +43,8 @@ function MediaPreview({ error, setError }: { error: any; setError: any }) {
     setAudioInputDeviceId,
     videoInputDeviceId,
     setVideoInputDeviceId,
-    localAudioTrack,
-    localVideoTrack,
-    setLocalAudioTrack,
-    setLocalVideoTrack,
+    localTracks,
+    setLocalTracks,
   } = useContext(TelnyxMeetContext);
 
   const videoElRef = useRef<HTMLVideoElement>(null);
@@ -55,13 +53,13 @@ function MediaPreview({ error, setError }: { error: any; setError: any }) {
     if (!videoElRef.current) {
       return;
     }
-    if (localVideoTrack) {
+    if (localTracks?.video) {
       const stream = new MediaStream();
-      stream.addTrack(localVideoTrack);
+      stream.addTrack(localTracks.video);
 
       videoElRef.current.srcObject = stream;
     }
-  }, [localVideoTrack]);
+  }, [localTracks?.video]);
 
   const onClose = () => {
     setError(undefined);
@@ -81,7 +79,7 @@ function MediaPreview({ error, setError }: { error: any; setError: any }) {
         <ErrorDialog onClose={onClose} title={error.title} body={error.body} />
       )}
       <VideoPreview id='preview-video'>
-        {localVideoTrack?.enabled && (
+        {localTracks?.video?.enabled && (
           <video
             id='video-preview'
             ref={videoElRef}
@@ -100,7 +98,7 @@ function MediaPreview({ error, setError }: { error: any; setError: any }) {
             }}
           ></video>
         )}
-        {!localVideoTrack?.enabled && (
+        {!localTracks?.video?.enabled && (
           <Text
             style={{
               position: 'absolute',
@@ -123,12 +121,10 @@ function MediaPreview({ error, setError }: { error: any; setError: any }) {
           }}
         >
           <MediaControlBar
-            audioTrack={localAudioTrack}
-            setAudioTrack={setLocalAudioTrack}
+            localTracks={localTracks}
+            setLocalTracks={setLocalTracks}
             setAudioInputDeviceId={setAudioInputDeviceId}
             audioInputDeviceId={audioInputDeviceId}
-            videoTrack={localVideoTrack}
-            setVideoTrack={setLocalVideoTrack}
             setVideoInputDeviceId={setVideoInputDeviceId}
             videoInputDeviceId={videoInputDeviceId}
             setError={setError}

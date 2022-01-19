@@ -9,11 +9,8 @@ const TelnyxMeetContext = React.createContext<{
   setAudioOutputDeviceId: Dispatch<SetStateAction<string | undefined>>;
   setVideoInputDeviceId: Dispatch<SetStateAction<string | undefined>>;
 
-  localAudioTrack: MediaStreamTrack | undefined; 
-  setLocalAudioTrack: Dispatch<SetStateAction<MediaStreamTrack | undefined>>;
-  localVideoTrack : MediaStreamTrack | undefined;
-  setLocalVideoTrack: Dispatch<SetStateAction<MediaStreamTrack | undefined>>;
-
+  localTracks: {audio: MediaStreamTrack | undefined, video: MediaStreamTrack | undefined};
+  setLocalTracks: Dispatch<SetStateAction<{audio: MediaStreamTrack | undefined, video: MediaStreamTrack | undefined}>>;
 }>({
   audioInputDeviceId: undefined,
   audioOutputDeviceId: undefined,
@@ -27,14 +24,14 @@ const TelnyxMeetContext = React.createContext<{
   setVideoInputDeviceId: (
     value: React.SetStateAction<string | undefined>
   ) => {},
-  localAudioTrack: undefined,
-  localVideoTrack : undefined,
-  setLocalAudioTrack: (
-    value: React.SetStateAction<MediaStreamTrack | undefined>
-  ) => {},
-  setLocalVideoTrack: (
-    value: React.SetStateAction<MediaStreamTrack | undefined>
+  localTracks: { audio: undefined, video: undefined },
+  setLocalTracks: (
+    value: React.SetStateAction<{
+      audio: MediaStreamTrack | undefined;
+      video: MediaStreamTrack | undefined;
+    }>
   ) => {},
 });
 
 export { TelnyxMeetContext };
+
