@@ -197,6 +197,7 @@ export default function RoomControls({
         'devicechange',
         getAndSetDevices
       );
+      removeMediaTracks();
     };
   }, []);
 
@@ -334,7 +335,6 @@ export default function RoomControls({
   };
 
   const handleLeaveRoom = () => {
-    removeMediaTracks();
     disconnect();
   };
 
