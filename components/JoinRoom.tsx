@@ -30,6 +30,9 @@ const JoinRoom = ({
         audio: true,
       })
       .then((stream) => {
+        stream.getTracks().forEach(function(track) {
+          track.stop();
+        });
         return true;
       })
       .catch((error) => {

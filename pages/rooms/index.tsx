@@ -9,8 +9,17 @@ import JoinRoom from 'components/JoinRoom';
 import MediaPreview from 'components/MediaPreview';
 
 import { generateUsername, generateId } from 'utils/helpers';
-import { getItem, USERNAME_KEY } from 'utils/storage';
 import { TelnyxMeetContext } from 'contexts/TelnyxMeetContext';
+import {
+  getUserMedia,
+  MediaDeviceErrors,
+} from 'components/MediaPreview/helper';
+import {
+  getItem,
+  USERNAME_KEY,
+  USER_PREFERENCE_AUDIO_ENABLED,
+  USER_PREFERENCE_VIDEO_ENABLED,
+} from 'utils/storage';
 
 const breakpointMedium = 1021;
 
@@ -57,6 +66,18 @@ export default function Rooms({ id }: { id: string }) {
     string | undefined
   >();
 
+  const [localTracks, setLocalTracks] = useState<{
+    audio: MediaStreamTrack | undefined;
+    video: MediaStreamTrack | undefined;
+  }>({
+    audio: undefined,
+    video: undefined,
+  });
+
+  const [error, setError] = useState<
+    { title: string; body: string } | undefined
+  >(undefined);
+
   useEffect(() => {
     setUsername(getUserName());
   }, []);
@@ -72,6 +93,61 @@ export default function Rooms({ id }: { id: string }) {
       setIsReady(false);
     }
   }, [roomId, username, tokens]);
+
+  useEffect(() => {
+    if (!isReady) {
+      navigator.mediaDevices.enumerateDevices().then((devices) => {
+        const mic = devices.filter((mic) => mic.kind === 'audioinput')[0];
+        const webcam = devices.filter(
+          (webcam) => webcam.kind === 'videoinput'
+        )[0];
+
+        if (!mic.label && !webcam.label) {
+          setError(MediaDeviceErrors.allowMediaWarning);
+        }
+      });
+
+      let isVideoEnabled =
+        getItem(USER_PREFERENCE_VIDEO_ENABLED) || null;
+
+      let isAudioEnabled =
+        getItem(USER_PREFERENCE_AUDIO_ENABLED) || null;
+
+      getUserMedia({
+        video:
+          isVideoEnabled && isVideoEnabled === 'yes'
+            ? true
+            : false,
+        audio:
+          isAudioEnabled && isAudioEnabled === 'yes'
+            ? true
+            : false,
+      })
+        .then((stream) => {
+          if (isAudioEnabled === 'yes') {
+            const localAudioTrack = stream?.getAudioTracks()[0];
+            setLocalTracks((value) => ({ ...value, audio: localAudioTrack }));
+            setAudioInputDeviceId(localAudioTrack.id);
+          }
+
+          if (isVideoEnabled === 'yes') {
+            const localVideoTrack = stream?.getVideoTracks()[0];
+            setLocalTracks((value) => ({ ...value, video: localVideoTrack }));
+            setVideoInputDeviceId(localVideoTrack.id);
+          }
+
+          setError(undefined);
+        })
+        .catch((error) => {
+          if (
+            error instanceof DOMException &&
+            error.name === 'NotAllowedError'
+          ) {
+            setError(MediaDeviceErrors.mediaBlocked);
+          }
+        });
+    }
+  }, [isReady]);
 
   const onDisconnected = () => {
     setTokens({ clientToken: '', refreshToken: '' });
@@ -92,6 +168,8 @@ export default function Rooms({ id }: { id: string }) {
           setAudioInputDeviceId,
           setAudioOutputDeviceId,
           setVideoInputDeviceId,
+          localTracks,
+          setLocalTracks,
         }}
       >
         <Main align='center' justify='center' background='light-2'>
@@ -107,7 +185,7 @@ export default function Rooms({ id }: { id: string }) {
             />
           ) : (
             <GridPreviewContainer>
-              <MediaPreview />
+              <MediaPreview error={error} setError={setError} />
               <JoinRoom
                 roomId={roomId || ''}
                 username={username}

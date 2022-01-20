@@ -3,15 +3,10 @@ import { Text } from 'grommet';
 import styled from 'styled-components';
 
 import { TelnyxMeetContext } from 'contexts/TelnyxMeetContext';
-import {
-  getItem,
-  USER_PREFERENCE_AUDIO_ALLOWED,
-  USER_PREFERENCE_VIDEO_ALLOWED,
-} from 'utils/storage';
+
 import ErrorDialog from 'components/ErrorDialog';
 
 import { MediaControlBar } from './MediaControlBar';
-import { getUserMedia, MediaDeviceErrors } from './helper';
 
 const breakpointSmall = 400;
 const breakpointMedium = 530;
@@ -42,91 +37,29 @@ const VideoPreview = styled.div`
   }
 `;
 
-function MediaPreview() {
+function MediaPreview({ error, setError }: { error: any; setError: any }) {
   const {
     audioInputDeviceId,
     setAudioInputDeviceId,
     videoInputDeviceId,
     setVideoInputDeviceId,
+    localTracks,
+    setLocalTracks,
   } = useContext(TelnyxMeetContext);
-
-  const [localAudioTrack, setLocalAudioTrack] = useState<
-    MediaStreamTrack | undefined
-  >();
-  const [localVideoTrack, setLocalVideoTrack] = useState<
-    MediaStreamTrack | undefined
-  >();
-
-  const [error, setError] = useState<
-    { title: string; body: string } | undefined
-  >(undefined);
 
   const videoElRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
-    navigator.mediaDevices.enumerateDevices().then((devices) => {
-      const mic = devices.filter((mic) => mic.kind === 'audioinput')[0];
-      const webcam = devices.filter(
-        (webcam) => webcam.kind === 'videoinput'
-      )[0];
-
-      if (!mic.label && !webcam.label) {
-        setError(MediaDeviceErrors.allowMediaWarning);
-      }
-    });
-
-    let videoPermissionPreference =
-      getItem(USER_PREFERENCE_VIDEO_ALLOWED) || null;
-
-    let audioPermissionPreference =
-      getItem(USER_PREFERENCE_AUDIO_ALLOWED) || null;
-
-    getUserMedia({
-      video:
-        videoPermissionPreference && videoPermissionPreference === 'yes'
-          ? true
-          : false,
-      audio:
-        audioPermissionPreference && audioPermissionPreference === 'yes'
-          ? true
-          : false,
-    })
-      .then((stream) => {
-        const localAudioTrack = stream?.getAudioTracks()[0];
-        const localVideoTrack = stream?.getVideoTracks()[0];
-
-        if (audioPermissionPreference === 'yes') {
-          setLocalAudioTrack(localAudioTrack);
-          setAudioInputDeviceId(localAudioTrack.id);
-        }
-
-        if (videoPermissionPreference === 'yes') {
-          setLocalVideoTrack(localVideoTrack);
-          setVideoInputDeviceId(localVideoTrack.id);
-        }
-
-        setError(undefined);
-
-        if (videoElRef.current) {
-          videoElRef.current.srcObject = stream;
-        }
-      })
-      .catch((error) => {
-        if (error instanceof DOMException && error.name === 'NotAllowedError') {
-          setError(MediaDeviceErrors.mediaBlocked);
-        }
-      });
-  }, []);
-
-  useEffect(() => {
-    if (videoElRef.current) {
-      if (localVideoTrack) {
-        const stream = new MediaStream();
-        stream.addTrack(localVideoTrack);
-        videoElRef.current.srcObject = stream;
-      }
+    if (!videoElRef.current) {
+      return;
     }
-  }, [localVideoTrack]);
+    if (localTracks?.video) {
+      const stream = new MediaStream();
+      stream.addTrack(localTracks.video);
+
+      videoElRef.current.srcObject = stream;
+    }
+  }, [localTracks?.video]);
 
   const onClose = () => {
     setError(undefined);
@@ -146,7 +79,7 @@ function MediaPreview() {
         <ErrorDialog onClose={onClose} title={error.title} body={error.body} />
       )}
       <VideoPreview id='preview-video'>
-        {localVideoTrack?.enabled && (
+        {localTracks?.video?.enabled && (
           <video
             id='video-preview'
             ref={videoElRef}
@@ -165,7 +98,7 @@ function MediaPreview() {
             }}
           ></video>
         )}
-        {!localVideoTrack?.enabled && (
+        {!localTracks?.video?.enabled && (
           <Text
             style={{
               position: 'absolute',
@@ -188,12 +121,10 @@ function MediaPreview() {
           }}
         >
           <MediaControlBar
-            audioTrack={localAudioTrack}
-            setAudioTrack={setLocalAudioTrack}
+            localTracks={localTracks}
+            setLocalTracks={setLocalTracks}
             setAudioInputDeviceId={setAudioInputDeviceId}
             audioInputDeviceId={audioInputDeviceId}
-            videoTrack={localVideoTrack}
-            setVideoTrack={setLocalVideoTrack}
             setVideoInputDeviceId={setVideoInputDeviceId}
             videoInputDeviceId={videoInputDeviceId}
             setError={setError}

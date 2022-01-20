@@ -17,7 +17,6 @@ import { TelnyxRoom } from 'hooks/room';
 import { TelnyxMeetContext } from 'contexts/TelnyxMeetContext';
 import ErrorDialog from 'components/ErrorDialog';
 
-
 const breakpointMedium = 1023;
 
 const RightBoxMenu = styled(Box)`
@@ -154,20 +153,15 @@ export default function RoomControls({
     setAudioInputDeviceId,
     setAudioOutputDeviceId,
     setVideoInputDeviceId,
+    localTracks,
+    setLocalTracks,
   } = useContext(TelnyxMeetContext);
 
   const [devices, setDevices] = useState<any>({});
   const [error, setError] = useState<
     { title: string; body: string } | undefined
   >(undefined);
-
-  const [selfTracks, setSelfTracks] = useState<{
-    audio: MediaStreamTrack | undefined;
-    video: MediaStreamTrack | undefined;
-  }>({
-    audio: undefined,
-    video: undefined,
-  });
+  
   const [presentationTracks, setPresentationTracks] = useState<{
     audio: MediaStreamTrack | undefined;
     video: MediaStreamTrack | undefined;
@@ -198,45 +192,30 @@ export default function RoomControls({
     getAndSetDevices();
     navigator?.mediaDevices?.addEventListener('devicechange', getAndSetDevices);
 
-    if (audioInputDeviceId || videoInputDeviceId) {
-      getUserMedia({
-        video: videoInputDeviceId ? { deviceId: videoInputDeviceId } : false,
-        audio: audioInputDeviceId ? { deviceId: audioInputDeviceId } : false,
-      })
-        .then((stream) => {
-          const localAudioTrack = stream?.getAudioTracks()[0];
-          const localVideoTrack = stream?.getVideoTracks()[0];
-
-          setSelfTracks({ audio: localAudioTrack, video: localVideoTrack });
-        })
-        .catch((error) => {
-          console.warn('getUserMedia', error);
-        });
-    }
-
     return () => {
       navigator?.mediaDevices?.removeEventListener(
         'devicechange',
         getAndSetDevices
       );
+      removeMediaTracks();
     };
   }, []);
 
   useEffect(() => {
     if (!selfStream) {
-      addStream('self', selfTracks);
+      addStream('self', localTracks);
 
       return;
     }
 
     if (
       selfStream.isConfigured &&
-      (selfStream.audioTrack !== selfTracks.audio ||
-        selfStream.videoTrack !== selfTracks.video)
+      (selfStream.audioTrack !== localTracks.audio ||
+        selfStream.videoTrack !== localTracks.video)
     ) {
-      updateStream('self', selfTracks);
+      updateStream('self', localTracks);
     }
-  }, [selfStream, selfTracks]);
+  }, [selfStream, localTracks]);
 
   useEffect(() => {
     if (presentationTracks.video) {
@@ -296,8 +275,8 @@ export default function RoomControls({
 
     if (kind === 'audio_input') {
       setAudioInputDeviceId(deviceId);
-      if (selfTracks.audio) {
-        selfTracks.audio.stop();
+      if (localTracks.audio) {
+        localTracks.audio.stop();
 
         getUserMedia({
           video: false,
@@ -306,7 +285,7 @@ export default function RoomControls({
           },
         })
           .then((stream) => {
-            setSelfTracks((value) => ({
+            setLocalTracks((value) => ({
               ...value,
               audio: stream.getAudioTracks()[0],
             }));
@@ -319,8 +298,8 @@ export default function RoomControls({
 
     if (kind === 'video_input') {
       setVideoInputDeviceId(deviceId);
-      if (selfTracks.video) {
-        selfTracks.video.stop();
+      if (localTracks.video) {
+        localTracks.video.stop();
         getUserMedia({
           audio: false,
           video: {
@@ -328,7 +307,7 @@ export default function RoomControls({
           },
         })
           .then((stream) => {
-            setSelfTracks((value) => ({
+            setLocalTracks((value) => ({
               ...value,
               video: stream.getVideoTracks()[0],
             }));
@@ -347,6 +326,17 @@ export default function RoomControls({
   useEffect(() => {
     onAudioOutputDeviceChange(audioOutputDeviceId);
   }, [audioOutputDeviceId]);
+
+  const removeMediaTracks = () => {
+    localTracks?.audio?.stop();
+    localTracks?.video?.stop();
+    presentationTracks?.audio?.stop();
+    presentationTracks?.video?.stop();
+  };
+
+  const handleLeaveRoom = () => {
+    disconnect();
+  };
 
   return (
     <Box
@@ -368,9 +358,13 @@ export default function RoomControls({
             data-testid='btn-toggle-audio'
             size='large'
             onClick={() => {
-              if (selfTracks.audio) {
-                selfTracks.audio.stop();
-                setSelfTracks((value) => ({ ...value, audio: undefined }));
+              if (localTracks.audio) {
+                localTracks.audio.stop();
+                if (selfStream?.audioTrack) {
+                  selfStream?.audioTrack.stop();
+                }
+                setAudioInputDeviceId('');
+                setLocalTracks((value) => ({ ...value, audio: undefined }));
               } else {
                 getUserMedia({
                   audio: audioInputDeviceId
@@ -379,7 +373,7 @@ export default function RoomControls({
                   video: false,
                 })
                   .then((stream) => {
-                    setSelfTracks((value) => ({
+                    setLocalTracks((value) => ({
                       ...value,
                       audio: stream?.getAudioTracks()[0],
                     }));
@@ -422,9 +416,13 @@ export default function RoomControls({
             data-testid='btn-toggle-video'
             size='large'
             onClick={() => {
-              if (selfTracks.video) {
-                selfTracks.video.stop();
-                setSelfTracks((value) => ({ ...value, video: undefined }));
+              if (localTracks.video) {
+                setVideoInputDeviceId('');
+                localTracks.video.stop();
+                if (selfStream?.videoTrack) {
+                  selfStream?.videoTrack.stop();
+                }
+                setLocalTracks((value) => ({ ...value, video: undefined }));
               } else {
                 getUserMedia({
                   audio: false,
@@ -433,7 +431,7 @@ export default function RoomControls({
                     : true,
                 })
                   .then((stream) => {
-                    setSelfTracks((value) => ({
+                    setLocalTracks((value) => ({
                       ...value,
                       video: stream?.getVideoTracks()[0],
                     }));
@@ -575,9 +573,7 @@ export default function RoomControls({
           <Button
             data-testid='btn-leave-room'
             label='Leave'
-            onClick={() => {
-              disconnect();
-            }}
+            onClick={handleLeaveRoom}
             color='status-error'
           />
         </Box>
@@ -586,9 +582,7 @@ export default function RoomControls({
       <LeaveButton
         data-testid='btn-leave-room'
         label='Leave'
-        onClick={() => {
-          disconnect();
-        }}
+        onClick={handleLeaveRoom}
         color='status-error'
       />
     </Box>
