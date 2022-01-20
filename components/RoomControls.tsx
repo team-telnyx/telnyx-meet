@@ -573,7 +573,7 @@ export default function RoomControls({
           <Button
             data-testid='btn-leave-room'
             label='Leave'
-            onClick={() => handleLeaveRoom()}
+            onClick={handleLeaveRoom}
             color='status-error'
           />
         </Box>
@@ -582,7 +582,7 @@ export default function RoomControls({
       <LeaveButton
         data-testid='btn-leave-room'
         label='Leave'
-        onClick={() => handleLeaveRoom()}
+        onClick={handleLeaveRoom}
         color='status-error'
       />
     </Box>

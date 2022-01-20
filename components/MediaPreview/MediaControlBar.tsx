@@ -52,37 +52,60 @@ function MediaControlBar({
     SetStateAction<{ title: string; body: string } | undefined>
   >;
 }) {
+  const handleAudioClick = () => {
+    if (localTracks?.audio) {
+      localTracks.audio.stop();
+      setLocalTracks((value) => ({ ...value, audio: undefined }));
+      setAudioInputDeviceId(undefined);
+      saveItem(USER_PREFERENCE_AUDIO_ENABLED, 'no');
+    } else {
+      getUserMedia({
+        audio: audioInputDeviceId ? { deviceId: audioInputDeviceId } : true,
+        video: false,
+      })
+        .then((stream) => {
+          setLocalTracks((value) => ({
+            ...value,
+            audio: stream?.getAudioTracks()[0],
+          }));
+          setAudioInputDeviceId(stream?.getAudioTracks()[0].id);
+          saveItem(USER_PREFERENCE_AUDIO_ENABLED, 'yes');
+        })
+        .catch((err) => {
+          setError(MediaDeviceErrors.mediaBlocked);
+        });
+    }
+  };
+
+  const handleVideoClick = () => {
+    if (localTracks?.video) {
+      localTracks.video.stop();
+      setLocalTracks((value) => ({ ...value, video: undefined }));
+      setVideoInputDeviceId(undefined);
+      saveItem(USER_PREFERENCE_VIDEO_ENABLED, 'no');
+    } else {
+      getUserMedia({
+        audio: false,
+        video: videoInputDeviceId ? { deviceId: videoInputDeviceId } : true,
+      })
+        .then((stream) => {
+          setLocalTracks((value) => ({
+            ...value,
+            video: stream?.getVideoTracks()[0],
+          }));
+
+          setVideoInputDeviceId(stream?.getVideoTracks()[0].id);
+          saveItem(USER_PREFERENCE_VIDEO_ENABLED, 'yes');
+        })
+        .catch((err) => {
+          setError(MediaDeviceErrors.mediaBlocked);
+        });
+    }
+  };
+
   return (
     <React.Fragment>
-      <Button
-        onClick={() => {
-          if (localTracks?.audio) {
-            localTracks.audio.stop();
-            setLocalTracks((value) => ({ ...value, audio: undefined }));
-            setAudioInputDeviceId(undefined);
-            saveItem(USER_PREFERENCE_AUDIO_ENABLED, 'no');
-          } else {
-            getUserMedia({
-              audio: audioInputDeviceId
-                ? { deviceId: audioInputDeviceId }
-                : true,
-              video: false,
-            })
-              .then((stream) => {
-                setLocalTracks((value) => ({
-                  ...value,
-                  audio: stream?.getAudioTracks()[0],
-                }));
-                setAudioInputDeviceId(stream?.getAudioTracks()[0].id);
-                saveItem(USER_PREFERENCE_AUDIO_ENABLED, 'yes');
-              })
-              .catch((err) => {
-                setError(MediaDeviceErrors.mediaBlocked);
-              });
-          }
-        }}
-        style={{ marginRight: 20 }}
-      >
+      <Button onClick={handleAudioClick} style={{ marginRight: 20 }}>
         <Box align='center' gap='xsmall'>
           <Box>
             <Text
@@ -91,7 +114,9 @@ function MediaControlBar({
             >
               <FontAwesomeIcon
                 icon={
-                  !localTracks?.audio?.enabled ? faMicrophoneSlash : faMicrophone
+                  !localTracks?.audio?.enabled
+                    ? faMicrophoneSlash
+                    : faMicrophone
                 }
                 fixedWidth
               />
@@ -103,35 +128,7 @@ function MediaControlBar({
         </Box>
       </Button>
 
-      <Button
-        onClick={() => {
-          if (localTracks?.video) {
-            localTracks.video.stop();
-            setLocalTracks((value) => ({ ...value, video: undefined }));
-            setVideoInputDeviceId(undefined);
-            saveItem(USER_PREFERENCE_VIDEO_ENABLED, 'no');
-          } else {
-            getUserMedia({
-              audio: false,
-              video: videoInputDeviceId
-                ? { deviceId: videoInputDeviceId }
-                : true,
-            })
-              .then((stream) => {
-                setLocalTracks((value) => ({
-                  ...value,
-                  video: stream?.getVideoTracks()[0],
-                }));
-
-                setVideoInputDeviceId(stream?.getVideoTracks()[0].id);
-                saveItem(USER_PREFERENCE_VIDEO_ENABLED, 'yes');
-              })
-              .catch((err) => {
-                setError(MediaDeviceErrors.mediaBlocked);
-              });
-          }
-        }}
-      >
+      <Button onClick={handleVideoClick}>
         <Box align='center' gap='xsmall'>
           <Box>
             <Text
