@@ -107,6 +107,11 @@ export const useRoom = ({
           ]);
         });
       });
+      roomRef.current.on('participant_leaving', (participantId, reason) => {
+        if (reason === 'kicked') {
+          alert(`${participantId} got kicked!`);
+        }
+      });
       roomRef.current.on('participant_left', (participantId) => {
         if (presenter?.id === participantId) {
           setPresenter(undefined);
