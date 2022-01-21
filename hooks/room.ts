@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, useContext } from 'react';
 import { initialize, Room, State, Participant, Stream } from '@telnyx/video';
 
 import { DebugContext } from 'contexts/DebugContext';
+import { TelnyxMeetContext } from 'contexts/TelnyxMeetContext';
 
 const TOKEN_TTL = 50;
 
@@ -45,6 +46,7 @@ export const useRoom = ({
   callbacks,
 }: Props): TelnyxRoom | undefined => {
   const [_, setDebugState] = useContext(DebugContext);
+  const { sendNotification } = useContext(TelnyxMeetContext);
   const roomRef = useRef<Room>();
   const [state, setState] = useState<State>();
   const [clientToken, setClientToken] = useState<string>(tokens.clientToken);
@@ -109,7 +111,17 @@ export const useRoom = ({
       });
       roomRef.current.on('participant_leaving', (participantId, reason) => {
         if (reason === 'kicked') {
-          alert(`${participantId} got kicked!`);
+          if (roomRef.current!.getLocalParticipant().id === participantId) {
+            sendNotification({
+              title: 'Moderator Action',
+              message: 'You were kicked from the room by the moderator!'
+            });
+          } else {
+            sendNotification({
+              title: 'Moderator Action',
+              message:`${participantId} has been kicked by the moderator!`
+            });
+          }
         }
       });
       roomRef.current.on('participant_left', (participantId) => {
