@@ -4,6 +4,7 @@ import Head from 'next/head';
 import { Main } from 'grommet';
 import styled from 'styled-components';
 
+import Notification from 'components/Notification';
 import Room from 'components/Room';
 import JoinRoom from 'components/JoinRoom';
 import MediaPreview from 'components/MediaPreview';
@@ -76,6 +77,10 @@ export default function Rooms({ id }: { id: string }) {
 
   const [error, setError] = useState<
     { title: string; body: string } | undefined
+  >(undefined);
+
+  const [notification, sendNotification] = useState<
+    { title: string; message: string } | undefined
   >(undefined);
 
   useEffect(() => {
@@ -170,9 +175,13 @@ export default function Rooms({ id }: { id: string }) {
           setVideoInputDeviceId,
           localTracks,
           setLocalTracks,
+          notification,
+          sendNotification,
         }}
       >
         <Main align='center' justify='center' background='light-2'>
+          <Notification />
+
           {roomId && isReady ? (
             <Room
               roomId={roomId}
