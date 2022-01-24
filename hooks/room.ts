@@ -109,16 +109,14 @@ export const useRoom = ({
           ]);
         });
       });
-      roomRef.current.on('participant_leaving', (participantId, reason) => {
+      roomRef.current.on('participant_leaving', (participantId, reason, state) => {
         if (reason === 'kicked') {
-          if (roomRef.current!.getLocalParticipant().id === participantId) {
+          if (state.localParticipantId === participantId) {
             sendNotification({
               message: 'You got kicked from the room by the moderator!',
             });
           } else {
-            const context = JSON.parse(
-              roomRef.current?.getState().participants.get(participantId).context
-            );
+            const context = JSON.parse(state.participants.get(participantId).context);
 
             sendNotification({
               message: `${
