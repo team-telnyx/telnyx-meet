@@ -114,12 +114,18 @@ export const useRoom = ({
           if (roomRef.current!.getLocalParticipant().id === participantId) {
             sendNotification({
               title: 'Moderator Action',
-              message: 'You were kicked from the room by the moderator!'
+              message: 'You got kicked from the room by the moderator!',
             });
           } else {
+            const context = JSON.parse(
+              roomRef.current?.getState().participants.get(participantId).context
+            );
+
             sendNotification({
               title: 'Moderator Action',
-              message:`${participantId} has been kicked by the moderator!`
+              message: `${
+                context.username ? context.username : participantId
+              } has been kicked by the moderator!`,
             });
           }
         }
