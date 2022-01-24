@@ -113,7 +113,6 @@ export const useRoom = ({
         if (reason === 'kicked') {
           if (roomRef.current!.getLocalParticipant().id === participantId) {
             sendNotification({
-              title: 'Moderator Action',
               message: 'You got kicked from the room by the moderator!',
             });
           } else {
@@ -122,7 +121,6 @@ export const useRoom = ({
             );
 
             sendNotification({
-              title: 'Moderator Action',
               message: `${
                 context.username ? context.username : participantId
               } has been kicked by the moderator!`,

@@ -80,7 +80,7 @@ export default function Rooms({ id }: { id: string }) {
   >(undefined);
 
   const [notification, sendNotification] = useState<
-    { title: string; message: string } | undefined
+    { message: string } | undefined
   >(undefined);
 
   useEffect(() => {
