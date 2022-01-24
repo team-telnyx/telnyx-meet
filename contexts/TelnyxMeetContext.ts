@@ -1,5 +1,4 @@
 import React, { Dispatch, SetStateAction } from 'react';
-import toast, { Toast } from 'react-hot-toast';
 
 const TelnyxMeetContext = React.createContext<{
   audioInputDeviceId: string | undefined;
