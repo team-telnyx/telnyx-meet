@@ -2,9 +2,9 @@ import PropTypes from 'prop-types';
 import { Fragment, useEffect, useState } from 'react';
 import Head from 'next/head';
 import { Main } from 'grommet';
+import toast, { Toaster } from 'react-hot-toast';
 import styled from 'styled-components';
 
-import Notification from 'components/Notification';
 import Room from 'components/Room';
 import JoinRoom from 'components/JoinRoom';
 import MediaPreview from 'components/MediaPreview';
@@ -79,9 +79,16 @@ export default function Rooms({ id }: { id: string }) {
     { title: string; body: string } | undefined
   >(undefined);
 
-  const [notification, sendNotification] = useState<
-    { message: string } | undefined
-  >(undefined);
+  const sendNotification = (message: { body: string }) => {
+    toast(message.body, {
+      duration: 6000,
+      style: {
+        minWidth: '420px',
+        background: '#000',
+        color: '#dadada',
+      },
+    });
+  };
 
   useEffect(() => {
     setUsername(getUserName());
@@ -175,12 +182,11 @@ export default function Rooms({ id }: { id: string }) {
           setVideoInputDeviceId,
           localTracks,
           setLocalTracks,
-          notification,
           sendNotification,
         }}
       >
         <Main align='center' justify='center' background='light-2'>
-          <Notification />
+          <Toaster />
 
           {roomId && isReady ? (
             <Room

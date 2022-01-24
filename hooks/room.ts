@@ -113,13 +113,13 @@ export const useRoom = ({
         if (reason === 'kicked') {
           if (state.localParticipantId === participantId) {
             sendNotification({
-              message: 'You got kicked from the room by the moderator!',
+              body: 'You got kicked from the room by the moderator!',
             });
           } else {
             const context = JSON.parse(state.participants.get(participantId).context);
 
             sendNotification({
-              message: `${
+              body: `${
                 context.username ? context.username : participantId
               } has been kicked by the moderator!`,
             });

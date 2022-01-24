@@ -1,4 +1,5 @@
 import React, { Dispatch, SetStateAction } from 'react';
+import toast, { Toast } from 'react-hot-toast';
 
 const TelnyxMeetContext = React.createContext<{
   audioInputDeviceId: string | undefined;
@@ -12,8 +13,7 @@ const TelnyxMeetContext = React.createContext<{
   localTracks: {audio: MediaStreamTrack | undefined, video: MediaStreamTrack | undefined};
   setLocalTracks: Dispatch<SetStateAction<{audio: MediaStreamTrack | undefined, video: MediaStreamTrack | undefined}>>;
 
-  notification: {message: string} | undefined;
-  sendNotification: Dispatch<SetStateAction<{message: string} | undefined>>;
+  sendNotification: (message: {body: string}) => void;
 }>({
   audioInputDeviceId: undefined,
   audioOutputDeviceId: undefined,
@@ -34,10 +34,7 @@ const TelnyxMeetContext = React.createContext<{
       video: MediaStreamTrack | undefined;
     }>
   ) => {},
-  notification: undefined,
-  sendNotification: (
-    value: React.SetStateAction<{message: string} | undefined>
-  ) => {},
+  sendNotification: (message: {body: string}) => {},
 });
 
 export { TelnyxMeetContext };
