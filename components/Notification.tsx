@@ -1,25 +1,26 @@
-import { Fragment, useContext } from 'react';
-import { Notification } from 'grommet';
+import { Fragment, useEffect, useContext } from 'react';
+import toast, { Toaster, Toast } from 'react-hot-toast';
 
 import { TelnyxMeetContext } from 'contexts/TelnyxMeetContext';
 
-export default function Notifications() {
-  const { notification, sendNotification } = useContext(TelnyxMeetContext);
+export default function Notification() {
+  const { notification } = useContext(TelnyxMeetContext);
 
-  const onClose = () => {
-    sendNotification(undefined);
-  };
+  useEffect(() => {
+    if (notification) {
+      toast(notification.message, {
+        duration: 6000,
+        style: {
+          background: '#000',
+          color: '#dadada',
+        },
+      });
+    }
+  }, [notification]);
 
   return (
     <Fragment>
-      {notification && (
-        <Notification
-          toast
-          title={notification.title}
-          message={notification.message}
-          onClose={onClose}
-        />
-      )}
+      <Toaster />
     </Fragment>
   );
 }
