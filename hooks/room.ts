@@ -23,6 +23,7 @@ export type TelnyxRoom = Room & {
   state: State;
   dominantSpeakerId?: Participant['id'];
   presenter?: Participant;
+  messages?: any;
   participantsByActivity: ReadonlySet<Participant['id']>;
   getWebRTCStatsForStream: (
     participantId: Participant['id'],
@@ -57,6 +58,8 @@ export const useRoom = ({
   >(new Set());
   const [dominantSpeakerId, setDominantSpeakerId] =
     useState<Participant['id']>();
+
+  const [messages, setMessages] = useState<Array<any>>([]);
 
   const connectAndJoinRoom = async () => {
     if (!roomRef.current) {
@@ -109,23 +112,28 @@ export const useRoom = ({
           ]);
         });
       });
-      roomRef.current.on('participant_leaving', (participantId, reason, state) => {
-        if (reason === 'kicked') {
-          if (state.localParticipantId === participantId) {
-            sendNotification({
-              body: 'You got kicked from the room by the moderator!',
-            });
-          } else {
-            const context = JSON.parse(state.participants.get(participantId).context);
+      roomRef.current.on(
+        'participant_leaving',
+        (participantId, reason, state) => {
+          if (reason === 'kicked') {
+            if (state.localParticipantId === participantId) {
+              sendNotification({
+                body: 'You got kicked from the room by the moderator!',
+              });
+            } else {
+              const context = JSON.parse(
+                state.participants.get(participantId).context
+              );
 
-            sendNotification({
-              body: `${
-                context.username ? context.username : participantId
-              } has been kicked by the moderator!`,
-            });
+              sendNotification({
+                body: `${
+                  context.username ? context.username : participantId
+                } has been kicked by the moderator!`,
+              });
+            }
           }
         }
-      });
+      );
       roomRef.current.on('participant_left', (participantId) => {
         if (presenter?.id === participantId) {
           setPresenter(undefined);
@@ -198,6 +206,13 @@ export const useRoom = ({
         'subscription_ended',
         (participantId, key, state) => {}
       );
+      roomRef.current.on('chat_message_received', (message, state) => {
+        debugger;
+        setMessages((value: Array<any>) => {
+          const messages = value.concat(message);
+          return messages;
+        });
+      });
     }
 
     roomRef.current.connect();
@@ -270,6 +285,7 @@ export const useRoom = ({
         dominantSpeakerId,
         presenter,
         participantsByActivity,
+        messages,
       }
     : undefined;
 };

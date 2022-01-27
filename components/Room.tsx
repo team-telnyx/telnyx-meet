@@ -76,6 +76,30 @@ function Room({
           id='room-container'
           style={{ position: 'relative', margin: '16px' }}
         >
+          {/* sendChatMessage */}
+          <div
+            style={{
+              position: 'absolute',
+              bottom: '10%',
+              left: '5%',
+              backgroundColor: 'white',
+              width: 300,
+              height: 300,
+              zIndex: 1000,
+              overflowY: 'auto',
+            }}
+          >
+            <div>
+              {room.messages && room.messages?.length > 0
+                ? room.messages.map((item: any) => (
+                    <p style={{ color: 'black' }}>{item}</p>
+                  ))
+                : null}
+            </div>
+            <button onClick={() => {
+              room.sendChatMessage('Hello Amal')
+              }}>Send Msg</button>
+          </div>
           {state.status === 'connecting' && (
             <Box align='center' justify='center' fill>
               <Text
