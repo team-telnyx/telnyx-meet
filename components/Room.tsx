@@ -7,7 +7,6 @@ import RoomInfo from 'components/RoomInfo';
 import RoomControls from 'components/RoomControls';
 import ParticipantsList from 'components/ParticipantsList';
 import RoomAudio from 'components/RoomAudio';
-import { Chat } from './Chat';
 
 function Room({
   roomId,
@@ -77,11 +76,7 @@ function Room({
           id='room-container'
           style={{ position: 'relative', margin: '16px' }}
         >
-          <Chat
-            sendMessage={room.sendChatMessage}
-            messages={room.messages}
-          ></Chat>
-
+    
           {state.status === 'connecting' && (
             <Box align='center' justify='center' fill>
               <Text
@@ -135,6 +130,8 @@ function Room({
                 : false
             }
             onAudioOutputDeviceChange={setAudioOutputDeviceId}
+            sendMessage={room.sendChatMessage}
+            messages={room.messages}
           />
           <RoomAudio
             useAudioMixer={true}
