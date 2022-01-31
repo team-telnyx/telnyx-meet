@@ -143,6 +143,7 @@ export default function RoomControls({
   disconnect,
   sendMessage,
   messages,
+  getLocalParticipant
 }: {
   isParticipantsListVisible: boolean;
   participantsByActivity: TelnyxRoom['participantsByActivity'];
@@ -156,6 +157,7 @@ export default function RoomControls({
   onAudioOutputDeviceChange: (deviceId?: MediaDeviceInfo['deviceId']) => void;
   sendMessage: Function;
   messages: Array<any>;
+  getLocalParticipant: any;
 }) {
   const {
     audioInputDeviceId,
@@ -351,6 +353,7 @@ export default function RoomControls({
     disconnect();
   };
 
+  const localParticipant = getLocalParticipant();
   return (
     <Box
       gridArea='controls'
@@ -370,6 +373,7 @@ export default function RoomControls({
           sendMessage={sendMessage}
           messages={messages}
           onClose={() => setShowChatBox(false)}
+          localParticipant={localParticipant}
         ></Chat>
       )}
 

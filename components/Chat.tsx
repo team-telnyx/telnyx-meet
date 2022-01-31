@@ -19,14 +19,39 @@ const Wrapper = styled.div`
   grid-template-rows: min-content 1fr min-content;
 `;
 
+const MessageWrapper = styled.div<{ isLocal: boolean }>`
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: ${(props) => (props.isLocal ? 'flex-end' : 'flex-start')};
+  margin: 8px 15px;
+`;
+
+const MessageContainer = styled.div<{ isLocal: boolean }>`
+  border-radius: 7.5px;
+  max-width: 95%;
+  color: #111b21;
+  background-color: ${(props) => (props.isLocal ? '#d9fdd3' : '#DADADA')};
+  padding: 6px 7px 8px 9px;
+`;
+
+const MessageSender = styled.div`
+  display: inline-flex;
+  max-width: '100%;
+  font-size: 12.8px;
+  font-weight: 500;
+`;
+
 export const Chat = ({
   sendMessage,
   messages,
   onClose,
+  localParticipant,
 }: {
   sendMessage: Function;
   onClose: MouseEventHandler<HTMLButtonElement>;
   messages: Array<any>;
+  localParticipant: any;
 }) => {
   const [value, setValue] = React.useState('');
 
@@ -77,16 +102,39 @@ export const Chat = ({
           }}
         >
           {messages && messages?.length > 0
-            ? messages.map((item: any) => (
-                <p style={{ color: 'black' }}>{item}</p>
-              ))
+            ? messages.map((item: any) => {
+                const message = JSON.parse(item);
+                const isLocalPartitipant = localParticipant.id === message.from;
+                console.log('isLocalPartitipant==>', isLocalPartitipant);
+
+                return (
+                  <MessageWrapper isLocal={isLocalPartitipant}>
+                    <MessageContainer isLocal={isLocalPartitipant}>
+                      <MessageSender>
+                        <span style={{ fontWeight: 900 }}>
+                          {isLocalPartitipant ? 'Me' : 'Remote'}
+                        </span>
+                      </MessageSender>
+                      <div>
+                        <span style={{ color: 'black' }}>{message.text}</span>
+                      </div>
+                    </MessageContainer>
+                  </MessageWrapper>
+                );
+              })
             : null}
         </div>
         <hr style={{ margin: 0, padding: 0 }}></hr>
         <div style={{ display: 'flex' }}>
           <TextInput
             focusIndicator={false}
-            style={{ height: '100%', outline: 'none', boxShadow: 'none' }}
+            style={{
+              height: '100%',
+              outline: 'none',
+              boxShadow: 'none',
+              wordWrap: 'break-word',
+              overflowY: 'auto',
+            }}
             placeholder='Type message here...'
             value={value}
             onChange={(event) => setValue(event.target.value)}

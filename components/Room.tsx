@@ -132,6 +132,7 @@ function Room({
             onAudioOutputDeviceChange={setAudioOutputDeviceId}
             sendMessage={room.sendChatMessage}
             messages={room.messages}
+            getLocalParticipant={room.getLocalParticipant}
           />
           <RoomAudio
             useAudioMixer={true}
