@@ -133,6 +133,7 @@ function Room({
             sendMessage={room.sendChatMessage}
             messages={room.messages}
             getLocalParticipant={room.getLocalParticipant}
+            participants={state.participants}
           />
           <RoomAudio
             useAudioMixer={true}

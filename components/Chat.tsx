@@ -1,5 +1,7 @@
+import { Participant } from '@telnyx/video';
 import { Button, TextInput } from 'grommet';
 import { Send } from 'grommet-icons';
+import { TelnyxRoom } from 'hooks/room';
 
 import React, { MouseEventHandler } from 'react';
 import Draggable from 'react-draggable';
@@ -47,11 +49,13 @@ export const Chat = ({
   messages,
   onClose,
   localParticipant,
+  participants,
 }: {
   sendMessage: Function;
   onClose: MouseEventHandler<HTMLButtonElement>;
   messages: Array<any>;
-  localParticipant: any;
+  localParticipant: Participant;
+  participants: TelnyxRoom['state']['participants'];
 }) => {
   const [value, setValue] = React.useState('');
 
@@ -105,14 +109,18 @@ export const Chat = ({
             ? messages.map((item: any) => {
                 const message = JSON.parse(item);
                 const isLocalPartitipant = localParticipant.id === message.from;
-                console.log('isLocalPartitipant==>', isLocalPartitipant);
+                const remoteParticipant = participants.get(message.from);
+                let remoteName = '';
+                if(remoteParticipant) {
+                  remoteName = JSON.parse(remoteParticipant.context).username
+                }
 
                 return (
                   <MessageWrapper isLocal={isLocalPartitipant}>
                     <MessageContainer isLocal={isLocalPartitipant}>
                       <MessageSender>
-                        <span style={{ fontWeight: 900 }}>
-                          {isLocalPartitipant ? 'Me' : 'Remote'}
+                        <span style={{ fontWeight: 900, fontSize: 12, color: !isLocalPartitipant ? '#7D4CDB' : '#000' }}>
+                          {isLocalPartitipant ? 'Me' : remoteName}
                         </span>
                       </MessageSender>
                       <div>

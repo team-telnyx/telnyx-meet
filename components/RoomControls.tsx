@@ -1,5 +1,5 @@
 import { useContext, useEffect, useState } from 'react';
-import { getDevices, Stream } from '@telnyx/video';
+import { getDevices, Participant, Stream } from '@telnyx/video';
 import { Box, Button, Menu, Text } from 'grommet';
 import { Group as GroupIcon, Chat as ChatIcon } from 'grommet-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -143,7 +143,8 @@ export default function RoomControls({
   disconnect,
   sendMessage,
   messages,
-  getLocalParticipant
+  getLocalParticipant,
+  participants,
 }: {
   isParticipantsListVisible: boolean;
   participantsByActivity: TelnyxRoom['participantsByActivity'];
@@ -157,7 +158,8 @@ export default function RoomControls({
   onAudioOutputDeviceChange: (deviceId?: MediaDeviceInfo['deviceId']) => void;
   sendMessage: Function;
   messages: Array<any>;
-  getLocalParticipant: any;
+  getLocalParticipant: () => Participant;
+  participants: TelnyxRoom['state']['participants'];
 }) {
   const {
     audioInputDeviceId,
@@ -374,6 +376,7 @@ export default function RoomControls({
           messages={messages}
           onClose={() => setShowChatBox(false)}
           localParticipant={localParticipant}
+          participants={participants}
         ></Chat>
       )}
 
