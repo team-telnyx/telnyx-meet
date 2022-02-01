@@ -39,7 +39,7 @@ const MessageContainer = styled.div<{ isLocal: boolean }>`
 
 const MessageSender = styled.div`
   display: inline-flex;
-  max-width: '100%;
+  max-width: 100%;
   font-size: 12.8px;
   font-weight: 500;
 `;
