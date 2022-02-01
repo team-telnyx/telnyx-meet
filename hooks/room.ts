@@ -1,5 +1,12 @@
 import { useEffect, useRef, useState, useContext } from 'react';
-import { initialize, Room, State, Participant, Stream } from '@telnyx/video';
+import {
+  initialize,
+  Room,
+  State,
+  Participant,
+  Stream,
+  Message,
+} from '@telnyx/video';
 
 import { DebugContext } from 'contexts/DebugContext';
 import { TelnyxMeetContext } from 'contexts/TelnyxMeetContext';
@@ -23,7 +30,7 @@ export type TelnyxRoom = Room & {
   state: State;
   dominantSpeakerId?: Participant['id'];
   presenter?: Participant;
-  messages?: any;
+  messages: Array<Message>;
   participantsByActivity: ReadonlySet<Participant['id']>;
   getWebRTCStatsForStream: (
     participantId: Participant['id'],
@@ -206,10 +213,10 @@ export const useRoom = ({
         'subscription_ended',
         (participantId, key, state) => {}
       );
-      roomRef.current.on('chat_message_received', (message, state) => {
-        debugger;
-        setMessages((value: Array<any>) => {
-          const messages = value.concat(message);
+      roomRef.current.on('chat_message_received', (message: string, state) => {
+        setMessages((value: Array<Message>) => {
+          const msg: Message = JSON.parse(message);
+          const messages = value.concat(msg);
           return messages;
         });
       });
