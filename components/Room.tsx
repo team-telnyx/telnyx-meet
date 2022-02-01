@@ -76,6 +76,7 @@ function Room({
           id='room-container'
           style={{ position: 'relative', margin: '16px' }}
         >
+    
           {state.status === 'connecting' && (
             <Box align='center' justify='center' fill>
               <Text
@@ -129,6 +130,10 @@ function Room({
                 : false
             }
             onAudioOutputDeviceChange={setAudioOutputDeviceId}
+            sendMessage={room.sendChatMessage}
+            messages={room.messages}
+            getLocalParticipant={room.getLocalParticipant}
+            participants={state.participants}
           />
           <RoomAudio
             useAudioMixer={true}
