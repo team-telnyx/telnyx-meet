@@ -106,7 +106,7 @@ export const Chat = ({
           }}
         >
           {messages && messages?.length > 0
-            ? messages.map((item: any) => {
+            ? messages.map((item: any, key) => {
                 const message = JSON.parse(item);
                 const isLocalPartitipant = localParticipant.id === message.from;
                 const remoteParticipant = participants.get(message.from);
@@ -116,7 +116,7 @@ export const Chat = ({
                 }
 
                 return (
-                  <MessageWrapper isLocal={isLocalPartitipant}>
+                  <MessageWrapper key={key} isLocal={isLocalPartitipant}>
                     <MessageContainer isLocal={isLocalPartitipant}>
                       <MessageSender>
                         <span style={{ fontWeight: 900, fontSize: 12, color: !isLocalPartitipant ? '#7D4CDB' : '#000' }}>

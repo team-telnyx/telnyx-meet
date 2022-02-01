@@ -207,7 +207,6 @@ export const useRoom = ({
         (participantId, key, state) => {}
       );
       roomRef.current.on('chat_message_received', (message, state) => {
-        debugger;
         setMessages((value: Array<any>) => {
           const messages = value.concat(message);
           return messages;
