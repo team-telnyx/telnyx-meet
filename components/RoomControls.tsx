@@ -158,7 +158,7 @@ export default function RoomControls({
   onAudioOutputDeviceChange: (deviceId?: MediaDeviceInfo['deviceId']) => void;
   sendMessage: (
     message: Message,
-    recipient?: Array<Participant['id']> | null
+    recipients?: Array<Participant['id']> | null
   ) => void;
   messages: Array<Message>;
   getLocalParticipant: () => Participant;
