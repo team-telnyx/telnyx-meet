@@ -1,5 +1,5 @@
 import { useContext, useEffect, useState } from 'react';
-import { getDevices, Participant, Stream } from '@telnyx/video';
+import { getDevices, Message, Participant, Stream } from '@telnyx/video';
 import { Box, Button, Menu, Text } from 'grommet';
 import { Group as GroupIcon, Chat as ChatIcon } from 'grommet-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -156,8 +156,11 @@ export default function RoomControls({
   streams: { [key: string]: Stream };
   disableScreenshare: boolean;
   onAudioOutputDeviceChange: (deviceId?: MediaDeviceInfo['deviceId']) => void;
-  sendMessage: Function;
-  messages: Array<any>;
+  sendMessage: (
+    message: Message,
+    recipients?: Array<Participant['id']> | null
+  ) => void;
+  messages: Array<Message>;
   getLocalParticipant: () => Participant;
   participants: TelnyxRoom['state']['participants'];
 }) {
@@ -577,7 +580,7 @@ export default function RoomControls({
             data-testid='btn-toggle-chat'
             size='large'
             onClick={() => {
-              setShowChatBox((value) => !value)
+              setShowChatBox((value) => !value);
             }}
           >
             <Box align='center' gap='xsmall'>

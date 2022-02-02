@@ -1,4 +1,4 @@
-import { Participant } from '@telnyx/video';
+import { Message, Participant } from '@telnyx/video';
 import { Button, TextInput } from 'grommet';
 import { Send } from 'grommet-icons';
 import { TelnyxRoom } from 'hooks/room';
@@ -39,7 +39,7 @@ const MessageContainer = styled.div<{ isLocal: boolean }>`
 
 const MessageSender = styled.div`
   display: inline-flex;
-  max-width: '100%;
+  max-width: 100%;
   font-size: 12.8px;
   font-weight: 500;
 `;
@@ -51,13 +51,25 @@ export const Chat = ({
   localParticipant,
   participants,
 }: {
-  sendMessage: Function;
+  sendMessage: (
+    message: Message,
+    recipients?: Array<Participant['id']> | null
+  ) => void;
   onClose: MouseEventHandler<HTMLButtonElement>;
-  messages: Array<any>;
+  messages: Array<Message>;
   localParticipant: Participant;
   participants: TelnyxRoom['state']['participants'];
 }) => {
   const [value, setValue] = React.useState('');
+
+  const handleSendMessage = () => {
+    sendMessage({
+      payload: value,
+      type: 'text',
+      sender: localParticipant.id,
+    });
+    setValue('');
+  };
 
   return (
     <Draggable>
@@ -106,25 +118,34 @@ export const Chat = ({
           }}
         >
           {messages && messages?.length > 0
-            ? messages.map((item: any, key) => {
-                const message = JSON.parse(item);
-                const isLocalPartitipant = localParticipant.id === message.from;
-                const remoteParticipant = participants.get(message.from);
+            ? messages.map((message: Message, key) => {
+                const isLocalPartitipant =
+                  localParticipant.id === message.sender;
+                const remoteParticipant = participants.get(message.sender);
+
                 let remoteName = '';
-                if(remoteParticipant) {
-                  remoteName = JSON.parse(remoteParticipant.context).username
+                if (remoteParticipant) {
+                  remoteName = JSON.parse(remoteParticipant.context).username;
                 }
 
                 return (
                   <MessageWrapper key={key} isLocal={isLocalPartitipant}>
                     <MessageContainer isLocal={isLocalPartitipant}>
                       <MessageSender>
-                        <span style={{ fontWeight: 900, fontSize: 12, color: !isLocalPartitipant ? '#7D4CDB' : '#000' }}>
+                        <span
+                          style={{
+                            fontWeight: 900,
+                            fontSize: 12,
+                            color: !isLocalPartitipant ? '#7D4CDB' : '#000',
+                          }}
+                        >
                           {isLocalPartitipant ? 'Me' : remoteName}
                         </span>
                       </MessageSender>
                       <div>
-                        <span style={{ color: 'black' }}>{message.text}</span>
+                        <span style={{ color: 'black' }}>
+                          {message.payload}
+                        </span>
                       </div>
                     </MessageContainer>
                   </MessageWrapper>
@@ -148,8 +169,7 @@ export const Chat = ({
             onChange={(event) => setValue(event.target.value)}
             onKeyDown={(e) => {
               if (e.key === 'Enter') {
-                sendMessage(value);
-                setValue('');
+                handleSendMessage();
               }
             }}
           />
@@ -157,10 +177,7 @@ export const Chat = ({
             style={{ borderRadius: 4 }}
             margin={'none'}
             icon={<Send color='brand' />}
-            onClick={() => {
-              sendMessage(value);
-              setValue('');
-            }}
+            onClick={handleSendMessage}
           />
         </div>
       </Wrapper>
