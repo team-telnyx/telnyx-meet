@@ -145,6 +145,7 @@ export default function RoomControls({
   messages,
   getLocalParticipant,
   participants,
+  isMessageFeatureEnabled,
 }: {
   isParticipantsListVisible: boolean;
   participantsByActivity: TelnyxRoom['participantsByActivity'];
@@ -163,6 +164,7 @@ export default function RoomControls({
   messages: Array<Message>;
   getLocalParticipant: () => Participant;
   participants: TelnyxRoom['state']['participants'];
+  isMessageFeatureEnabled: boolean;
 }) {
   const {
     audioInputDeviceId,
@@ -575,6 +577,7 @@ export default function RoomControls({
             </Box>
           </Button>
         </ParticipantBox>
+        {isMessageFeatureEnabled &&
         <ChatBox>
           <Button
             data-testid='btn-toggle-chat'
@@ -595,7 +598,7 @@ export default function RoomControls({
               </Text>
             </Box>
           </Button>
-        </ChatBox>
+        </ChatBox>}
       </Box>
 
       <RightBoxMenu pad='small' direction='row' gap='large'>
