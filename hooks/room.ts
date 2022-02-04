@@ -214,10 +214,9 @@ export const useRoom = ({
         'subscription_ended',
         (participantId, key, state) => {}
       );
-      roomRef.current.on('chat_message_received', (message: string, state) => {
+      roomRef.current.on('chat_message_received', (message: Message, state) => {
         setMessages((value: Array<Message>) => {
-          const msg: Message = JSON.parse(message);
-          const messages = value.concat(msg);
+          const messages = value.concat(message);
           return messages;
         });
       });
