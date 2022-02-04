@@ -75,7 +75,7 @@ export const useRoom = ({
         clientToken,
         context: JSON.stringify(context),
         logLevel: 'DEBUG',
-        enabledMessages: true,
+        enableMessages: true,
       });
 
       setState(roomRef.current.getState());

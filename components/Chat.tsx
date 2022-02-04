@@ -53,7 +53,7 @@ export const Chat = ({
 }: {
   sendMessage: (
     message: Message,
-    recipients?: Array<Participant['id']> | null
+    recipients?: Array<Participant['id']>
   ) => void;
   onClose: MouseEventHandler<HTMLButtonElement>;
   messages: Array<Message>;
