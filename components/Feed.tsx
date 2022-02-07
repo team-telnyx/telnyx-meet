@@ -236,6 +236,9 @@ function Feed({
                   }
                   fixedWidth
                 />
+                {stream && !stream?.isAudioRelayed && (
+                  <Text size='small'> Silenced</Text>
+                )}
               </Text>
             )}
             {stream?.isVideoEnabled && (
