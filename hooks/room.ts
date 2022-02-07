@@ -187,6 +187,32 @@ export const useRoom = ({
         }
       });
       roomRef.current.on(
+        'stream_relay_status_change',
+        (participantId, key, status, reason, state) => {
+          if (reason === 'moderated') {
+            const isAudioRelayed = status.audio;
+
+            if (state.localParticipantId === participantId) {
+              sendNotification({
+                body: `You got ${
+                  isAudioRelayed ? 'unmuted' : 'muted'
+                } by the moderator!`,
+              });
+            } else {
+              const context = JSON.parse(state.participants.get(participantId).context);
+
+              sendNotification({
+                body: `${
+                  context.username ? context.username : participantId
+                } has been ${
+                  isAudioRelayed ? 'unmuted' : 'muted'
+                } by the moderator!`,
+              });
+            }
+          }
+        }
+      );
+      roomRef.current.on(
         'subscription_started',
         (participantId, key, state) => {}
       );
