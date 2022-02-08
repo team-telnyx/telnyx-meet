@@ -30,7 +30,11 @@ export type TelnyxRoom = Room & {
   state: State;
   dominantSpeakerId?: Participant['id'];
   presenter?: Participant;
-  messages: Array<Message>;
+  messages: Array<{
+    from: Participant['id'];
+    message: Message;
+    recipients: Array<Participant['id']> | null;
+  }>;
   participantsByActivity: ReadonlySet<Participant['id']>;
   getWebRTCStatsForStream: (
     participantId: Participant['id'],
@@ -66,7 +70,13 @@ export const useRoom = ({
   const [dominantSpeakerId, setDominantSpeakerId] =
     useState<Participant['id']>();
 
-  const [messages, setMessages] = useState<Array<any>>([]);
+  const [messages, setMessages] = useState<
+    Array<{
+      from: Participant['id'];
+      message: Message;
+      recipients: Array<Participant['id']> | null;
+    }>
+  >([]);
 
   const connectAndJoinRoom = async () => {
     if (!roomRef.current) {
@@ -214,12 +224,20 @@ export const useRoom = ({
         'subscription_ended',
         (participantId, key, state) => {}
       );
-      roomRef.current.on('message_received', (message, recipients, state) => {
-        setMessages((value: Array<Message>) => {
-          const messages = value.concat(message);
-          return messages;
-        });
-      });
+      roomRef.current.on(
+        'message_received',
+        (participantId, message, recipients) => {
+          setMessages((value) => {
+            const messages = value.concat({
+              from: participantId,
+              message,
+              recipients,
+            });
+
+            return messages;
+          });
+        }
+      );
     }
 
     roomRef.current.connect();
