@@ -114,20 +114,20 @@ export const Chat = ({
         >
           {messages && messages?.length > 0
             ? messages.map(({ from, fromUsername, message, recipients }, key) => {
-                const isLocalPartitipant = localParticipant.id === from;
+                const isLocalParticipant = localParticipant.id === from;
                 
                 return (
-                  <MessageWrapper key={key} isLocal={isLocalPartitipant}>
-                    <MessageContainer isLocal={isLocalPartitipant}>
+                  <MessageWrapper key={key} isLocal={isLocalParticipant}>
+                    <MessageContainer isLocal={isLocalParticipant}>
                       <MessageSender>
                         <span
                           style={{
                             fontWeight: 900,
                             fontSize: 12,
-                            color: !isLocalPartitipant ? '#7D4CDB' : '#000',
+                            color: !isLocalParticipant ? '#7D4CDB' : '#000',
                           }}
                         >
-                          {isLocalPartitipant ? 'Me' : fromUsername}
+                          {isLocalParticipant ? 'Me' : fromUsername}
                         </span>
                       </MessageSender>
                       <div>
