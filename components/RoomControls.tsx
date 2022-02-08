@@ -378,7 +378,6 @@ export default function RoomControls({
           messages={messages}
           onClose={() => setShowChatBox(false)}
           localParticipant={localParticipant}
-          participants={participants}
         ></Chat>
       )}
 
