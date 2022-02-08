@@ -1,5 +1,5 @@
 import { useContext, useEffect, useState } from 'react';
-import { getDevices, Message, Participant, Stream } from '@telnyx/video';
+import { getDevices, Message, Participant, Room, Stream } from '@telnyx/video';
 import { Box, Button, Menu, Text } from 'grommet';
 import { Group as GroupIcon, Chat as ChatIcon } from 'grommet-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -156,11 +156,8 @@ export default function RoomControls({
   streams: { [key: string]: Stream };
   disableScreenshare: boolean;
   onAudioOutputDeviceChange: (deviceId?: MediaDeviceInfo['deviceId']) => void;
-  sendMessage: (
-    message: Message,
-    recipients?: Array<Participant['id']>
-  ) => void;
-  messages: Array<Message>;
+  sendMessage: Room['sendMessage'];
+  messages: TelnyxRoom['messages'];
   getLocalParticipant: () => Participant;
   participants: TelnyxRoom['state']['participants'];
 }) {
@@ -374,7 +371,7 @@ export default function RoomControls({
       {error && (
         <ErrorDialog onClose={onClose} title={error.title} body={error.body} />
       )}
-      
+
       {showChatBox && (
         <Chat
           sendMessage={sendMessage}
@@ -577,28 +574,29 @@ export default function RoomControls({
             </Box>
           </Button>
         </ParticipantBox>
-        {localParticipant.hasMessagingEnabled &&
-        <ChatBox>
-          <Button
-            data-testid='btn-toggle-chat'
-            size='large'
-            onClick={() => {
-              setShowChatBox((value) => !value);
-            }}
-          >
-            <Box align='center' gap='xsmall'>
-              <Box style={{ position: 'relative' }}>
-                <ChatIcon
-                  size='large'
-                  color={showChatBox ? 'accent-1' : 'light-5'}
-                />
+        {localParticipant.hasMessagingEnabled && (
+          <ChatBox>
+            <Button
+              data-testid='btn-toggle-chat'
+              size='large'
+              onClick={() => {
+                setShowChatBox((value) => !value);
+              }}
+            >
+              <Box align='center' gap='xsmall'>
+                <Box style={{ position: 'relative' }}>
+                  <ChatIcon
+                    size='large'
+                    color={showChatBox ? 'accent-1' : 'light-5'}
+                  />
+                </Box>
+                <Text size='xsmall' color='light-6'>
+                  Chat
+                </Text>
               </Box>
-              <Text size='xsmall' color='light-6'>
-                Chat
-              </Text>
-            </Box>
-          </Button>
-        </ChatBox>}
+            </Button>
+          </ChatBox>
+        )}
       </Box>
 
       <RightBoxMenu pad='small' direction='row' gap='large'>
