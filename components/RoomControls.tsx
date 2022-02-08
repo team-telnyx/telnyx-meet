@@ -574,7 +574,7 @@ export default function RoomControls({
             </Box>
           </Button>
         </ParticipantBox>
-        {localParticipant.hasMessagingEnabled && (
+        {localParticipant.canReceiveMessages && (
           <ChatBox>
             <Button
               data-testid='btn-toggle-chat'
