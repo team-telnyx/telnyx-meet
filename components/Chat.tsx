@@ -49,13 +49,12 @@ export const Chat = ({
   messages,
   onClose,
   localParticipant,
-  participants,
+
 }: {
   sendMessage: Room['sendMessage'];
   onClose: MouseEventHandler<HTMLButtonElement>;
   messages: TelnyxRoom['messages'];
   localParticipant: Participant;
-  participants: TelnyxRoom['state']['participants'];
 }) => {
   const [value, setValue] = React.useState('');
 
@@ -114,12 +113,9 @@ export const Chat = ({
           }}
         >
           {messages && messages?.length > 0
-            ? messages.map(({ from, message, recipients }, key) => {
+            ? messages.map(({ from, fromUsername, message, recipients }, key) => {
                 const isLocalPartitipant = localParticipant.id === from;
-                const participant = participants.get(from);
-
-                const fromUsername = JSON.parse(participant.context).username;
-
+                
                 return (
                   <MessageWrapper key={key} isLocal={isLocalPartitipant}>
                     <MessageContainer isLocal={isLocalPartitipant}>

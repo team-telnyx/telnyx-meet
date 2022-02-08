@@ -32,6 +32,7 @@ export type TelnyxRoom = Room & {
   presenter?: Participant;
   messages: Array<{
     from: Participant['id'];
+    fromUsername: string;
     message: Message;
     recipients: Array<Participant['id']> | null;
   }>;
@@ -70,13 +71,7 @@ export const useRoom = ({
   const [dominantSpeakerId, setDominantSpeakerId] =
     useState<Participant['id']>();
 
-  const [messages, setMessages] = useState<
-    Array<{
-      from: Participant['id'];
-      message: Message;
-      recipients: Array<Participant['id']> | null;
-    }>
-  >([]);
+  const [messages, setMessages] = useState<TelnyxRoom['messages']>([]);
 
   const connectAndJoinRoom = async () => {
     if (!roomRef.current) {
@@ -226,10 +221,14 @@ export const useRoom = ({
       );
       roomRef.current.on(
         'message_received',
-        (participantId, message, recipients) => {
+        (participantId, message, recipients, state) => {
+          const participant = state.participants.get(participantId);
+          const fromUsername = JSON.parse(participant.context).username;
+          
           setMessages((value) => {
             const messages = value.concat({
               from: participantId,
+              fromUsername,
               message,
               recipients,
             });
