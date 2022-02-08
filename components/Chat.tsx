@@ -1,4 +1,4 @@
-import { Message, Participant } from '@telnyx/video';
+import { Message, Participant, Room } from '@telnyx/video';
 import { Button, TextInput } from 'grommet';
 import { Send } from 'grommet-icons';
 import { TelnyxRoom } from 'hooks/room';
@@ -49,16 +49,12 @@ export const Chat = ({
   messages,
   onClose,
   localParticipant,
-  participants,
+
 }: {
-  sendMessage: (
-    message: Message,
-    recipients?: Array<Participant['id']> | null
-  ) => void;
+  sendMessage: Room['sendMessage'];
   onClose: MouseEventHandler<HTMLButtonElement>;
-  messages: Array<Message>;
+  messages: TelnyxRoom['messages'];
   localParticipant: Participant;
-  participants: TelnyxRoom['state']['participants'];
 }) => {
   const [value, setValue] = React.useState('');
 
@@ -66,7 +62,6 @@ export const Chat = ({
     sendMessage({
       payload: value,
       type: 'text',
-      sender: localParticipant.id,
     });
     setValue('');
   };
@@ -118,16 +113,9 @@ export const Chat = ({
           }}
         >
           {messages && messages?.length > 0
-            ? messages.map((message: Message, key) => {
-                const isLocalPartitipant =
-                  localParticipant.id === message.sender;
-                const remoteParticipant = participants.get(message.sender);
-
-                let remoteName = '';
-                if (remoteParticipant) {
-                  remoteName = JSON.parse(remoteParticipant.context).username;
-                }
-
+            ? messages.map(({ from, fromUsername, message, recipients }, key) => {
+                const isLocalPartitipant = localParticipant.id === from;
+                
                 return (
                   <MessageWrapper key={key} isLocal={isLocalPartitipant}>
                     <MessageContainer isLocal={isLocalPartitipant}>
@@ -139,7 +127,7 @@ export const Chat = ({
                             color: !isLocalPartitipant ? '#7D4CDB' : '#000',
                           }}
                         >
-                          {isLocalPartitipant ? 'Me' : remoteName}
+                          {isLocalPartitipant ? 'Me' : fromUsername}
                         </span>
                       </MessageSender>
                       <div>

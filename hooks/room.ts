@@ -30,7 +30,12 @@ export type TelnyxRoom = Room & {
   state: State;
   dominantSpeakerId?: Participant['id'];
   presenter?: Participant;
-  messages: Array<Message>;
+  messages: Array<{
+    from: Participant['id'];
+    fromUsername: string;
+    message: Message;
+    recipients: Array<Participant['id']> | null;
+  }>;
   participantsByActivity: ReadonlySet<Participant['id']>;
   getWebRTCStatsForStream: (
     participantId: Participant['id'],
@@ -66,7 +71,7 @@ export const useRoom = ({
   const [dominantSpeakerId, setDominantSpeakerId] =
     useState<Participant['id']>();
 
-  const [messages, setMessages] = useState<Array<any>>([]);
+  const [messages, setMessages] = useState<TelnyxRoom['messages']>([]);
 
   const connectAndJoinRoom = async () => {
     if (!roomRef.current) {
@@ -75,6 +80,7 @@ export const useRoom = ({
         clientToken,
         context: JSON.stringify(context),
         logLevel: 'DEBUG',
+        enableMessages: true,
       });
 
       setState(roomRef.current.getState());
@@ -213,13 +219,24 @@ export const useRoom = ({
         'subscription_ended',
         (participantId, key, state) => {}
       );
-      roomRef.current.on('chat_message_received', (message: string, state) => {
-        setMessages((value: Array<Message>) => {
-          const msg: Message = JSON.parse(message);
-          const messages = value.concat(msg);
-          return messages;
-        });
-      });
+      roomRef.current.on(
+        'message_received',
+        (participantId, message, recipients, state) => {
+          const participant = state.participants.get(participantId);
+          const fromUsername = JSON.parse(participant.context).username;
+          
+          setMessages((value) => {
+            const messages = value.concat({
+              from: participantId,
+              fromUsername,
+              message,
+              recipients,
+            });
+
+            return messages;
+          });
+        }
+      );
     }
 
     roomRef.current.connect();
