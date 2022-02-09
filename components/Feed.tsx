@@ -236,7 +236,7 @@ function Feed({
                   }
                   fixedWidth
                 />
-                {stream && !stream?.isAudioRelayed && (
+                {stream && stream?.isAudioCensored && (
                   <Text size='small'> Silenced</Text>
                 )}
               </Text>

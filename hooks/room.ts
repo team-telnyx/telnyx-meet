@@ -171,6 +171,50 @@ export const useRoom = ({
         'track_disabled',
         (participantId, key, kind, state) => {}
       );
+      roomRef.current.on('track_censored', (participantId, key, kind, state) => {
+          if (state.localParticipantId === participantId) {
+            if (kind === 'audio') {
+              sendNotification({
+                body: `Your audio from "${key}" is disabled by the moderator`,
+              });
+            }
+          } else {
+            const context = JSON.parse(
+              state.participants.get(participantId).context
+            );
+
+            if (kind === 'audio') {
+              sendNotification({
+                body: `${
+                  context.username ? context.username : participantId
+                }'s audio from "${key}" is disabled by the moderator`,
+              });
+            }
+          }
+        }
+      );
+      roomRef.current.on('track_uncensored', (participantId, key, kind, state) => {
+          if (state.localParticipantId === participantId) {
+            if (kind === 'audio') {
+              sendNotification({
+                body: `Your audio from "${key}" is enabled by the moderator`,
+              });
+            }
+          } else {
+            const context = JSON.parse(
+              state.participants.get(participantId).context
+            );
+
+            if (kind === 'audio') {
+              sendNotification({
+                body: `${
+                  context.username ? context.username : participantId
+                }'s audio from "${key}" is enabled by the moderator`,
+              });
+            }
+          }
+        }
+      );
       roomRef.current.on('audio_activity', (participantId, key) => {
         if (
           key !== 'presentation' &&
@@ -186,32 +230,6 @@ export const useRoom = ({
           });
         }
       });
-      roomRef.current.on(
-        'stream_relay_status_change',
-        (participantId, key, status, reason, state) => {
-          if (reason === 'moderated') {
-            const isAudioRelayed = status.audio;
-
-            if (state.localParticipantId === participantId) {
-              sendNotification({
-                body: `You got ${
-                  isAudioRelayed ? 'unmuted' : 'muted'
-                } by the moderator!`,
-              });
-            } else {
-              const context = JSON.parse(state.participants.get(participantId).context);
-
-              sendNotification({
-                body: `${
-                  context.username ? context.username : participantId
-                } has been ${
-                  isAudioRelayed ? 'unmuted' : 'muted'
-                } by the moderator!`,
-              });
-            }
-          }
-        }
-      );
       roomRef.current.on(
         'subscription_started',
         (participantId, key, state) => {}
