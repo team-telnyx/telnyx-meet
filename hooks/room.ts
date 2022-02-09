@@ -175,7 +175,7 @@ export const useRoom = ({
           if (state.localParticipantId === participantId) {
             if (kind === 'audio') {
               sendNotification({
-                body: `Your audio from "${key}" is disabled by the moderator`,
+                body: `Your audio from "${key}" stream has been censored by the moderator`,
               });
             }
           } else {
@@ -187,7 +187,7 @@ export const useRoom = ({
               sendNotification({
                 body: `${
                   context.username ? context.username : participantId
-                }'s audio from "${key}" is disabled by the moderator`,
+                }'s audio from "${key}" stream has been censored by the moderator`,
               });
             }
           }
@@ -197,7 +197,7 @@ export const useRoom = ({
           if (state.localParticipantId === participantId) {
             if (kind === 'audio') {
               sendNotification({
-                body: `Your audio from "${key}" is enabled by the moderator`,
+                body: `Your audio from "${key}" stream has been uncensored by the moderator`,
               });
             }
           } else {
@@ -209,7 +209,7 @@ export const useRoom = ({
               sendNotification({
                 body: `${
                   context.username ? context.username : participantId
-                }'s audio from "${key}" is enabled by the moderator`,
+                }'s audio from "${key}" stream has been uncensored by the moderator`,
               });
             }
           }
