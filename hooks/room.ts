@@ -172,18 +172,16 @@ export const useRoom = ({
         (participantId, key, kind, state) => {}
       );
       roomRef.current.on('track_censored', (participantId, key, kind, state) => {
-          if (state.localParticipantId === participantId) {
-            if (kind === 'audio') {
+          if (kind === 'audio') {
+            if (state.localParticipantId === participantId) {
               sendNotification({
                 body: `Your audio from "${key}" stream has been censored by the moderator`,
               });
-            }
-          } else {
-            const context = JSON.parse(
-              state.participants.get(participantId).context
-            );
+            } else {
+              const context = JSON.parse(
+                state.participants.get(participantId).context
+              );
 
-            if (kind === 'audio') {
               sendNotification({
                 body: `${
                   context.username ? context.username : participantId
@@ -194,18 +192,16 @@ export const useRoom = ({
         }
       );
       roomRef.current.on('track_uncensored', (participantId, key, kind, state) => {
-          if (state.localParticipantId === participantId) {
-            if (kind === 'audio') {
+          if (kind === 'audio') {
+            if (state.localParticipantId === participantId) {
               sendNotification({
                 body: `Your audio from "${key}" stream has been uncensored by the moderator`,
               });
-            }
-          } else {
-            const context = JSON.parse(
-              state.participants.get(participantId).context
-            );
+            } else {
+              const context = JSON.parse(
+                state.participants.get(participantId).context
+              );
 
-            if (kind === 'audio') {
               sendNotification({
                 body: `${
                   context.username ? context.username : participantId
