@@ -59,11 +59,13 @@ export const Chat = ({
   const [value, setValue] = React.useState('');
 
   const handleSendMessage = async () => {
-    await sendMessage({
-      payload: value,
-      type: 'text',
-    });
-    setValue('');
+    if(value && value.length > 0) {
+      await sendMessage({
+        payload: value,
+        type: 'text',
+      });
+      setValue('');
+    }
   };
 
   return (
