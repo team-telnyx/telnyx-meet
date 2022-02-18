@@ -1,7 +1,7 @@
 import { useContext, useEffect, useState } from 'react';
-import { getDevices, Stream } from '@telnyx/video';
+import { getDevices, Message, Participant, Room, Stream } from '@telnyx/video';
 import { Box, Button, Menu, Text } from 'grommet';
-import { Group as GroupIcon } from 'grommet-icons';
+import { Group as GroupIcon, Chat as ChatIcon } from 'grommet-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   faMicrophone,
@@ -16,6 +16,7 @@ import styled from 'styled-components';
 import { TelnyxRoom } from 'hooks/room';
 import { TelnyxMeetContext } from 'contexts/TelnyxMeetContext';
 import ErrorDialog from 'components/ErrorDialog';
+import { Chat } from './Chat';
 
 const breakpointMedium = 1023;
 
@@ -34,6 +35,12 @@ const ScreenShareBox = styled(Box)`
 `;
 
 const ParticipantBox = styled(Box)`
+  @media (max-width: ${breakpointMedium}px) {
+    display: none;
+  }
+`;
+
+const ChatBox = styled(Box)`
   @media (max-width: ${breakpointMedium}px) {
     display: none;
   }
@@ -134,6 +141,10 @@ export default function RoomControls({
   removeStream,
   updateStream,
   disconnect,
+  sendMessage,
+  messages,
+  getLocalParticipant,
+  participants,
 }: {
   isParticipantsListVisible: boolean;
   participantsByActivity: TelnyxRoom['participantsByActivity'];
@@ -145,6 +156,10 @@ export default function RoomControls({
   streams: { [key: string]: Stream };
   disableScreenshare: boolean;
   onAudioOutputDeviceChange: (deviceId?: MediaDeviceInfo['deviceId']) => void;
+  sendMessage: Room['sendMessage'];
+  messages: TelnyxRoom['messages'];
+  getLocalParticipant: () => Participant;
+  participants: TelnyxRoom['state']['participants'];
 }) {
   const {
     audioInputDeviceId,
@@ -161,7 +176,7 @@ export default function RoomControls({
   const [error, setError] = useState<
     { title: string; body: string } | undefined
   >(undefined);
-  
+
   const [presentationTracks, setPresentationTracks] = useState<{
     audio: MediaStreamTrack | undefined;
     video: MediaStreamTrack | undefined;
@@ -169,6 +184,8 @@ export default function RoomControls({
     audio: undefined,
     video: undefined,
   });
+
+  const [showChatBox, setShowChatBox] = useState(false);
 
   const selfStream = streams.self;
   const presentationStream = streams.presentation;
@@ -338,6 +355,8 @@ export default function RoomControls({
     disconnect();
   };
 
+  const localParticipant = getLocalParticipant();
+
   return (
     <Box
       gridArea='controls'
@@ -352,6 +371,16 @@ export default function RoomControls({
       {error && (
         <ErrorDialog onClose={onClose} title={error.title} body={error.body} />
       )}
+
+      {showChatBox && (
+        <Chat
+          sendMessage={sendMessage}
+          messages={messages}
+          onClose={() => setShowChatBox(false)}
+          localParticipant={localParticipant}
+        ></Chat>
+      )}
+
       <Box pad='small' direction='row' gap='medium'>
         <Box width='80px'>
           <Button
@@ -544,6 +573,29 @@ export default function RoomControls({
             </Box>
           </Button>
         </ParticipantBox>
+        {localParticipant.canReceiveMessages && (
+          <ChatBox>
+            <Button
+              data-testid='btn-toggle-chat'
+              size='large'
+              onClick={() => {
+                setShowChatBox((value) => !value);
+              }}
+            >
+              <Box align='center' gap='xsmall'>
+                <Box style={{ position: 'relative' }}>
+                  <ChatIcon
+                    size='large'
+                    color={showChatBox ? 'accent-1' : 'light-5'}
+                  />
+                </Box>
+                <Text size='xsmall' color='light-6'>
+                  Chat
+                </Text>
+              </Box>
+            </Button>
+          </ChatBox>
+        )}
       </Box>
 
       <RightBoxMenu pad='small' direction='row' gap='large'>

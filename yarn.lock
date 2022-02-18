@@ -1246,10 +1246,10 @@
     magic-string "^0.25.0"
     string.prototype.matchall "^4.0.6"
 
-"@telnyx/video@0.2.0-alpha.9":
-  version "0.2.0-alpha.9"
-  resolved "https://registry.yarnpkg.com/@telnyx/video/-/video-0.2.0-alpha.9.tgz#e52b9a97d749643578fafc6f0e382e85830b0204"
-  integrity sha512-EaSTxtyGIunTP/ZhdR8BNZlA0ZXR2D6oPfeOmy3JydMywmBH4hC4SJPfjN9+OQYmGXuqLWt3mSSo6YxGPjaMbQ==
+"@telnyx/video@0.2.0-alpha.10":
+  version "0.2.0-alpha.10"
+  resolved "https://registry.yarnpkg.com/@telnyx/video/-/video-0.2.0-alpha.10.tgz#123300eb5b61700327b99435555a5b5dbcd16840"
+  integrity sha512-sKBwjsR5qJ7iodeIGyRZlYJukT1cUr8BZm+ud4ZBUJ+HW4XgnRZ3MtrT52GdJmuYU0Myp1GOyKKYi3LYYlCj0g==
   dependencies:
     "@types/uuid" "^8.3.0"
     events "^3.3.0"
@@ -2337,6 +2337,11 @@ clean-webpack-plugin@^4.0.0:
   integrity sha512-WuWE1nyTNAyW5T7oNyys2EN0cfP2fdRxhxnIQWiAp0bMabPdHhoGxM8A6YL2GhqwgrPnnaemVE7nv5XJ2Fhh2w==
   dependencies:
     del "^4.1.1"
+
+clsx@^1.1.1:
+  version "1.1.1"
+  resolved "https://registry.yarnpkg.com/clsx/-/clsx-1.1.1.tgz#98b3134f9abbdf23b2663491ace13c5c03a73188"
+  integrity sha512-6/bPho624p3S2pMyvP5kKBPXnI3ufHLObBFCfgx+LkeR5lg2XYy2hqZqUf45ypD8COn2bhgGJSUE+l5dhNBieA==
 
 code-point-at@^1.0.0:
   version "1.1.0"
@@ -5613,7 +5618,7 @@ prop-types@15.7.2:
     object-assign "^4.1.1"
     react-is "^16.8.1"
 
-prop-types@^15.5.8, prop-types@^15.7.2:
+prop-types@^15.5.8, prop-types@^15.6.0, prop-types@^15.7.2:
   version "15.8.1"
   resolved "https://registry.yarnpkg.com/prop-types/-/prop-types-15.8.1.tgz#67d87bf1a694f48435cf332c24af10214a3140b5"
   integrity sha512-oj87CgZICdulUohogVAR7AjlC0327U4el4L6eAvOqCeudMDVU0NThNaV+b9Df4dXgSP1gXMTnPdhfe/2qDH5cg==
@@ -5785,6 +5790,14 @@ react-dom@17.0.1:
     loose-envify "^1.1.0"
     object-assign "^4.1.1"
     scheduler "^0.20.1"
+
+react-draggable@^4.4.4:
+  version "4.4.4"
+  resolved "https://registry.yarnpkg.com/react-draggable/-/react-draggable-4.4.4.tgz#5b26d9996be63d32d285a426f41055de87e59b2f"
+  integrity sha512-6e0WdcNLwpBx/YIDpoyd2Xb04PB0elrDrulKUgdrIlwuYvxh5Ok9M+F8cljm8kPXXs43PmMzek9RrB1b7mLMqA==
+  dependencies:
+    clsx "^1.1.1"
+    prop-types "^15.6.0"
 
 react-hot-toast@^2.2.0:
   version "2.2.0"

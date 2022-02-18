@@ -1,5 +1,12 @@
 import { useEffect, useRef, useState, useContext } from 'react';
-import { initialize, Room, State, Participant, Stream } from '@telnyx/video';
+import {
+  initialize,
+  Room,
+  State,
+  Participant,
+  Stream,
+  Message,
+} from '@telnyx/video';
 
 import { DebugContext } from 'contexts/DebugContext';
 import { TelnyxMeetContext } from 'contexts/TelnyxMeetContext';
@@ -23,6 +30,12 @@ export type TelnyxRoom = Room & {
   state: State;
   dominantSpeakerId?: Participant['id'];
   presenter?: Participant;
+  messages: Array<{
+    from: Participant['id'];
+    fromUsername: string;
+    message: Message;
+    recipients: Array<Participant['id']> | null;
+  }>;
   participantsByActivity: ReadonlySet<Participant['id']>;
   getWebRTCStatsForStream: (
     participantId: Participant['id'],
@@ -58,6 +71,8 @@ export const useRoom = ({
   const [dominantSpeakerId, setDominantSpeakerId] =
     useState<Participant['id']>();
 
+  const [messages, setMessages] = useState<TelnyxRoom['messages']>([]);
+
   const connectAndJoinRoom = async () => {
     if (!roomRef.current) {
       roomRef.current = await initialize({
@@ -65,6 +80,7 @@ export const useRoom = ({
         clientToken,
         context: JSON.stringify(context),
         logLevel: 'DEBUG',
+        enableMessages: true,
       });
 
       setState(roomRef.current.getState());
@@ -109,23 +125,28 @@ export const useRoom = ({
           ]);
         });
       });
-      roomRef.current.on('participant_leaving', (participantId, reason, state) => {
-        if (reason === 'kicked') {
-          if (state.localParticipantId === participantId) {
-            sendNotification({
-              body: 'You got kicked from the room by the moderator!',
-            });
-          } else {
-            const context = JSON.parse(state.participants.get(participantId).context);
+      roomRef.current.on(
+        'participant_leaving',
+        (participantId, reason, state) => {
+          if (reason === 'kicked') {
+            if (state.localParticipantId === participantId) {
+              sendNotification({
+                body: 'You got kicked from the room by the moderator!',
+              });
+            } else {
+              const context = JSON.parse(
+                state.participants.get(participantId).context
+              );
 
-            sendNotification({
-              body: `${
-                context.username ? context.username : participantId
-              } has been kicked by the moderator!`,
-            });
+              sendNotification({
+                body: `${
+                  context.username ? context.username : participantId
+                } has been kicked by the moderator!`,
+              });
+            }
           }
         }
-      });
+      );
       roomRef.current.on('participant_left', (participantId) => {
         if (presenter?.id === participantId) {
           setPresenter(undefined);
@@ -238,6 +259,24 @@ export const useRoom = ({
         'subscription_ended',
         (participantId, key, state) => {}
       );
+      roomRef.current.on(
+        'message_received',
+        (participantId, message, recipients, state) => {
+          const participant = state.participants.get(participantId);
+          const fromUsername = JSON.parse(participant.context).username;
+          
+          setMessages((value) => {
+            const messages = value.concat({
+              from: participantId,
+              fromUsername,
+              message,
+              recipients,
+            });
+
+            return messages;
+          });
+        }
+      );
     }
 
     roomRef.current.connect();
@@ -310,6 +349,7 @@ export const useRoom = ({
         dominantSpeakerId,
         presenter,
         participantsByActivity,
+        messages,
       }
     : undefined;
 };
