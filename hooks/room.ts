@@ -192,6 +192,46 @@ export const useRoom = ({
         'track_disabled',
         (participantId, key, kind, state) => {}
       );
+      roomRef.current.on('track_censored', (participantId, key, kind, state) => {
+          if (kind === 'audio') {
+            if (state.localParticipantId === participantId) {
+              sendNotification({
+                body: `Your audio from "${key}" stream has been censored by the moderator`,
+              });
+            } else {
+              const context = JSON.parse(
+                state.participants.get(participantId).context
+              );
+
+              sendNotification({
+                body: `${
+                  context.username ? context.username : participantId
+                }'s audio from "${key}" stream has been censored by the moderator`,
+              });
+            }
+          }
+        }
+      );
+      roomRef.current.on('track_uncensored', (participantId, key, kind, state) => {
+          if (kind === 'audio') {
+            if (state.localParticipantId === participantId) {
+              sendNotification({
+                body: `Your audio from "${key}" stream has been uncensored by the moderator`,
+              });
+            } else {
+              const context = JSON.parse(
+                state.participants.get(participantId).context
+              );
+
+              sendNotification({
+                body: `${
+                  context.username ? context.username : participantId
+                }'s audio from "${key}" stream has been uncensored by the moderator`,
+              });
+            }
+          }
+        }
+      );
       roomRef.current.on('audio_activity', (participantId, key) => {
         if (
           key !== 'presentation' &&
