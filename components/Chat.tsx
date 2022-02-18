@@ -19,6 +19,7 @@ const Wrapper = styled.div`
   border-radius: 4px;
   display: grid;
   grid-template-rows: min-content 1fr min-content;
+  box-shadow: 2px 2px 5px #CDCDCD;
 `;
 
 const MessageWrapper = styled.div<{ isLocal: boolean }>`
