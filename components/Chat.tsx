@@ -70,7 +70,7 @@ export const Chat = ({
   };
 
   return (
-    <Draggable>
+    <Draggable bounds="body">
       <Wrapper>
         <div
           style={{
