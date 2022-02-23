@@ -1,23 +1,10 @@
 # Telnyx Meet App
-Video meet app example using @telnyx/video SDK
 
-## How it works?
-
-This application demonstrates a simple interactive video conference
-built using the [@telnyx/video](https://www.npmjs.com/package/@telnyx/video) SDK.
-
-You can join in a video conference room and have a meeting with many participants publishing and subscribing to audio and video streams. You can also share your screen into the meeting.
-
-
-## Deploy your own
-
-Once you have access to [the environment variables you'll need](#step-4-set-up-environment-variables), deploy the example using:
-
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/git/external?repository-url=https://github.com/team-telnyx/telnyx-meet.git&project-name=telnyx-meet&repository-name=telnyx-meet&env=TELNYX_API_HOST,TELNYX_API_KEY&envDescription=Required%20to%20connect%20the%20app%20with%20TelnyxMeet&envLink=https://github.com/team-telnyx/telnyx-meet/#step-4-set-up-environment-variables)
+This is an example app built with [NextJS](https://nextjs.org/) that uses [@telnyx/video](https://www.npmjs.com/package/@telnyx/video) SDK.
 
 ## Getting Started
 
-In this guide, you’ll learn how to get started with the Telnyx Meet App by using Telnyx SDKs and the Telnyx Portal. 
+In this guide, you’ll learn how to get run and deploy Telnyx Meet
 
 Just follow these steps:
 
@@ -34,7 +21,7 @@ Just follow these steps:
 
 Head to [telnyx.com/sign-up](https://telnyx.com/sign-up) to sign up for your free Telnyx account.
 
-It’ll give you access to our Mission Control Portal where you can set up and manage your API KEY, and more.
+Once signed up you will have access to Telnyx Portal, where you can set up and manage your API KEY, and more.
 
 
 ## Step 2: Create an API KEY
@@ -48,7 +35,6 @@ You need this API Key to consume the API `https://api.telnyx.com/v2/rooms` to ma
 ## Step 3: Create a Room ID
 
 You should read this documentation [video/Rooms](https://developers.telnyx.com/docs/api/v2/video/Rooms) to learn how to create a new video room id. When you get your `roomId` you can join in a video meet conference.
-
 
 ### Step 4. Set up environment variables
 
@@ -84,16 +70,12 @@ Run the commands
 
 ## Step 6: Deploy on Vercel
 
-You can deploy this app to the cloud with [Vercel](https://vercel.com) ([Documentation](https://nextjs.org/docs/deployment)).
+You can deploy this app with [Vercel](https://vercel.com) ([Documentation](https://nextjs.org/docs/deployment)).
+
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/git/external?repository-url=https://github.com/team-telnyx/telnyx-meet.git&project-name=telnyx-meet&repository-name=telnyx-meet&env=TELNYX_API_HOST,TELNYX_API_KEY&envDescription=Required%20to%20connect%20the%20app%20with%20TelnyxMeet&envLink=https://github.com/team-telnyx/telnyx-meet/#step-4-set-up-environment-variables)
 
 #### **Deploy Your Local Project**
 
 To deploy your local project to Vercel, push it to GitHub/GitLab/Bitbucket and [import to Vercel](https://vercel.com/new).
 
 **Important**: When you import your project on Vercel, make sure to click on **Environment Variables** and set them to match your `.env.local` file.
-
-#### **Deploy from Our Template**
-
-Alternatively, you can deploy using our template by clicking on the Deploy button below.
-
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/git/external?repository-url=https://github.com/team-telnyx/telnyx-meet.git&project-name=telnyx-meet&repository-name=telnyx-meet&env=TELNYX_API_HOST,TELNYX_API_KEY&envDescription=Required%20to%20connect%20the%20app%20with%20TelnyxMeet&envLink=https://github.com/team-telnyx/telnyx-meet/#step-4-set-up-environment-variables)
