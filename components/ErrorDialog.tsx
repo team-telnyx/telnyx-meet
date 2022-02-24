@@ -8,11 +8,7 @@ const ErrorDialog = ({
   title,
   body,
 }: {
-  onClose: (
-    event:
-      | React.MouseEvent<HTMLElement, MouseEvent>
-      | React.KeyboardEvent<HTMLElement>
-  ) => void;
+  onClose: () => void;
   title: string;
   body: string;
 }) => {

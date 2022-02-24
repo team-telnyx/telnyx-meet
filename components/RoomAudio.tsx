@@ -45,7 +45,7 @@ export default function RoomAudio({
     });
 
     return audioTracks;
-  }, [streams]);
+  }, [streams, participants, useAudioMixer]);
 
   const roomAudio = useMemo(() => {
     if (useAudioMixer) {
