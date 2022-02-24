@@ -71,6 +71,8 @@ function MediaControlBar({
           setAudioInputDeviceId(stream?.getAudioTracks()[0].id);
           saveItem(USER_PREFERENCE_AUDIO_ENABLED, 'yes');
         })
+        // TODO: avoid disable line
+        // eslint-disable-next-line no-unused-vars
         .catch((err) => {
           setError(MediaDeviceErrors.mediaBlocked);
         });
@@ -97,6 +99,8 @@ function MediaControlBar({
           setVideoInputDeviceId(stream?.getVideoTracks()[0].id);
           saveItem(USER_PREFERENCE_VIDEO_ENABLED, 'yes');
         })
+        // TODO: avoid disable line
+        // eslint-disable-next-line no-unused-vars
         .catch((err) => {
           setError(MediaDeviceErrors.mediaBlocked);
         });

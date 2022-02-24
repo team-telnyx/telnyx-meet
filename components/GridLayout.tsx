@@ -34,6 +34,8 @@ function GridView({
 
 function GridLayout({
   participants,
+  // TODO: avoid disable line
+  // eslint-disable-next-line no-unused-vars
   streams,
   dominantSpeakerId,
   participantsByActivity,

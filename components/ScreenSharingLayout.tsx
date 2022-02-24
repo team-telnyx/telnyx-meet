@@ -32,6 +32,8 @@ function NewSideBar({ children }: { children: ReactChild }) {
 
 function ScreenSharingLayout({
   participants,
+  // TODO: avoid disable line
+  // eslint-disable-next-line no-unused-vars
   streams,
   participantsByActivity,
   presenter,

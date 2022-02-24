@@ -1,6 +1,5 @@
 import { Stream } from '@telnyx/video';
 import React, { useRef, useEffect } from 'react';
-import { useCallback } from 'react';
 import { useState } from 'react';
 
 export default function VideoTrack({
@@ -18,7 +17,9 @@ export default function VideoTrack({
   const videoElRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
-    if (!videoElRef.current || !stream.videoTrack) {
+    const videoElRefCurrent = videoElRef.current;
+
+    if (!videoElRefCurrent || !stream.videoTrack) {
       return;
     }
 
@@ -30,8 +31,8 @@ export default function VideoTrack({
     videoElRef.current.srcObject = new MediaStream([stream.videoTrack]);
 
     return function cleanup() {
-      if (videoElRef && videoElRef.current) {
-        videoElRef.current.srcObject = null;
+      if (videoElRefCurrent) {
+        videoElRefCurrent.srcObject = null;
       }
     };
   }, [stream.videoTrack]);
