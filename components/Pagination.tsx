@@ -51,7 +51,7 @@ export function Pagination({
   //Set the quantity of pages
   useEffect(() => {
     setPages(Math.ceil(data.length / dataLimit));
-  }, [data]);
+  }, [data, dataLimit]);
 
   function goToNextPage() {
     setCurrentPage((page) => page + 1);

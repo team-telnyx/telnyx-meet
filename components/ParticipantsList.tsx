@@ -25,7 +25,7 @@ export default function ParticipantsList({
     <Box background='#2a2a2a' round='xsmall' fill>
       <Box direction='row' align='center' justify='between' pad='small'>
         <Heading margin='none' size='1.2em' level={2}>
-          Participants ({Object.keys(participants).length})
+          Participants ({participants.size})
         </Heading>
 
         <Box>

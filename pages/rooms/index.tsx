@@ -119,21 +119,13 @@ export default function Rooms({ id }: { id: string }) {
         }
       });
 
-      let isVideoEnabled =
-        getItem(USER_PREFERENCE_VIDEO_ENABLED) || null;
+      let isVideoEnabled = getItem(USER_PREFERENCE_VIDEO_ENABLED) || null;
 
-      let isAudioEnabled =
-        getItem(USER_PREFERENCE_AUDIO_ENABLED) || null;
+      let isAudioEnabled = getItem(USER_PREFERENCE_AUDIO_ENABLED) || null;
 
       getUserMedia({
-        video:
-          isVideoEnabled && isVideoEnabled === 'yes'
-            ? true
-            : false,
-        audio:
-          isAudioEnabled && isAudioEnabled === 'yes'
-            ? true
-            : false,
+        video: isVideoEnabled && isVideoEnabled === 'yes' ? true : false,
+        audio: isAudioEnabled && isAudioEnabled === 'yes' ? true : false,
       })
         .then((stream) => {
           if (isAudioEnabled === 'yes') {

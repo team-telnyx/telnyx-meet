@@ -1,5 +1,5 @@
 import { useContext, useEffect, useState } from 'react';
-import { getDevices, Message, Participant, Room, Stream } from '@telnyx/video';
+import { getDevices, Participant, Room, Stream } from '@telnyx/video';
 import { Box, Button, Menu, Text } from 'grommet';
 import { Group as GroupIcon, Chat as ChatIcon } from 'grommet-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -66,6 +66,8 @@ const isSinkIdSupported = (): boolean => {
 };
 
 const getUserMedia = async (
+  // TODO: avoid disable line
+  // eslint-disable-next-line no-undef
   constraints: MediaStreamConstraints
 ): Promise<MediaStream> => {
   // @ts-ignore
@@ -144,7 +146,6 @@ export default function RoomControls({
   sendMessage,
   messages,
   getLocalParticipant,
-  participants,
 }: {
   isParticipantsListVisible: boolean;
   participantsByActivity: TelnyxRoom['participantsByActivity'];
@@ -155,11 +156,10 @@ export default function RoomControls({
   onChangeParticipantsListVisible: Function;
   streams: { [key: string]: Stream };
   disableScreenshare: boolean;
-  onAudioOutputDeviceChange: (deviceId?: MediaDeviceInfo['deviceId']) => void;
+  onAudioOutputDeviceChange: React.Dispatch<React.SetStateAction<string | undefined>>;
   sendMessage: Room['sendMessage'];
   messages: TelnyxRoom['messages'];
   getLocalParticipant: () => Participant;
-  participants: TelnyxRoom['state']['participants'];
 }) {
   const {
     audioInputDeviceId,
@@ -216,6 +216,8 @@ export default function RoomControls({
       );
       removeMediaTracks();
     };
+    // TODO: avoid disable line
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -232,6 +234,8 @@ export default function RoomControls({
     ) {
       updateStream('self', localTracks);
     }
+    // TODO: avoid disable line
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selfStream, localTracks]);
 
   useEffect(() => {
@@ -250,6 +254,8 @@ export default function RoomControls({
         removeStream('presentation');
       }
     }
+    // TODO: avoid disable line
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [presentationTracks]);
 
   const handleMediaError = (err: Error, kind: 'audio' | 'video' | 'screen') => {
@@ -342,6 +348,8 @@ export default function RoomControls({
 
   useEffect(() => {
     onAudioOutputDeviceChange(audioOutputDeviceId);
+    // TODO: avoid disable line
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [audioOutputDeviceId]);
 
   const removeMediaTracks = () => {

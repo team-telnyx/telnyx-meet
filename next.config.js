@@ -1,4 +1,3 @@
-const WorkerPlugin = require('worker-plugin');
 const withSourceMaps = require('@zeit/next-source-maps')();
 const { BugsnagSourceMapUploaderPlugin } = require('webpack-bugsnag-plugins');
 const withPWA = require('next-pwa')
@@ -16,16 +15,7 @@ const bugsnagConfig = withSourceMaps({
     BUGSNAG_API_KEY: process.env.NEXT_PUBLIC_BUGSNAG_API_KEY, // Pass through env variables
   },
   webpack: (config, options) => {  
-    const { isServer } = options;
-
-    if (!isServer) {
-      config.plugins.push(
-        new WorkerPlugin({
-          // use "self" as the global object when receiving hot updates.
-          globalObject: 'self',
-        })
-      );
-    }
+ 
 
     if (process.env.NEXT_PUBLIC_BUGSNAG_API_KEY) {
       config.devtool = 'source-map';
