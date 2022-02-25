@@ -328,7 +328,7 @@ function WebRTCStats({ data, onClose }: IWebRTCStats) {
         <CloseButton onClick={onClose}>[x]</CloseButton>
       </div>
       {!data ? (
-        <p>Sorry we don't have any stat metrics yet</p>
+        <p>Sorry, we do not have any stat metrics yet</p>
       ) : (
         <React.Fragment>
           {audioRTP && (

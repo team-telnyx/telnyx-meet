@@ -55,7 +55,7 @@ export default function AudioTrack({
         audioEl.remove();
       }
     };
-  }, [audioTrack, audioOutputDeviceId]);
+  }, [audioTrack, audioOutputDeviceId, id]);
 
   return <div ref={mediaWrapperRef} />;
 }

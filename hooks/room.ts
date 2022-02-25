@@ -192,7 +192,9 @@ export const useRoom = ({
         'track_disabled',
         (participantId, key, kind, state) => {}
       );
-      roomRef.current.on('track_censored', (participantId, key, kind, state) => {
+      roomRef.current.on(
+        'track_censored',
+        (participantId, key, kind, state) => {
           if (kind === 'audio') {
             if (state.localParticipantId === participantId) {
               sendNotification({
@@ -212,7 +214,9 @@ export const useRoom = ({
           }
         }
       );
-      roomRef.current.on('track_uncensored', (participantId, key, kind, state) => {
+      roomRef.current.on(
+        'track_uncensored',
+        (participantId, key, kind, state) => {
           if (kind === 'audio') {
             if (state.localParticipantId === participantId) {
               sendNotification({
@@ -264,7 +268,7 @@ export const useRoom = ({
         (participantId, message, recipients, state) => {
           const participant = state.participants.get(participantId);
           const fromUsername = JSON.parse(participant.context).username;
-          
+
           setMessages((value) => {
             const messages = value.concat({
               from: participantId,

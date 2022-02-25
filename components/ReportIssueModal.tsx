@@ -54,7 +54,7 @@ export function ReportIssueModal() {
     </Box>
   );
 
-  if(!debugState) {
+  if (!debugState) {
     return null;
   }
 
@@ -69,7 +69,7 @@ export function ReportIssueModal() {
           backgroundColor: '#63adfc',
           color: '#fff',
           borderColor: '#fff',
-          zIndex: 4
+          zIndex: 4,
         }}
         onClick={open}
         label='Report issue'

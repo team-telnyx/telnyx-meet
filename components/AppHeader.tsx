@@ -1,5 +1,4 @@
-import Link from 'next/link';
-import { Anchor, Header, Nav } from 'grommet';
+import { Anchor, Header } from 'grommet';
 
 export default function AppHeader({ ...unhandledProps }) {
   return (

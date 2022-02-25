@@ -8,9 +8,11 @@ import { MediaDeviceErrors } from 'components/MediaPreview/helper';
 interface Props {
   roomId: string;
   username: string;
-  updateRoomId?: (value: string) => void;
-  updateUsername: (value: string) => void;
-  updateTokens: (tokens: { clientToken: string; refreshToken: string }) => void;
+  updateRoomId?: React.Dispatch<React.SetStateAction<string | undefined>>;
+  updateUsername: React.Dispatch<React.SetStateAction<string>>;
+  updateTokens: React.Dispatch<
+    React.SetStateAction<{ clientToken: string; refreshToken: string }>
+  >;
 }
 
 const JoinRoom = ({
@@ -30,7 +32,7 @@ const JoinRoom = ({
         audio: true,
       })
       .then((stream) => {
-        stream.getTracks().forEach(function(track) {
+        stream.getTracks().forEach(function (track) {
           track.stop();
         });
         return true;

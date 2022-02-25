@@ -1,4 +1,4 @@
-import { Message, Participant, Room } from '@telnyx/video';
+import { Participant, Room } from '@telnyx/video';
 import { Button, TextInput } from 'grommet';
 import { Send } from 'grommet-icons';
 import { TelnyxRoom } from 'hooks/room';
@@ -19,7 +19,7 @@ const Wrapper = styled.div`
   border-radius: 4px;
   display: grid;
   grid-template-rows: min-content 1fr min-content;
-  box-shadow: 2px 2px 5px #CDCDCD;
+  box-shadow: 2px 2px 5px #cdcdcd;
 `;
 
 const MessageWrapper = styled.div<{ isLocal: boolean }>`
@@ -50,7 +50,6 @@ export const Chat = ({
   messages,
   onClose,
   localParticipant,
-
 }: {
   sendMessage: Room['sendMessage'];
   onClose: MouseEventHandler<HTMLButtonElement>;
@@ -60,7 +59,7 @@ export const Chat = ({
   const [value, setValue] = React.useState('');
 
   const handleSendMessage = async () => {
-    if(value && value.length > 0) {
+    if (value && value.length > 0) {
       await sendMessage({
         payload: value,
         type: 'text',
@@ -70,7 +69,7 @@ export const Chat = ({
   };
 
   return (
-    <Draggable bounds="body">
+    <Draggable bounds='body'>
       <Wrapper>
         <div
           style={{
@@ -116,9 +115,9 @@ export const Chat = ({
           }}
         >
           {messages && messages?.length > 0
-            ? messages.map(({ from, fromUsername, message, recipients }, key) => {
+            ? messages.map(({ from, fromUsername, message }, key) => {
                 const isLocalParticipant = localParticipant.id === from;
-                
+
                 return (
                   <MessageWrapper key={key} isLocal={isLocalParticipant}>
                     <MessageContainer isLocal={isLocalParticipant}>

@@ -1,4 +1,4 @@
-import { Fragment, useState } from 'react';
+import { Fragment } from 'react';
 import { Box, Heading } from 'grommet';
 
 export default function RoomInfo({ roomId }: { roomId: string }) {
