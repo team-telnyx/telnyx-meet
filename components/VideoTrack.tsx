@@ -17,9 +17,9 @@ export default function VideoTrack({
   const videoElRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
-    const videoElRefCurrent = videoElRef.current;
+    const videoEl = videoElRef.current;
 
-    if (!videoElRefCurrent || !stream.videoTrack) {
+    if (!videoEl || !stream.videoTrack) {
       return;
     }
 
@@ -28,11 +28,11 @@ export default function VideoTrack({
         stream.videoTrack.getSettings().width!
     );
 
-    videoElRef.current.srcObject = new MediaStream([stream.videoTrack]);
+    videoEl.srcObject = new MediaStream([stream.videoTrack]);
 
     return function cleanup() {
-      if (videoElRefCurrent) {
-        videoElRefCurrent.srcObject = null;
+      if (videoEl) {
+        videoEl.srcObject = null;
       }
     };
   }, [stream.videoTrack]);
