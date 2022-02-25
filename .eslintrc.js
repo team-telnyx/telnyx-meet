@@ -23,6 +23,7 @@ module.exports = {
   plugins: ['react'],
   rules: {
     'react/react-in-jsx-scope': 'off',
+    'react/jsx-key': 'off',
     'no-unused-vars': 'warn',
   },
 };
