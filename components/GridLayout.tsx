@@ -21,7 +21,6 @@ function GridView({
       style={{
         display: 'grid',
         gridTemplateColumns: `repeat(${columnsQuantity.size}, minmax(auto, 1fr))`,
-        gridGap: 5,
         position: 'relative',
         overflow: 'hidden',
         paddingTop: 20,

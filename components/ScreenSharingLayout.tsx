@@ -12,7 +12,6 @@ const breakpointMedium = 1023;
 const SideBar = styled.div`
   display: grid;
   grid-template-columns: minmax(200px, 347px);
-  grid-gap: 5px 0px;
   align-content: start;
   max-height: calc(100% - 54px);
   overflow: hidden;
