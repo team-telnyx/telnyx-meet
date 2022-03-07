@@ -79,3 +79,7 @@ You can deploy this app with [Vercel](https://vercel.com) ([Documentation](https
 To deploy your local project to Vercel, push it to GitHub/GitLab/Bitbucket and [import to Vercel](https://vercel.com/new).
 
 **Important**: When you import your project on Vercel, make sure to click on **Environment Variables** and set them to match your `.env.local` file.
+
+## **Deploy using docker-compose**
+
+To deploy your local project to a docker container for development purposes, run `docker-compose up -d` from within the telnyx-meet directory.
