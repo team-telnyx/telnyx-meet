@@ -132,7 +132,9 @@ function Feed({
           ? 'unset'
           : `${(9 / 16) * 100}%` /* 56.25% - 16:9 Aspect Ratio */,
         overflow: 'hidden',
-        border: showAudioActivityIndicator ? '3px solid yellow' : 'unset',
+        borderWidth: '3px',
+        borderStyle: 'solid',
+        borderColor: showAudioActivityIndicator ? 'yellow' : '#1b1b1b',
         height: isPresentation ? '100%' : 'unset',
       }}
     >
