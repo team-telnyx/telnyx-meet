@@ -38,6 +38,7 @@ function Feed({
   const [showStatsOverlay, setShowStatsOverlay] = useState(false);
   const [stats, setStats] = useState<any>(null);
   const [allowedBrowser, setAllowedBrowser] = useState(false);
+  const [bitrateScore, setBitrateScore] = useState(0);
 
   const intervalStatsId = useRef<any>();
 
@@ -69,6 +70,14 @@ function Feed({
     setShowStatsOverlay(false);
   }
 
+  interface IRTCOutboundRTPVideoStreamReport {
+    timestamp?: number;
+    bytesSent?: number;
+    headerBytesSent?: number;
+    packetsSent?: number;
+    id?: string;
+  }
+
   function renderStats() {
     if (!stream || !allowedBrowser) {
       return null;
@@ -78,12 +87,69 @@ function Feed({
       return (
         <button
           onClick={async () => {
+            let lastResult = new Map<string, IRTCOutboundRTPVideoStreamReport>();
             intervalStatsId.current = setInterval(async () => {
               try {
                 const stats = await getStatsForParticipantStream(
                   participant.id,
                   stream.key
                 );
+
+                if (stats.senders.audio) {
+                  console.log(stats.senders.audio);
+                }
+                if (stats.senders.video) {
+                  Object.keys(stats.senders.video).forEach((key) => {
+                    if (
+                      key.includes('RTCOutboundRTPVideoStream') &&
+                      stats.senders.video
+                    ) {
+                      let report: IRTCOutboundRTPVideoStreamReport =
+                        stats.senders.video[key];
+
+                      let bytes;
+                      let headerBytes;
+                      let packets;
+
+                      const now = report.timestamp;
+                      bytes = report.bytesSent;
+                      headerBytes = report.headerBytesSent;
+
+                      packets = report.packetsSent;
+                      if (lastResult && lastResult.has(report.id)) {
+                        // calculate bitrate
+                        const bitrate =
+                          (8 * (bytes - lastResult.get(report.id).bytesSent)) /
+                          (now - lastResult.get(report.id).timestamp);
+                        const headerrate =
+                          (8 *
+                            (headerBytes -
+                              lastResult.get(report.id).headerBytesSent)) /
+                          (now - lastResult.get(report.id).timestamp);
+                       
+                        if(bitrate > 10 && bitrate < 50) {
+                          setBitrateScore(1);
+                        }
+                        else if(bitrate > 50 && bitrate < 100) {
+                          setBitrateScore(2);
+                        }
+                        else if(bitrate > 100 && bitrate < 200) {
+                          setBitrateScore(3);
+                        }
+                        else if(bitrate > 200 && bitrate < 400) {
+                          setBitrateScore(4);
+                        }
+                        else if(bitrate > 400) {
+                          setBitrateScore(5);
+                        }
+                        else {
+                          setBitrateScore(0);
+                        }
+                      }
+                      lastResult.set(report.id, report);
+                    }
+                  });
+                }
 
                 if (stats) {
                   setStats(stats);
@@ -106,12 +172,26 @@ function Feed({
           stats
         </button>
       );
-    } else {
+    } else {     
+    const bars =  {
+      1: '▃',
+      2: '▃▄',
+      3: '▃▄▅',
+      4: '▃▄▅▆',
+      5: '▃▄▅▆▇'
+    }
+
       return (
-        <WebRTCStats
-          onClose={() => resetWebRTCStats()}
-          data={stats}
-        ></WebRTCStats>
+        <div>
+          <div style={{color: '#FFF', zIndex: 99999999, position: 'relative'}}>
+            <div>Network level: {bitrateScore} - {bars[bitrateScore]}</div>
+          </div>
+          <WebRTCStats
+            onClose={() => resetWebRTCStats()}
+            data={stats}
+          ></WebRTCStats>
+          
+        </div>
       );
     }
   }
