@@ -39,10 +39,10 @@ function Feed({
   const [stats, setStats] = useState<any>(null);
   const [allowedBrowser, setAllowedBrowser] = useState(false);
   const [bitrateScore, setBitrateScore] = useState(0);
-  const lastResult = new Map<
-  string,
-  IRTCOutboundRTPVideoStreamReport
->();
+  const [packeLossScore, setPacketLossScore] = useState(0);
+
+  const lastResult = new Map<string, IRTCOutboundRTPVideoStreamReport>();
+
 
   const intervalStatsId = useRef<any>();
 
@@ -88,10 +88,7 @@ function Feed({
     }
     if (stats.senders.video) {
       Object.keys(stats.senders.video).forEach((key) => {
-        if (
-          key.includes('RTCOutboundRTPVideoStream') &&
-          stats.senders.video
-        ) {
+        if (key.includes('RTCOutboundRTPVideoStream') && stats.senders.video) {
           let report: IRTCOutboundRTPVideoStreamReport =
             stats.senders.video[key];
 
@@ -110,13 +107,10 @@ function Feed({
               (8 * (bytes - lastResult.get(report.id).bytesSent)) /
               (now - lastResult.get(report.id).timestamp);
             const headerrate =
-              (8 *
-                (headerBytes -
-                  lastResult.get(report.id).headerBytesSent)) /
+              (8 * (headerBytes - lastResult.get(report.id).headerBytesSent)) /
               (now - lastResult.get(report.id).timestamp);
 
-          console.log('bitrate===>', bitrate)
-
+            console.log('bitrate===>', bitrate);
 
             if (bitrate > 10 && bitrate < 50) {
               setBitrateScore(1);
@@ -139,6 +133,60 @@ function Feed({
     }
   }
 
+  function getConnectionQualityByPacketLoss(stats) {
+    console.log('stats===>', stats);
+    // console.log('baselineReport===>', baselineReport)
+    let remoteId = '';
+    if (stats.senders.audio) {
+      // console.log(stats.senders.audio);
+    }
+    if (stats.senders.video) {
+      Object.keys(stats.senders.video).forEach((key) => {
+        if (key.includes('RTCOutboundRTPVideoStream') && stats.senders.video) {
+          let rTCOutboundRTPVideoStream = stats.senders.video[key];
+
+          console.log(
+            'RTCOutboundRTPVideoStream===>',
+            rTCOutboundRTPVideoStream
+          );
+
+          remoteId = rTCOutboundRTPVideoStream.remoteId;
+          console.log('remoteId===>', remoteId);
+        }
+      });
+
+      if (stats.senders.video && remoteId) {
+        Object.keys(stats.senders.video).forEach((key) => {
+          if (key.includes(remoteId) && stats.senders.video) {
+            let report = stats.senders.video[key];
+            console.log('Inboud====>', report);
+            console.log('fractionLost====>', report.fractionLost);
+            console.log('fractionLost*100====>', Math.floor(report.fractionLost * 100));
+            let packetLoss = report.fractionLost * 100;
+
+            if (packetLoss === undefined) {
+                  setPacketLossScore(5)
+          } else if (packetLoss <= 2) {
+              // quality = 100; // Full 5 bars.
+              setPacketLossScore(5)
+
+          } else if (packetLoss <= 4) {
+            setPacketLossScore(4) // 4 bars
+          } else if (packetLoss <= 6) {
+            setPacketLossScore(3) // 3 bars
+          } else if (packetLoss <= 8) {
+            setPacketLossScore(2) // 2 bars
+          } else if (packetLoss <= 12) {
+            setPacketLossScore(1); // 1 bars
+          } else {
+            setPacketLossScore(1); // Still 1 bar, but slower climb-up.
+          }
+          }
+        });
+      }
+    }
+  }
+
   function renderStats() {
     if (!stream || !allowedBrowser) {
       return null;
@@ -148,7 +196,6 @@ function Feed({
       return (
         <button
           onClick={async () => {
-          
             intervalStatsId.current = setInterval(async () => {
               try {
                 const stats = await getStatsForParticipantStream(
@@ -157,6 +204,7 @@ function Feed({
                 );
 
                 getConnectionQualityByBitrate(stats);
+                getConnectionQualityByPacketLoss(stats);
 
                 if (stats) {
                   setStats(stats);
@@ -180,7 +228,6 @@ function Feed({
         </button>
       );
     } else {
-  
       const STEP = 3;
       const BARS_ARRAY = [0, 1, 2, 3, 4];
 
@@ -189,7 +236,6 @@ function Feed({
           <div
             style={{ color: '#FFF', zIndex: 99999999, position: 'relative' }}
           >
-            
             <div
               style={{
                 display: 'flex',
@@ -198,7 +244,7 @@ function Feed({
                 alignItems: 'flex-end',
               }}
             >
-              Connection Quality: {bitrateScore} - {' '}
+              Bitrate level: {bitrateScore} -{' '}
               {BARS_ARRAY.map((level) => (
                 <div
                   key={level}
@@ -213,6 +259,36 @@ function Feed({
                   }}
                 />
               ))}
+            </div>
+          </div>
+          <div>
+            <div
+              style={{ color: '#FFF', zIndex: 99999999, position: 'relative' }}
+            >
+              <div
+                style={{
+                  display: 'flex',
+                  flexDirection: 'row',
+                  height: '20px',
+                  alignItems: 'flex-end',
+                }}
+              >
+                Fraction Lost level: {packeLossScore} -{' '}
+                {BARS_ARRAY.map((level) => (
+                  <div
+                    key={level}
+                    style={{
+                      width: '2px',
+                      marginRight: '1px',
+                      height: `${STEP * (level + 1)}px`,
+                      background:
+                      packeLossScore > level
+                          ? 'white'
+                          : 'rgba(255, 255, 255, 0.2)',
+                    }}
+                  />
+                ))}
+              </div>
             </div>
           </div>
 
