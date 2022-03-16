@@ -39,6 +39,10 @@ function Feed({
   const [stats, setStats] = useState<any>(null);
   const [allowedBrowser, setAllowedBrowser] = useState(false);
   const [bitrateScore, setBitrateScore] = useState(0);
+  const lastResult = new Map<
+  string,
+  IRTCOutboundRTPVideoStreamReport
+>();
 
   const intervalStatsId = useRef<any>();
 
@@ -78,6 +82,63 @@ function Feed({
     id?: string;
   }
 
+  function getConnectionQualityByBitrate(stats) {
+    if (stats.senders.audio) {
+      // console.log(stats.senders.audio);
+    }
+    if (stats.senders.video) {
+      Object.keys(stats.senders.video).forEach((key) => {
+        if (
+          key.includes('RTCOutboundRTPVideoStream') &&
+          stats.senders.video
+        ) {
+          let report: IRTCOutboundRTPVideoStreamReport =
+            stats.senders.video[key];
+
+          let bytes;
+          let headerBytes;
+          let packets;
+
+          const now = report.timestamp;
+          bytes = report.bytesSent;
+          headerBytes = report.headerBytesSent;
+
+          packets = report.packetsSent;
+          if (lastResult && lastResult.has(report.id)) {
+            // calculate bitrate
+            const bitrate =
+              (8 * (bytes - lastResult.get(report.id).bytesSent)) /
+              (now - lastResult.get(report.id).timestamp);
+            const headerrate =
+              (8 *
+                (headerBytes -
+                  lastResult.get(report.id).headerBytesSent)) /
+              (now - lastResult.get(report.id).timestamp);
+
+          console.log('bitrate===>', bitrate)
+
+
+            if (bitrate > 10 && bitrate < 50) {
+              setBitrateScore(1);
+            } else if (bitrate > 50 && bitrate < 100) {
+              setBitrateScore(2);
+            } else if (bitrate > 100 && bitrate < 200) {
+              setBitrateScore(3);
+            } else if (bitrate > 200 && bitrate < 400) {
+              setBitrateScore(4);
+            } else if (bitrate > 400) {
+              setBitrateScore(5);
+            } else {
+              setBitrateScore(0);
+            }
+          }
+
+          lastResult.set(report.id, report);
+        }
+      });
+    }
+  }
+
   function renderStats() {
     if (!stream || !allowedBrowser) {
       return null;
@@ -87,10 +148,7 @@ function Feed({
       return (
         <button
           onClick={async () => {
-            let lastResult = new Map<
-              string,
-              IRTCOutboundRTPVideoStreamReport
-            >();
+          
             intervalStatsId.current = setInterval(async () => {
               try {
                 const stats = await getStatsForParticipantStream(
@@ -98,56 +156,7 @@ function Feed({
                   stream.key
                 );
 
-                if (stats.senders.audio) {
-                  console.log(stats.senders.audio);
-                }
-                if (stats.senders.video) {
-                  Object.keys(stats.senders.video).forEach((key) => {
-                    if (
-                      key.includes('RTCOutboundRTPVideoStream') &&
-                      stats.senders.video
-                    ) {
-                      let report: IRTCOutboundRTPVideoStreamReport =
-                        stats.senders.video[key];
-
-                      let bytes;
-                      let headerBytes;
-                      let packets;
-
-                      const now = report.timestamp;
-                      bytes = report.bytesSent;
-                      headerBytes = report.headerBytesSent;
-
-                      packets = report.packetsSent;
-                      if (lastResult && lastResult.has(report.id)) {
-                        // calculate bitrate
-                        const bitrate =
-                          (8 * (bytes - lastResult.get(report.id).bytesSent)) /
-                          (now - lastResult.get(report.id).timestamp);
-                        const headerrate =
-                          (8 *
-                            (headerBytes -
-                              lastResult.get(report.id).headerBytesSent)) /
-                          (now - lastResult.get(report.id).timestamp);
-
-                        if (bitrate > 10 && bitrate < 50) {
-                          setBitrateScore(1);
-                        } else if (bitrate > 50 && bitrate < 100) {
-                          setBitrateScore(2);
-                        } else if (bitrate > 100 && bitrate < 200) {
-                          setBitrateScore(3);
-                        } else if (bitrate > 200 && bitrate < 400) {
-                          setBitrateScore(4);
-                        } else if (bitrate > 400) {
-                          setBitrateScore(5);
-                        } else {
-                          setBitrateScore(0);
-                        }
-                      }
-                      lastResult.set(report.id, report);
-                    }
-                  });
-                }
+                getConnectionQualityByBitrate(stats);
 
                 if (stats) {
                   setStats(stats);
