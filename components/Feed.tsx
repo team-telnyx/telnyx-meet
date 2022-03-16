@@ -87,7 +87,10 @@ function Feed({
       return (
         <button
           onClick={async () => {
-            let lastResult = new Map<string, IRTCOutboundRTPVideoStreamReport>();
+            let lastResult = new Map<
+              string,
+              IRTCOutboundRTPVideoStreamReport
+            >();
             intervalStatsId.current = setInterval(async () => {
               try {
                 const stats = await getStatsForParticipantStream(
@@ -126,23 +129,18 @@ function Feed({
                             (headerBytes -
                               lastResult.get(report.id).headerBytesSent)) /
                           (now - lastResult.get(report.id).timestamp);
-                       
-                        if(bitrate > 10 && bitrate < 50) {
+
+                        if (bitrate > 10 && bitrate < 50) {
                           setBitrateScore(1);
-                        }
-                        else if(bitrate > 50 && bitrate < 100) {
+                        } else if (bitrate > 50 && bitrate < 100) {
                           setBitrateScore(2);
-                        }
-                        else if(bitrate > 100 && bitrate < 200) {
+                        } else if (bitrate > 100 && bitrate < 200) {
                           setBitrateScore(3);
-                        }
-                        else if(bitrate > 200 && bitrate < 400) {
+                        } else if (bitrate > 200 && bitrate < 400) {
                           setBitrateScore(4);
-                        }
-                        else if(bitrate > 400) {
+                        } else if (bitrate > 400) {
                           setBitrateScore(5);
-                        }
-                        else {
+                        } else {
                           setBitrateScore(0);
                         }
                       }
@@ -172,25 +170,47 @@ function Feed({
           stats
         </button>
       );
-    } else {     
-    const bars =  {
-      1: '▃',
-      2: '▃▄',
-      3: '▃▄▅',
-      4: '▃▄▅▆',
-      5: '▃▄▅▆▇'
-    }
+    } else {
+  
+      const STEP = 3;
+      const BARS_ARRAY = [0, 1, 2, 3, 4];
 
       return (
         <div>
-          <div style={{color: '#FFF', zIndex: 99999999, position: 'relative'}}>
-            <div>Network level: {bitrateScore} - {bars[bitrateScore]}</div>
+          <div
+            style={{ color: '#FFF', zIndex: 99999999, position: 'relative' }}
+          >
+            
+            <div
+              style={{
+                display: 'flex',
+                flexDirection: 'row',
+                height: '20px',
+                alignItems: 'flex-end',
+              }}
+            >
+              Connection Quality: {bitrateScore} - {' '}
+              {BARS_ARRAY.map((level) => (
+                <div
+                  key={level}
+                  style={{
+                    width: '2px',
+                    marginRight: '1px',
+                    height: `${STEP * (level + 1)}px`,
+                    background:
+                      bitrateScore > level
+                        ? 'white'
+                        : 'rgba(255, 255, 255, 0.2)',
+                  }}
+                />
+              ))}
+            </div>
           </div>
+
           <WebRTCStats
             onClose={() => resetWebRTCStats()}
             data={stats}
           ></WebRTCStats>
-          
         </div>
       );
     }
