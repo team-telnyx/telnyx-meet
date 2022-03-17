@@ -36,6 +36,10 @@ export type TelnyxRoom = Room & {
     message: Message;
     recipients: Array<Participant['id']> | null;
   }>;
+  connectionQualityLevel: {
+    participantId: string;
+    level: number;
+  };
   participantsByActivity: ReadonlySet<Participant['id']>;
   getWebRTCStatsForStream: (
     participantId: Participant['id'],
@@ -72,6 +76,10 @@ export const useRoom = ({
     useState<Participant['id']>();
 
   const [messages, setMessages] = useState<TelnyxRoom['messages']>([]);
+  const [connectionQualityLevel, setConnectionQualityLevel] = useState<{
+    participantId: string;
+    level: number;
+  }>({ participantId: '', level: 5 });
 
   const connectAndJoinRoom = async () => {
     if (!roomRef.current) {
@@ -81,6 +89,7 @@ export const useRoom = ({
         context: JSON.stringify(context),
         logLevel: 'DEBUG',
         enableMessages: true,
+        enableConnectionQualityMetrics: true,
       });
 
       setState(roomRef.current.getState());
@@ -281,6 +290,20 @@ export const useRoom = ({
           });
         }
       );
+      roomRef.current.on(
+        'connection_quality_changed',
+        (participantId, connectionQualityLevel, state) => {
+          console.log(
+            'connection_quality_changed',
+            participantId,
+            connectionQualityLevel
+          );
+          setConnectionQualityLevel({
+            participantId,
+            level: connectionQualityLevel,
+          });
+        }
+      );
     }
 
     roomRef.current.connect();
@@ -354,6 +377,7 @@ export const useRoom = ({
         presenter,
         participantsByActivity,
         messages,
+        connectionQualityLevel,
       }
     : undefined;
 };

@@ -24,6 +24,7 @@ function Feed({
   mirrorVideo = false,
   getStatsForParticipantStream,
   dataId,
+  connectionQualityLevel,
 }: {
   participant: Participant;
   stream?: Stream;
@@ -31,6 +32,10 @@ function Feed({
   getStatsForParticipantStream: TelnyxRoom['getWebRTCStatsForStream'];
   mirrorVideo: boolean;
   dataId?: string;
+  connectionQualityLevel: {
+    participantId: string;
+    level: number;
+  };
 }) {
   const isTelephonyEngineParticipant =
     participant.origin === 'telephony_engine';
@@ -95,12 +100,6 @@ function Feed({
               }
             }, 500);
           }}
-          style={{
-            position: 'absolute',
-            top: '5px',
-            left: '5px',
-            zIndex: 1,
-          }}
           disabled={!stream}
         >
           stats
@@ -117,6 +116,9 @@ function Feed({
   }
 
   const renderedStats = renderStats();
+
+  const STEP = 3;
+  const BARS_ARRAY = [0, 1, 2, 3, 4];
 
   return (
     <div
@@ -138,7 +140,58 @@ function Feed({
         height: isPresentation ? '100%' : 'unset',
       }}
     >
-      {renderedStats}
+      <div
+        style={{
+          position: 'absolute',
+          top: '5px',
+          zIndex: 1,
+          width: '100%',
+        }}
+      >
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            margin: '0px 4px 0px 4px',
+          }}
+        >
+          {renderedStats}
+          {participant.id === connectionQualityLevel.participantId && <div
+            style={{
+              borderRadius: 4,
+              backgroundColor: '#84807C',
+              width: 20
+            }}
+          >
+            <div
+              style={{
+                display: 'flex',
+                flexDirection: 'row',
+                height: '20px',
+                alignItems: 'flex-end',
+                justifyContent: 'flex-end',
+              }}
+            >
+              {BARS_ARRAY.map((level) => (
+                <div
+                  key={level}
+                  style={{
+                    width: '2px',
+                    marginRight: '1px',
+                    height: `${STEP * (level + 1)}px`,
+                    background:
+                      connectionQualityLevel.level > level
+                        ? 'white'
+                        : 'rgba(255, 255, 255, 0.2)',
+                  }}
+                />
+              ))}
+            </div>
+          </div>}
+          
+        </div>
+      </div>
+
       <div
         style={{
           position: 'absolute',

@@ -14,6 +14,7 @@ function Feeds({
   getParticipantStream,
   getStatsForParticipantStream,
   dataTestId,
+  connectionQualityLevel,
 }: {
   participants: TelnyxRoom['state']['participants'];
   streams: TelnyxRoom['state']['streams'];
@@ -23,6 +24,10 @@ function Feeds({
   getParticipantStream: TelnyxRoom['getParticipantStream'];
   getStatsForParticipantStream: TelnyxRoom['getWebRTCStatsForStream'];
   dataTestId: string;
+  connectionQualityLevel: {
+    participantId: string;
+    level: number;
+  }
 }) {
   if (presenter) {
     return (
@@ -48,6 +53,7 @@ function Feeds({
       dominantSpeakerId={dominantSpeakerId}
       getParticipantStream={getParticipantStream}
       getStatsForParticipantStream={getStatsForParticipantStream}
+      connectionQualityLevel={connectionQualityLevel}
     />
   );
 }
