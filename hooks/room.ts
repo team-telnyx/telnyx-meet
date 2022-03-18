@@ -36,11 +36,11 @@ export interface Metrics {
       level: number | null;
     };
   };
-  remote: {
+  remotes: Array<{
     participantId: string | null;
     audio: any;
     video: any;
-  };
+  }> | null;
 }
 
 export type TelnyxRoom = Room & {
@@ -101,11 +101,7 @@ export const useRoom = ({
           level: 5,
         },
       },
-      remote: {
-        participantId: '',
-        audio: null,
-        video: null,
-      },
+      remotes: null,
     }
   );
 
@@ -336,13 +332,9 @@ export const useRoom = ({
                 level: connectionQualityMetrics?.local?.video?.level,
               },
             },
-            remote: {
-              participantId: null,
-              audio: null,
-              video: null,
-            },
+            remotes: null,
           };
-          console.log('metrics===>', metrics)
+          console.log('metrics===>', metrics);
           setConnectionQualityLevel(metrics);
         }
       );
