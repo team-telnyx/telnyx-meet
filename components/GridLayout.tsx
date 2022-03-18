@@ -1,7 +1,7 @@
 import React, { ReactChild, ReactElement, useEffect } from 'react';
 import { Participant } from '@telnyx/video';
 
-import { TelnyxRoom } from 'hooks/room';
+import { Metrics, TelnyxRoom } from 'hooks/room';
 import { useWindowSize, getWindowSize } from 'hooks/windowSize';
 import Feed from 'components/Feed';
 import { Pagination } from 'components/Pagination';
@@ -50,10 +50,7 @@ function GridLayout({
   getParticipantStream: TelnyxRoom['getParticipantStream'];
   getStatsForParticipantStream: TelnyxRoom['getWebRTCStatsForStream'];
   dataTestId: string;
-  connectionQualityLevel: {
-    participantId: string;
-    level: number;
-  }
+  connectionQualityLevel: Metrics;
 }) {
   const NAVIGATION_BUTTONS_HEIGHT = 96;
   const REPORT_BUTTON_HEIGHT = 32;

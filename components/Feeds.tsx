@@ -1,7 +1,7 @@
 import React from 'react';
 import { Participant } from '@telnyx/video';
 
-import { TelnyxRoom } from 'hooks/room';
+import { Metrics, TelnyxRoom } from 'hooks/room';
 import GridLayout from 'components/GridLayout';
 import ScreenSharingLayout from 'components/ScreenSharingLayout';
 
@@ -24,10 +24,7 @@ function Feeds({
   getParticipantStream: TelnyxRoom['getParticipantStream'];
   getStatsForParticipantStream: TelnyxRoom['getWebRTCStatsForStream'];
   dataTestId: string;
-  connectionQualityLevel: {
-    participantId: string;
-    level: number;
-  }
+  connectionQualityLevel: Metrics;
 }) {
   if (presenter) {
     return (

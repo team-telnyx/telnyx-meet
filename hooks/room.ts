@@ -26,6 +26,23 @@ interface Props {
   };
 }
 
+export interface Metrics {
+  local: {
+    participantId: string;
+    audio: {
+      level: number | null;
+    };
+    video: {
+      level: number | null;
+    };
+  };
+  remote: {
+    participantId: string | null;
+    audio: any;
+    video: any;
+  };
+}
+
 export type TelnyxRoom = Room & {
   state: State;
   dominantSpeakerId?: Participant['id'];
@@ -36,10 +53,7 @@ export type TelnyxRoom = Room & {
     message: Message;
     recipients: Array<Participant['id']> | null;
   }>;
-  connectionQualityLevel: {
-    participantId: string;
-    level: number;
-  };
+  connectionQualityLevel: Metrics;
   participantsByActivity: ReadonlySet<Participant['id']>;
   getWebRTCStatsForStream: (
     participantId: Participant['id'],
@@ -76,10 +90,24 @@ export const useRoom = ({
     useState<Participant['id']>();
 
   const [messages, setMessages] = useState<TelnyxRoom['messages']>([]);
-  const [connectionQualityLevel, setConnectionQualityLevel] = useState<{
-    participantId: string;
-    level: number;
-  }>({ participantId: '', level: 5 });
+  const [connectionQualityLevel, setConnectionQualityLevel] = useState<Metrics>(
+    {
+      local: {
+        participantId: '',
+        audio: {
+          level: 5,
+        },
+        video: {
+          level: 5,
+        },
+      },
+      remote: {
+        participantId: '',
+        audio: null,
+        video: null,
+      },
+    }
+  );
 
   const connectAndJoinRoom = async () => {
     if (!roomRef.current) {
@@ -292,16 +320,30 @@ export const useRoom = ({
       );
       roomRef.current.on(
         'connection_quality_changed',
-        (participantId, connectionQualityLevel, state) => {
+        (participantId, connectionQualityMetrics, state) => {
           console.log(
             'connection_quality_changed',
             participantId,
             connectionQualityLevel
           );
-          setConnectionQualityLevel({
-            participantId,
-            level: connectionQualityLevel,
-          });
+          const metrics: Metrics = {
+            local: {
+              participantId: connectionQualityMetrics.local.participantId,
+              audio: {
+                level: connectionQualityMetrics?.local?.audio?.level,
+              },
+              video: {
+                level: connectionQualityMetrics?.local?.video?.level,
+              },
+            },
+            remote: {
+              participantId: null,
+              audio: null,
+              video: null,
+            },
+          };
+          console.log('metrics===>', metrics)
+          setConnectionQualityLevel(metrics);
         }
       );
     }
