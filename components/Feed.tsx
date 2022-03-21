@@ -79,6 +79,7 @@ function Feed({
     if (!showStatsOverlay || !stats) {
       return (
         <button
+          style={{ margin: 4 }}
           onClick={async () => {
             intervalStatsId.current = setInterval(async () => {
               try {
@@ -140,52 +141,58 @@ function Feed({
       <div
         style={{
           position: 'absolute',
-          top: '5px',
+          top: '0px',
           zIndex: 1,
           width: '100%',
+          height: '100%',
+          //backgroundColor: showStatsOverlay ? 'rgba(0,0,0,0.1)' : ''
         }}
       >
         <div
           style={{
             display: 'flex',
             justifyContent: 'space-between',
-            margin: '0px 4px 0px 4px',
           }}
         >
           {renderedStats}
-          {connectionQualityLevel && connectionQualityLevel.local && participant.id === connectionQualityLevel.local.participantId && <div
-            style={{
-              borderRadius: 4,
-              backgroundColor: '#84807C',
-              width: 20
-            }}
-          >
-            <div
-              style={{
-                display: 'flex',
-                flexDirection: 'row',
-                height: '20px',
-                alignItems: 'flex-end',
-                justifyContent: 'flex-end',
-              }}
-            >
-              {BARS_ARRAY.map((level) => (
+          {!showStatsOverlay &&
+            connectionQualityLevel &&
+            connectionQualityLevel.local &&
+            participant.id === connectionQualityLevel.local.participantId && (
+              <div
+                style={{
+                  borderRadius: 4,
+                  backgroundColor: '#84807C',
+                  width: 20,
+                  margin: 4,
+                }}
+              >
                 <div
-                  key={level}
                   style={{
-                    width: '2px',
-                    marginRight: '1px',
-                    height: `${STEP * (level + 1)}px`,
-                    background:
-                      connectionQualityLevel.local?.video?.level > level
-                        ? 'white'
-                        : 'rgba(255, 255, 255, 0.2)',
+                    display: 'flex',
+                    flexDirection: 'row',
+                    height: '20px',
+                    alignItems: 'flex-end',
+                    justifyContent: 'flex-end',
                   }}
-                />
-              ))}
-            </div>
-          </div>}
-          
+                >
+                  {BARS_ARRAY.map((level) => (
+                    <div
+                      key={level}
+                      style={{
+                        width: '2px',
+                        marginRight: '1px',
+                        height: `${STEP * (level + 1)}px`,
+                        background:
+                          connectionQualityLevel.local?.video?.level > level
+                            ? 'white'
+                            : 'rgba(255, 255, 255, 0.2)',
+                      }}
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
         </div>
       </div>
 
