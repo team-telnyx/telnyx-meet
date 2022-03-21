@@ -107,6 +107,7 @@ export const useRoom = ({
           roomRef.current?.addSubscription(stream.participantId, stream.key, {
             audio: true,
             video: true,
+            streamQuality: 'low',
           });
         });
         typeof callbacks?.onConnected === 'function' && callbacks.onConnected();
@@ -173,6 +174,7 @@ export const useRoom = ({
         roomRef.current?.addSubscription(participantId, key, {
           audio: true,
           video: true,
+          streamQuality: 'medium',
         });
       });
       roomRef.current.on('stream_unpublished', (participantId, key, state) => {
