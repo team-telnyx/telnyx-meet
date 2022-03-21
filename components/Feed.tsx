@@ -118,6 +118,8 @@ function Feed({
   const STEP = 3;
   const BARS_ARRAY = [0, 1, 2, 3, 4];
 
+  console.log('connectionQualityLevel===>', connectionQualityLevel)
+
   return (
     <div
       // id={stream?.isSpeaking ? 'speaking-box' : ''}
@@ -145,7 +147,6 @@ function Feed({
           zIndex: 1,
           width: '100%',
           height: '100%',
-          //backgroundColor: showStatsOverlay ? 'rgba(0,0,0,0.1)' : ''
         }}
       >
         <div
@@ -184,7 +185,7 @@ function Feed({
                         marginRight: '1px',
                         height: `${STEP * (level + 1)}px`,
                         background:
-                          connectionQualityLevel.local?.video?.level > level
+                          (connectionQualityLevel.local?.video?.level || connectionQualityLevel.local?.audio?.level) > level
                             ? 'white'
                             : 'rgba(255, 255, 255, 0.2)',
                       }}
