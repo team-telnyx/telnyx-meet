@@ -32,7 +32,7 @@ function Feed({
   getStatsForParticipantStream: TelnyxRoom['getWebRTCStatsForStream'];
   mirrorVideo: boolean;
   dataId?: string;
-  connectionQualityLevel: Metrics;
+  connectionQualityLevel: React.RefObject<Metrics>;
 }) {
   const isTelephonyEngineParticipant =
     participant.origin === 'telephony_engine';
@@ -118,7 +118,15 @@ function Feed({
   const STEP = 3;
   const BARS_ARRAY = [0, 1, 2, 3, 4];
 
+  const localPeerMetrics = connectionQualityLevel.current.local.get(participant.id);
+  const remotePeerMetrics = connectionQualityLevel.current.remotes.get(participant.id);
+
+
   console.log('connectionQualityLevel===>', connectionQualityLevel)
+  console.log('localPeerMetrics===>', localPeerMetrics)
+  console.log('participant.id===>', participant.id)
+
+
 
   return (
     <div
@@ -157,9 +165,7 @@ function Feed({
         >
           {renderedStats}
           {!showStatsOverlay &&
-            connectionQualityLevel &&
-            connectionQualityLevel.local &&
-            participant.id === connectionQualityLevel.local.participantId && (
+           localPeerMetrics  && (
               <div
                 style={{
                   borderRadius: 4,
@@ -185,7 +191,7 @@ function Feed({
                         marginRight: '1px',
                         height: `${STEP * (level + 1)}px`,
                         background:
-                          (connectionQualityLevel.local?.video?.level || connectionQualityLevel.local?.audio?.level) > level
+                          (localPeerMetrics?.video?.level || localPeerMetrics?.audio?.level) > level
                             ? 'white'
                             : 'rgba(255, 255, 255, 0.2)',
                       }}
@@ -194,6 +200,43 @@ function Feed({
                 </div>
               </div>
             )}
+          {!showStatsOverlay &&
+           remotePeerMetrics  && (
+              <div
+                style={{
+                  borderRadius: 4,
+                  backgroundColor: '#84807C',
+                  width: 20,
+                  margin: 4,
+                }}
+              >
+                <div
+                  style={{
+                    display: 'flex',
+                    flexDirection: 'row',
+                    height: '20px',
+                    alignItems: 'flex-end',
+                    justifyContent: 'flex-end',
+                  }}
+                >
+                  {BARS_ARRAY.map((level) => (
+                    <div
+                      key={level}
+                      style={{
+                        width: '2px',
+                        marginRight: '1px',
+                        height: `${STEP * (level + 1)}px`,
+                        background:
+                          (remotePeerMetrics?.video?.level || remotePeerMetrics?.audio?.level) > level
+                            ? 'white'
+                            : 'rgba(255, 255, 255, 0.2)',
+                      }}
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
+
         </div>
       </div>
 

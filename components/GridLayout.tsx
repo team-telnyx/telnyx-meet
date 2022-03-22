@@ -50,7 +50,7 @@ function GridLayout({
   getParticipantStream: TelnyxRoom['getParticipantStream'];
   getStatsForParticipantStream: TelnyxRoom['getWebRTCStatsForStream'];
   dataTestId: string;
-  connectionQualityLevel: Metrics;
+  connectionQualityLevel: React.RefObject<Metrics>;
 }) {
   const NAVIGATION_BUTTONS_HEIGHT = 96;
   const REPORT_BUTTON_HEIGHT = 32;
