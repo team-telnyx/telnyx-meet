@@ -26,23 +26,12 @@ interface Props {
   };
 }
 
-export interface Metrics {
-  local: Map<string, {
-    participantId: string | undefined;
-    audio: {
-      level: number;
-    };
-    video: {
-      level: number;
-    };
-  }> | null;
-  remotes: Map<
-    string,
-    {participantId: string | undefined;
-    audio: any;
-    video: any
-  }> | null
-}
+export type Metrics = Map<
+string,
+{participantId: string | undefined;
+audio: any;
+video: any
+}>
 
 export type TelnyxRoom = Room & {
   state: State;
@@ -54,7 +43,7 @@ export type TelnyxRoom = Room & {
     message: Message;
     recipients: Array<Participant['id']> | null;
   }>;
-  connectionQualityLevel: React.RefObject<Metrics>;
+  connectionQualityLevel: Metrics;
   participantsByActivity: ReadonlySet<Participant['id']>;
   getWebRTCStatsForStream: (
     participantId: Participant['id'],
@@ -91,12 +80,7 @@ export const useRoom = ({
     useState<Participant['id']>();
 
   const [messages, setMessages] = useState<TelnyxRoom['messages']>([]);
-  const connectionQualityLevel = useRef<Metrics>(
-    {
-      local: new Map(),
-      remotes: new Map(),
-    }
-  );
+  const [connectionQualityLevel, setConnectionQualityLevel] = useState<Metrics>(new Map());
 
   const connectAndJoinRoom = async () => {
     if (!roomRef.current) {
@@ -316,44 +300,39 @@ export const useRoom = ({
             connectionQualityLevel
           );
           const metrics = {
-            local: {
-              participantId: connectionQualityMetrics?.local?.participantId,
+              participantId: connectionQualityMetrics?.participantId,
               audio: {
-                level: connectionQualityMetrics?.local?.audio?.level || 0,
+                level: connectionQualityMetrics?.audio?.level || 0,
               },
               video: {
-                level: connectionQualityMetrics?.local?.video?.level || 0,
+                level: connectionQualityMetrics?.video?.level || 0,
               },
-            },
-          };
-          connectionQualityLevel.current.local?.set(metrics.local.participantId, metrics.local);
-
-          console.log('connectionQualityLevel.current.local', connectionQualityLevel.current)
-
+            };
+            console.log('connectionQualityLevel===>', connectionQualityLevel)
+          
+          setConnectionQualityLevel(new Map(connectionQualityLevel.set(metrics.participantId, metrics)))
         }
       );
-      roomRef.current.on(
-        'connection_quality_changed_subscription',
-        (participantId, connectionQualityMetrics, state) => {
-          console.log(
-            'connection_quality_changed_subscription',
-            participantId,
-            connectionQualityLevel
-          );
+      // roomRef.current.on(
+      //   'connection_quality_changed_subscription',
+      //   (participantId, connectionQualityMetrics, state) => {
+      //     console.log(
+      //       'connection_quality_changed_subscription',
+      //       participantId,
+      //       connectionQualityLevel
+      //     );
        
-          connectionQualityLevel.current.remotes?.set(participantId, {
-            participantId: connectionQualityMetrics?.remote?.participantId || undefined,
-            audio: {
-              level: connectionQualityMetrics?.remote?.audio?.level,
-            },
-            video: {
-              level: connectionQualityMetrics?.remote?.video?.level,
-            },
-          });
-
-          console.log('connectionQualityLevel.current.remotes', connectionQualityLevel.current)
-        }
-      );
+      //     connectionQualityLevel.peer.set(participantId, {
+      //       participantId: connectionQualityMetrics?.participantId || undefined,
+      //       audio: {
+      //         level: connectionQualityMetrics?.audio?.level,
+      //       },
+      //       video: {
+      //         level: connectionQualityMetrics?.video?.level,
+      //       },
+      //     })
+      //   }
+      // );
     }
 
     roomRef.current.connect();

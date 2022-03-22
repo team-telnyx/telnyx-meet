@@ -24,7 +24,7 @@ function Feeds({
   getParticipantStream: TelnyxRoom['getParticipantStream'];
   getStatsForParticipantStream: TelnyxRoom['getWebRTCStatsForStream'];
   dataTestId: string;
-  connectionQualityLevel: React.RefObject<Metrics>;
+  connectionQualityLevel: Metrics
 }) {
   if (presenter) {
     return (

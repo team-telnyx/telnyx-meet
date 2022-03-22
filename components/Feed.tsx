@@ -32,7 +32,7 @@ function Feed({
   getStatsForParticipantStream: TelnyxRoom['getWebRTCStatsForStream'];
   mirrorVideo: boolean;
   dataId?: string;
-  connectionQualityLevel: React.RefObject<Metrics>;
+  connectionQualityLevel: Metrics
 }) {
   const isTelephonyEngineParticipant =
     participant.origin === 'telephony_engine';
@@ -118,15 +118,7 @@ function Feed({
   const STEP = 3;
   const BARS_ARRAY = [0, 1, 2, 3, 4];
 
-  const localPeerMetrics = connectionQualityLevel.current.local.get(participant.id);
-  const remotePeerMetrics = connectionQualityLevel.current.remotes.get(participant.id);
-
-
-  console.log('connectionQualityLevel===>', connectionQualityLevel)
-  console.log('localPeerMetrics===>', localPeerMetrics)
-  console.log('participant.id===>', participant.id)
-
-
+  const peerMetrics = connectionQualityLevel.get(participant.id);
 
   return (
     <div
@@ -164,79 +156,42 @@ function Feed({
           }}
         >
           {renderedStats}
-          {!showStatsOverlay &&
-           localPeerMetrics  && (
+          {!showStatsOverlay && peerMetrics && (
+            <div
+              style={{
+                borderRadius: 4,
+                backgroundColor: '#84807C',
+                width: 20,
+                margin: 4,
+              }}
+            >
               <div
                 style={{
-                  borderRadius: 4,
-                  backgroundColor: '#84807C',
-                  width: 20,
-                  margin: 4,
+                  display: 'flex',
+                  flexDirection: 'row',
+                  height: '20px',
+                  alignItems: 'flex-end',
+                  justifyContent: 'flex-end',
                 }}
               >
-                <div
-                  style={{
-                    display: 'flex',
-                    flexDirection: 'row',
-                    height: '20px',
-                    alignItems: 'flex-end',
-                    justifyContent: 'flex-end',
-                  }}
-                >
-                  {BARS_ARRAY.map((level) => (
-                    <div
-                      key={level}
-                      style={{
-                        width: '2px',
-                        marginRight: '1px',
-                        height: `${STEP * (level + 1)}px`,
-                        background:
-                          (localPeerMetrics?.video?.level || localPeerMetrics?.audio?.level) > level
-                            ? 'white'
-                            : 'rgba(255, 255, 255, 0.2)',
-                      }}
-                    />
-                  ))}
-                </div>
+                {BARS_ARRAY.map((level) => (
+                  <div
+                    key={level}
+                    style={{
+                      width: '2px',
+                      marginRight: '1px',
+                      height: `${STEP * (level + 1)}px`,
+                      background:
+                        (peerMetrics?.video?.level ||
+                          peerMetrics?.audio?.level) > level
+                          ? 'white'
+                          : 'rgba(255, 255, 255, 0.2)',
+                    }}
+                  />
+                ))}
               </div>
-            )}
-          {!showStatsOverlay &&
-           remotePeerMetrics  && (
-              <div
-                style={{
-                  borderRadius: 4,
-                  backgroundColor: '#84807C',
-                  width: 20,
-                  margin: 4,
-                }}
-              >
-                <div
-                  style={{
-                    display: 'flex',
-                    flexDirection: 'row',
-                    height: '20px',
-                    alignItems: 'flex-end',
-                    justifyContent: 'flex-end',
-                  }}
-                >
-                  {BARS_ARRAY.map((level) => (
-                    <div
-                      key={level}
-                      style={{
-                        width: '2px',
-                        marginRight: '1px',
-                        height: `${STEP * (level + 1)}px`,
-                        background:
-                          (remotePeerMetrics?.video?.level || remotePeerMetrics?.audio?.level) > level
-                            ? 'white'
-                            : 'rgba(255, 255, 255, 0.2)',
-                      }}
-                    />
-                  ))}
-                </div>
-              </div>
-            )}
-
+            </div>
+          )}
         </div>
       </div>
 
