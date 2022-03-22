@@ -308,7 +308,6 @@ export const useRoom = ({
                 level: connectionQualityMetrics?.video?.level || 0,
               },
             };
-            console.log('connectionQualityLevel===>', connectionQualityLevel)
           
           setConnectionQualityLevel(new Map(connectionQualityLevel.set(metrics.participantId, metrics)))
         }
