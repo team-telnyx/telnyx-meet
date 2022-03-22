@@ -98,6 +98,7 @@ function Room({
               streams={room.state.streams}
               getParticipantStream={room.getParticipantStream}
               getStatsForParticipantStream={room.getWebRTCStatsForStream}
+              updateSubscription={room.updateSubscription}
             />
           )}
         </Box>

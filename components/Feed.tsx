@@ -12,6 +12,7 @@ import { TelnyxRoom } from 'hooks/room';
 
 import VideoTrack from 'components/VideoTrack';
 import { WebRTCStats } from 'components/WebRTCStats';
+import { StreamQualityControls } from 'components/StreamQualityControls';
 
 const VIDEO_BG_COLOR = '#111';
 
@@ -23,12 +24,14 @@ function Feed({
   isSpeaking,
   mirrorVideo = false,
   getStatsForParticipantStream,
+  updateSubscription,
   dataId,
 }: {
   participant: Participant;
   stream?: Stream;
   isSpeaking: boolean;
   getStatsForParticipantStream: TelnyxRoom['getWebRTCStatsForStream'];
+  updateSubscription: TelnyxRoom['updateSubscription'];
   mirrorVideo: boolean;
   dataId?: string;
 }) {
@@ -36,6 +39,7 @@ function Feed({
     participant.origin === 'telephony_engine';
   const showAudioActivityIndicator = isSpeaking && stream?.key === 'self';
   const [showStatsOverlay, setShowStatsOverlay] = useState(false);
+  const [showStreamControls, setShowStreamControls] = useState(false);
   const [stats, setStats] = useState<any>(null);
   const [allowedBrowser, setAllowedBrowser] = useState(false);
 
@@ -70,7 +74,7 @@ function Feed({
   }
 
   function renderStats() {
-    if (!stream || !allowedBrowser) {
+    if (!stream || !allowedBrowser || showStreamControls) {
       return null;
     }
 
@@ -116,7 +120,49 @@ function Feed({
     }
   }
 
+  function renderStreamControls() {
+    const localParticipant = participant.origin === 'local';
+    if (
+      !stream ||
+      !allowedBrowser ||
+      showStatsOverlay ||
+      stats ||
+      localParticipant
+    ) {
+      return null;
+    }
+
+    if (!showStreamControls) {
+      return (
+        <button
+          onClick={() => setShowStreamControls(true)}
+          style={{
+            position: 'absolute',
+            top: '5px',
+            right: '5px',
+            zIndex: 1,
+          }}
+          disabled={!stream}
+        >
+          substreams
+        </button>
+      );
+    } else {
+      return (
+        <StreamQualityControls
+          callOnClick={(quality: string) =>
+            updateSubscription(participant.id, stream.key, {
+              streamQuality: quality,
+            })
+          }
+          callOnClose={() => setShowStreamControls(false)}
+        ></StreamQualityControls>
+      );
+    }
+  }
+
   const renderedStats = renderStats();
+  const renderedStreamControls = renderStreamControls();
 
   return (
     <div
@@ -139,6 +185,7 @@ function Feed({
       }}
     >
       {renderedStats}
+      {renderedStreamControls}
       <div
         style={{
           position: 'absolute',
