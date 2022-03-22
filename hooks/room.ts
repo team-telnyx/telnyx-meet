@@ -313,26 +313,6 @@ export const useRoom = ({
           setConnectionQualityLevel(new Map(connectionQualityLevel.set(metrics.participantId, metrics)))
         }
       );
-      // roomRef.current.on(
-      //   'connection_quality_changed_subscription',
-      //   (participantId, connectionQualityMetrics, state) => {
-      //     console.log(
-      //       'connection_quality_changed_subscription',
-      //       participantId,
-      //       connectionQualityLevel
-      //     );
-       
-      //     connectionQualityLevel.peer.set(participantId, {
-      //       participantId: connectionQualityMetrics?.participantId || undefined,
-      //       audio: {
-      //         level: connectionQualityMetrics?.audio?.level,
-      //       },
-      //       video: {
-      //         level: connectionQualityMetrics?.video?.level,
-      //       },
-      //     })
-      //   }
-      // );
     }
 
     roomRef.current.connect();
