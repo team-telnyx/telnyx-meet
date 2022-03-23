@@ -51,6 +51,18 @@ const FontAwesomeIconStyled = styled(FontAwesomeIcon)`
   }
 `;
 
+const Bubble = styled.div`
+  background-color: #8ab4f8;
+  border-color: #202124;
+  right: -3px;
+  position: absolute;
+  top: -4px;
+  border-radius: 50%;
+  border: 2px solid white;
+  height: 15px;
+  width: 15px;
+`;
+
 const isSinkIdSupported = (): boolean => {
   const audio = document.createElement('audio');
   // @ts-expect-error
@@ -184,6 +196,8 @@ export default function RoomControls({
   });
 
   const [showChatBox, setShowChatBox] = useState(false);
+  const [newMessagesCount, setNewMessagesCount] = useState(0);
+
 
   const selfStream = streams.self;
   const presentationStream = streams.presentation;
@@ -201,6 +215,21 @@ export default function RoomControls({
   const onClose = () => {
     setError(undefined);
   };
+
+  const getNewMessagesCount = (newMessagesCount: number, messagesCount: number) => {
+    if(newMessagesCount !== messagesCount) {
+      const count = messagesCount - newMessagesCount;
+      if(count !== newMessagesCount) {
+        setNewMessagesCount(count)
+      }
+    } 
+  }
+
+  useEffect(() => {
+    if(messages && messages.length > 0) {
+      getNewMessagesCount(newMessagesCount, messages.length)
+    }
+  }, [messages])
 
   useEffect(() => {
     // get devices if permissions are already granted
@@ -370,6 +399,8 @@ export default function RoomControls({
 
   const localParticipant = getLocalParticipant();
 
+  console.log('messages===>', messages)
+  console.log('newMessagesCount===>', newMessagesCount)
   return (
     <Box
       gridArea='controls'
@@ -620,6 +651,7 @@ export default function RoomControls({
             >
               <Box align='center' gap='xsmall'>
                 <Box style={{ position: 'relative' }}>
+                {(newMessagesCount > 0 && (messages.length !== newMessagesCount)) && <Bubble></Bubble>}
                   <ChatIcon
                     size='large'
                     color={showChatBox ? 'accent-1' : 'light-5'}

@@ -69,10 +69,10 @@ export const Chat = ({
   };
 
   return (
-    <Draggable bounds='body' handle="#chat-header">
+    <Draggable bounds='body' handle='#chat-header'>
       <Wrapper>
         <div
-          id="chat-header"
+          id='chat-header'
           style={{
             backgroundColor: '#b5a4a4',
             display: 'flex',
@@ -80,7 +80,7 @@ export const Chat = ({
             borderTopRightRadius: 4,
             justifyContent: 'space-between',
             alignItems: 'center',
-            cursor: 'grab'
+            cursor: 'grab',
           }}
         >
           <button
