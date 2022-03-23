@@ -37,6 +37,7 @@ function Feeds({
         dominantSpeakerId={dominantSpeakerId}
         getParticipantStream={getParticipantStream}
         getStatsForParticipantStream={getStatsForParticipantStream}
+        updateSubscription={updateSubscription}
       />
     );
   }
