@@ -49,7 +49,7 @@ function ScreenSharingLayout({
   dominantSpeakerId?: Participant['id'];
   getParticipantStream: TelnyxRoom['getParticipantStream'];
   getStatsForParticipantStream: TelnyxRoom['getWebRTCStatsForStream'];
-  updateSubscription: TelnyxRoom['updateSubscription'],
+  updateSubscription: TelnyxRoom['updateSubscription'];
   dataTestId: string;
 }) {
   const USERS_PER_PAGE = 3;

@@ -94,8 +94,15 @@ export const useRoom = ({
           ]);
         });
         state.streams.forEach((stream) => {
+          const config = {
+            audio: true,
+            video: true,
+            streamQuality: 'medium',
+          };
+
           if (stream.key === 'presentation') {
             setPresenter(state.participants.get(stream.participantId));
+            config.streamQuality = 'high';
           }
 
           if (
@@ -104,11 +111,11 @@ export const useRoom = ({
             return;
           }
 
-          roomRef.current?.addSubscription(stream.participantId, stream.key, {
-            audio: true,
-            video: true,
-            streamQuality: 'low',
-          });
+          roomRef.current?.addSubscription(
+            stream.participantId,
+            stream.key,
+            config
+          );
         });
         typeof callbacks?.onConnected === 'function' && callbacks.onConnected();
       });
@@ -163,19 +170,22 @@ export const useRoom = ({
         });
       });
       roomRef.current.on('stream_published', (participantId, key, state) => {
+        const config = {
+          audio: true,
+          video: true,
+          streamQuality: 'medium',
+        };
+
         if (key === 'presentation') {
           setPresenter(state.participants.get(participantId));
+          config.streamQuality = 'high';
         }
 
         if (participantId === roomRef.current?.getLocalParticipant().id) {
           return;
         }
 
-        roomRef.current?.addSubscription(participantId, key, {
-          audio: true,
-          video: true,
-          streamQuality: 'medium',
-        });
+        roomRef.current?.addSubscription(participantId, key, config);
       });
       roomRef.current.on('stream_unpublished', (participantId, key, state) => {
         if (key === 'presentation') {
