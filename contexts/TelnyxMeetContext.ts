@@ -1,11 +1,14 @@
 import { NetworkMetrics } from '@telnyx/video';
 import React, { Dispatch, SetStateAction } from 'react';
 
+import { TelnyxRoom } from 'hooks/room';
+
 const TelnyxMeetContext = React.createContext<{
   audioInputDeviceId: string | undefined;
   audioOutputDeviceId: string | undefined;
   videoInputDeviceId: string | undefined;
   networkMetrics: NetworkMetrics | undefined;
+  readMessages: any;
 
   setAudioInputDeviceId: Dispatch<SetStateAction<string | undefined>>;
   setAudioOutputDeviceId: Dispatch<SetStateAction<string | undefined>>;
@@ -24,11 +27,14 @@ const TelnyxMeetContext = React.createContext<{
   setNetworkMetrics: Dispatch<SetStateAction<NetworkMetrics | undefined>>;
 
   sendNotification: (message: { body: string }) => void;
+  setReadMessages: Dispatch<SetStateAction<TelnyxRoom['messages']>>;
 }>({
   audioInputDeviceId: undefined,
   audioOutputDeviceId: undefined,
   videoInputDeviceId: undefined,
   networkMetrics: undefined,
+  readMessages: undefined,
+
   setAudioInputDeviceId: (
     value: React.SetStateAction<string | undefined>
   ) => {},
@@ -49,6 +55,7 @@ const TelnyxMeetContext = React.createContext<{
     value: React.SetStateAction<NetworkMetrics | undefined>
   ) => {},
   sendNotification: (message: { body: string }) => {},
+  setReadMessages: (value: React.SetStateAction<TelnyxRoom['messages']>) => {},
 });
 
 export { TelnyxMeetContext };

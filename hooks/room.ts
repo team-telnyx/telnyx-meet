@@ -63,7 +63,8 @@ export const useRoom = ({
   callbacks,
 }: Props): TelnyxRoom | undefined => {
   const [_, setDebugState] = useContext(DebugContext);
-  const { sendNotification, setNetworkMetrics } = useContext(TelnyxMeetContext);
+  const { sendNotification, setNetworkMetrics, setReadMessages, readMessages } =
+    useContext(TelnyxMeetContext);
   const roomRef = useRef<Room>();
   const [state, setState] = useState<State>();
   const [clientToken, setClientToken] = useState<string>(tokens.clientToken);
@@ -281,7 +282,6 @@ export const useRoom = ({
             });
           }
         });
-
         roomRef.current.on(
           'subscription_started',
           (participantId, key, state) => {}
@@ -294,12 +294,13 @@ export const useRoom = ({
           'subscription_ended',
           (participantId, key, state) => {}
         );
-
         roomRef.current.on(
           'message_received',
           (participantId, message, recipients, state) => {
             const participant = state.participants.get(participantId);
             const fromUsername = JSON.parse(participant.context).username;
+
+            setReadMessages(messages);
 
             setMessages((value) => {
               const messages = value.concat({

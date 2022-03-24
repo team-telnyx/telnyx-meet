@@ -180,6 +180,8 @@ export default function RoomControls({
     setVideoInputDeviceId,
     localTracks,
     setLocalTracks,
+    readMessages,
+    setReadMessages
   } = useContext(TelnyxMeetContext);
 
   const [devices, setDevices] = useState<any>({});
@@ -196,8 +198,6 @@ export default function RoomControls({
   });
 
   const [showChatBox, setShowChatBox] = useState(false);
-  const [newMessagesCount, setNewMessagesCount] = useState(0);
-
 
   const selfStream = streams.self;
   const presentationStream = streams.presentation;
@@ -215,21 +215,6 @@ export default function RoomControls({
   const onClose = () => {
     setError(undefined);
   };
-
-  const getNewMessagesCount = (newMessagesCount: number, messagesCount: number) => {
-    if(newMessagesCount !== messagesCount) {
-      const count = messagesCount - newMessagesCount;
-      if(count !== newMessagesCount) {
-        setNewMessagesCount(count)
-      }
-    } 
-  }
-
-  useEffect(() => {
-    if(messages && messages.length > 0) {
-      getNewMessagesCount(newMessagesCount, messages.length)
-    }
-  }, [messages])
 
   useEffect(() => {
     // get devices if permissions are already granted
@@ -399,8 +384,42 @@ export default function RoomControls({
 
   const localParticipant = getLocalParticipant();
 
+
+  const hasUnreadMessages = () => {
+
+    if(readMessages && readMessages.lenght > 0) {
+      if(messages.length !== readMessages.lenght) {
+
+        return true
+      }   
+    }
+
+    return false;
+  }
+
+  const checkBubbleNotification = () => {
+    if(messages && messages.length > 0) {
+      const lastMessage = messages.length - 1;
+      const isNotLocalParticipantMessage = messages[lastMessage].from !== localParticipant.id
+      const existUnReadMessages = hasUnreadMessages()
+
+      console.log('isNotLocalParticipantMessage===>', isNotLocalParticipantMessage)
+      console.log('showChatBox===>', showChatBox)
+      console.log('existUnReadMessages===>', existUnReadMessages)
+      
+      if(isNotLocalParticipantMessage && !showChatBox && existUnReadMessages) {
+        return true
+      }
+      return false;
+    }
+    return false;
+  }
+
   console.log('messages===>', messages)
-  console.log('newMessagesCount===>', newMessagesCount)
+  console.log('readMessages===>', readMessages)
+
+  const showBubbleNotification = checkBubbleNotification();
+
   return (
     <Box
       gridArea='controls'
@@ -420,7 +439,10 @@ export default function RoomControls({
         <Chat
           sendMessage={sendMessage}
           messages={messages}
-          onClose={() => setShowChatBox(false)}
+          onClose={() => {
+            setShowChatBox(false)
+            setReadMessages([])
+          }}
           localParticipant={localParticipant}
         ></Chat>
       )}
@@ -647,11 +669,12 @@ export default function RoomControls({
               size='large'
               onClick={() => {
                 setShowChatBox((value) => !value);
+                setReadMessages([])
               }}
             >
               <Box align='center' gap='xsmall'>
                 <Box style={{ position: 'relative' }}>
-                {(newMessagesCount > 0 && (messages.length !== newMessagesCount)) && <Bubble></Bubble>}
+                  {showBubbleNotification && <Bubble></Bubble>}
                   <ChatIcon
                     size='large'
                     color={showChatBox ? 'accent-1' : 'light-5'}

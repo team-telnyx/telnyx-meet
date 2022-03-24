@@ -1,9 +1,10 @@
 import { Participant, Room } from '@telnyx/video';
+import { TelnyxMeetContext } from 'contexts/TelnyxMeetContext';
 import { Button, TextInput } from 'grommet';
 import { Send } from 'grommet-icons';
 import { TelnyxRoom } from 'hooks/room';
 
-import React, { MouseEventHandler } from 'react';
+import React, { MouseEventHandler, useContext } from 'react';
 import Draggable from 'react-draggable';
 import styled from 'styled-components';
 
@@ -57,9 +58,12 @@ export const Chat = ({
   localParticipant: Participant;
 }) => {
   const [value, setValue] = React.useState('');
+  const { readMessages, setReadMessages } = useContext(TelnyxMeetContext);
 
   const handleSendMessage = async () => {
     if (value && value.length > 0) {
+      setReadMessages(messages);
+
       await sendMessage({
         payload: value,
         type: 'text',

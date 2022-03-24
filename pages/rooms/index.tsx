@@ -22,6 +22,7 @@ import {
   USER_PREFERENCE_VIDEO_ENABLED,
 } from 'utils/storage';
 import { NetworkMetrics } from '@telnyx/video';
+import { TelnyxRoom } from 'hooks/room';
 
 const breakpointMedium = 1021;
 
@@ -77,6 +78,8 @@ export default function Rooms({
   const [videoInputDeviceId, setVideoInputDeviceId] = useState<
     string | undefined
   >();
+
+  const [readMessages, setReadMessages] = useState<TelnyxRoom['messages']>([]);
 
   const [localTracks, setLocalTracks] = useState<{
     audio: MediaStreamTrack | undefined;
@@ -188,6 +191,8 @@ export default function Rooms({
           sendNotification,
           networkMetrics,
           setNetworkMetrics,
+          readMessages,
+          setReadMessages,
         }}
       >
         <Main align='center' justify='center' background='light-2'>
