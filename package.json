@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build:pwa": "NODE_ENV=production next build",
     "build": "next build",
-    "start": "next start"
+    "start": "next start",
+    "lint": "next lint"
   },
   "dependencies": {
     "@bugsnag/js": "^7.10.1",
