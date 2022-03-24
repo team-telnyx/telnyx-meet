@@ -76,7 +76,13 @@ export const useRoom = ({
   const [dominantSpeakerId, setDominantSpeakerId] =
     useState<Participant['id']>();
 
-  const [messages, setMessages] = useState<TelnyxRoom['messages']>([]);
+  const [messages, _setMessages] = useState<TelnyxRoom['messages']>([]);
+
+  const messagesRef = useRef(messages);
+  const setMessages = (data: any) => {
+    messagesRef.current = data;
+    _setMessages(data);
+  };
 
   useEffect(() => {
     const connectAndJoinRoom = async () => {
@@ -282,6 +288,7 @@ export const useRoom = ({
             });
           }
         });
+
         roomRef.current.on(
           'subscription_started',
           (participantId, key, state) => {}
@@ -299,17 +306,18 @@ export const useRoom = ({
           (participantId, message, recipients, state) => {
             const participant = state.participants.get(participantId);
             const fromUsername = JSON.parse(participant.context).username;
+            // used to know if it is the first message, if so readMessages should be null, doing that I can show count message notification.
+            if (messagesRef.current && messagesRef.current.length > 0) {
+              setReadMessages(messagesRef.current);
+            }
 
-            setReadMessages(messages);
-
-            setMessages((value) => {
+            setMessages((value: any) => {
               const messages = value.concat({
                 from: participantId,
                 fromUsername,
                 message,
                 recipients,
               });
-
               return messages;
             });
           }

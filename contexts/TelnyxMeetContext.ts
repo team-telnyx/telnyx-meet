@@ -27,7 +27,7 @@ const TelnyxMeetContext = React.createContext<{
   setNetworkMetrics: Dispatch<SetStateAction<NetworkMetrics | undefined>>;
 
   sendNotification: (message: { body: string }) => void;
-  setReadMessages: Dispatch<SetStateAction<TelnyxRoom['messages']>>;
+  setReadMessages: Dispatch<SetStateAction<TelnyxRoom['messages'] | null>>;
 }>({
   audioInputDeviceId: undefined,
   audioOutputDeviceId: undefined,
@@ -55,7 +55,9 @@ const TelnyxMeetContext = React.createContext<{
     value: React.SetStateAction<NetworkMetrics | undefined>
   ) => {},
   sendNotification: (message: { body: string }) => {},
-  setReadMessages: (value: React.SetStateAction<TelnyxRoom['messages']>) => {},
+  setReadMessages: (
+    value: React.SetStateAction<TelnyxRoom['messages'] | null>
+  ) => {},
 });
 
 export { TelnyxMeetContext };

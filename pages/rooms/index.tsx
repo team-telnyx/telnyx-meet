@@ -79,7 +79,9 @@ export default function Rooms({
     string | undefined
   >();
 
-  const [readMessages, setReadMessages] = useState<TelnyxRoom['messages']>([]);
+  const [readMessages, setReadMessages] = useState<
+    TelnyxRoom['messages'] | null
+  >(null);
 
   const [localTracks, setLocalTracks] = useState<{
     audio: MediaStreamTrack | undefined;

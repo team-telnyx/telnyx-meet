@@ -58,12 +58,9 @@ export const Chat = ({
   localParticipant: Participant;
 }) => {
   const [value, setValue] = React.useState('');
-  const { readMessages, setReadMessages } = useContext(TelnyxMeetContext);
 
   const handleSendMessage = async () => {
     if (value && value.length > 0) {
-      setReadMessages(messages);
-
       await sendMessage({
         payload: value,
         type: 'text',

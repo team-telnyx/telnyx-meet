@@ -59,8 +59,11 @@ const Bubble = styled.div`
   top: -4px;
   border-radius: 50%;
   border: 2px solid white;
-  height: 15px;
-  width: 15px;
+  height: 18px;
+  width: 18px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 `;
 
 const isSinkIdSupported = (): boolean => {
@@ -181,7 +184,7 @@ export default function RoomControls({
     localTracks,
     setLocalTracks,
     readMessages,
-    setReadMessages
+    setReadMessages,
   } = useContext(TelnyxMeetContext);
 
   const [devices, setDevices] = useState<any>({});
@@ -384,39 +387,50 @@ export default function RoomControls({
 
   const localParticipant = getLocalParticipant();
 
-
   const hasUnreadMessages = () => {
-
-    if(readMessages && readMessages.lenght > 0) {
-      if(messages.length !== readMessages.lenght) {
-
-        return true
-      }   
+    // used to know if it is the first message received and show count message notification
+    if (messages.length === 1 && !readMessages) {
+      return true;
+    } else if (readMessages && readMessages.length > 0) {
+      if (messages.length !== readMessages.length) {
+        return true;
+      }
     }
 
     return false;
-  }
+  };
 
   const checkBubbleNotification = () => {
-    if(messages && messages.length > 0) {
+    if (messages && messages.length > 0) {
       const lastMessage = messages.length - 1;
-      const isNotLocalParticipantMessage = messages[lastMessage].from !== localParticipant.id
-      const existUnReadMessages = hasUnreadMessages()
+      const isNotLocalParticipantMessage =
+        messages[lastMessage].from !== localParticipant.id;
+      const existUnReadMessages = hasUnreadMessages();
 
-      console.log('isNotLocalParticipantMessage===>', isNotLocalParticipantMessage)
-      console.log('showChatBox===>', showChatBox)
-      console.log('existUnReadMessages===>', existUnReadMessages)
-      
-      if(isNotLocalParticipantMessage && !showChatBox && existUnReadMessages) {
-        return true
+      console.log(
+        'isNotLocalParticipantMessage===>',
+        isNotLocalParticipantMessage
+      );
+      console.log('showChatBox===>', showChatBox);
+      console.log('existUnReadMessages===>', existUnReadMessages);
+
+      if (isNotLocalParticipantMessage && !showChatBox && existUnReadMessages) {
+        return true;
       }
       return false;
     }
     return false;
-  }
+  };
 
-  console.log('messages===>', messages)
-  console.log('readMessages===>', readMessages)
+  console.log('messages===>', messages);
+  console.log('readMessages===>', readMessages);
+
+  const getTotalUnReadMessages = () => {
+    if (!readMessages) {
+      return 1;
+    }
+    return readMessages.length;
+  };
 
   const showBubbleNotification = checkBubbleNotification();
 
@@ -440,8 +454,8 @@ export default function RoomControls({
           sendMessage={sendMessage}
           messages={messages}
           onClose={() => {
-            setShowChatBox(false)
-            setReadMessages([])
+            setShowChatBox(false);
+            setReadMessages([]);
           }}
           localParticipant={localParticipant}
         ></Chat>
@@ -669,12 +683,24 @@ export default function RoomControls({
               size='large'
               onClick={() => {
                 setShowChatBox((value) => !value);
-                setReadMessages([])
+                setReadMessages([]);
               }}
             >
               <Box align='center' gap='xsmall'>
                 <Box style={{ position: 'relative' }}>
-                  {showBubbleNotification && <Bubble></Bubble>}
+                  {showBubbleNotification && (
+                    <Bubble>
+                      <span
+                        style={{
+                          fontSize: '10px',
+                          textAlign: 'center',
+                          fontWeight: 'bold',
+                        }}
+                      >
+                        {getTotalUnReadMessages()}
+                      </span>
+                    </Bubble>
+                  )}
                   <ChatIcon
                     size='large'
                     color={showChatBox ? 'accent-1' : 'light-5'}
