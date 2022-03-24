@@ -1,10 +1,9 @@
 import { Participant, Room } from '@telnyx/video';
-import { TelnyxMeetContext } from 'contexts/TelnyxMeetContext';
 import { Button, TextInput } from 'grommet';
 import { Send } from 'grommet-icons';
 import { TelnyxRoom } from 'hooks/room';
 
-import React, { MouseEventHandler, useContext } from 'react';
+import React, { MouseEventHandler } from 'react';
 import Draggable from 'react-draggable';
 import styled from 'styled-components';
 
