@@ -1,5 +1,5 @@
 import PropTypes from 'prop-types';
-import { Fragment, useEffect, useState } from 'react';
+import { Fragment, useEffect, useRef, useState } from 'react';
 import Head from 'next/head';
 import { Main } from 'grommet';
 import toast, { Toaster } from 'react-hot-toast';
@@ -79,9 +79,7 @@ export default function Rooms({
     string | undefined
   >();
 
-  const [readMessages, setReadMessages] = useState<
-    TelnyxRoom['messages'] | null
-  >(null);
+  const unReadMessages = useRef<TelnyxRoom['messages'] | null>(null);
 
   const [localTracks, setLocalTracks] = useState<{
     audio: MediaStreamTrack | undefined;
@@ -193,8 +191,7 @@ export default function Rooms({
           sendNotification,
           networkMetrics,
           setNetworkMetrics,
-          readMessages,
-          setReadMessages,
+          unReadMessages,
         }}
       >
         <Main align='center' justify='center' background='light-2'>
