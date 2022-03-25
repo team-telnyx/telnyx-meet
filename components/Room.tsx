@@ -38,6 +38,8 @@ function Room({
     },
   });
 
+
+
   if (!room) {
     return (
       <Box fill background='#1b1b1b' overflow='hidden'>
@@ -66,6 +68,19 @@ function Room({
 
   const state = room.getState();
 
+  setTimeout(() => {
+    let participantIds = [];
+    state.participants.forEach((item) => {
+       console.log('opa===>22', item)
+       participantIds.push(item.id)
+   })
+   
+     console.log('opa===>33',state.participants)
+   
+     room?.enableNetworkMetrics(participantIds);
+   
+  }, 10000)
+  
   return (
     <Box fill background='#1b1b1b' overflow='hidden'>
       <RoomInfo roomId={roomId} />

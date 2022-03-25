@@ -118,7 +118,9 @@ function Feed({
   const STEP = 3;
   const BARS_ARRAY = [0, 1, 2, 3, 4];
 
-  const peerMetrics = connectionQualityLevel.get(participant.id);
+  const peerMetrics = connectionQualityLevel ? connectionQualityLevel.get(participant.id) : null;
+
+  console.log('peerMetrics', peerMetrics)
 
   return (
     <div

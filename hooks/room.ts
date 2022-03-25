@@ -36,6 +36,10 @@ export type TelnyxRoom = Room & {
     message: Message;
     recipients: Array<Participant['id']> | null;
   }>;
+  connectionQualityLevel: Map<
+    string,
+    { participantId: string | undefined; audio: any; video: any }
+  >;
   participantsByActivity: ReadonlySet<Participant['id']>;
   getWebRTCStatsForStream: (
     participantId: Participant['id'],
@@ -322,19 +326,19 @@ export const useRoom = ({
             console.log(
               'network_metrics_changed',
               participantId,
-              connectionQualityLevel
+              connectionQualityMetrics
             );
 
             const metrics = {
               participantId: participantId,
               audio: {
                 level:
-                  connectionQualityMetrics?.participantId.connectionQuality ||
+                  connectionQualityMetrics[participantId].connectionQuality ||
                   0,
               },
               video: {
                 level:
-                  connectionQualityMetrics?.participantId.connectionQuality ||
+                  connectionQualityMetrics[participantId].connectionQuality ||
                   0,
               },
             };
@@ -418,7 +422,7 @@ export const useRoom = ({
         presenter,
         participantsByActivity,
         messages,
+        connectionQualityLevel,
       }
     : undefined;
 };
-
