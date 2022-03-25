@@ -89,6 +89,7 @@ function StreamQualityControls({
 
     setBitrate(8 * (currentBytesReceived - previousBytesReceived));
     setPreviousBytesReceived(currentBytesReceived);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentBytesReceived]);
 
   const handleStreamQualityClick = (quality: string) => {

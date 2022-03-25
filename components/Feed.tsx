@@ -138,6 +138,7 @@ function Feed({
         getStatsForParticipantStream={getStatsForParticipantStream}
       />
     );
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [participant, stream, updateSubscription]);
 
   const renderedStats = renderStats();
