@@ -26,13 +26,6 @@ interface Props {
   };
 }
 
-export type Metrics = Map<
-string,
-{participantId: string | undefined;
-audio: any;
-video: any
-}>
-
 export type TelnyxRoom = Room & {
   state: State;
   dominantSpeakerId?: Participant['id'];
@@ -43,7 +36,6 @@ export type TelnyxRoom = Room & {
     message: Message;
     recipients: Array<Participant['id']> | null;
   }>;
-  connectionQualityLevel: Metrics;
   participantsByActivity: ReadonlySet<Participant['id']>;
   getWebRTCStatsForStream: (
     participantId: Participant['id'],
@@ -59,6 +51,11 @@ export type TelnyxRoom = Room & {
     };
   }>;
 };
+
+export type Metrics = Map<
+  string,
+  { participantId: string | undefined; audio: any; video: any }
+>;
 
 export const useRoom = ({
   roomId,
@@ -80,18 +77,21 @@ export const useRoom = ({
     useState<Participant['id']>();
 
   const [messages, setMessages] = useState<TelnyxRoom['messages']>([]);
-  const [connectionQualityLevel, setConnectionQualityLevel] = useState<Metrics>(new Map());
 
-  const connectAndJoinRoom = async () => {
-    if (!roomRef.current) {
-      roomRef.current = await initialize({
-        roomId,
-        clientToken,
-        context: JSON.stringify(context),
-        logLevel: 'DEBUG',
-        enableMessages: true,
-        enableConnectionQualityMetrics: true,
-      });
+  const [connectionQualityLevel, setConnectionQualityLevel] = useState<Metrics>(
+    new Map()
+  );
+
+  useEffect(() => {
+    const connectAndJoinRoom = async () => {
+      if (!roomRef.current) {
+        roomRef.current = await initialize({
+          roomId,
+          clientToken,
+          context: JSON.stringify(context),
+          logLevel: 'DEBUG',
+          enableMessages: true,
+        });
 
         setState(roomRef.current.getState());
         setDebugState(roomRef.current.getState());
@@ -317,27 +317,33 @@ export const useRoom = ({
         );
 
         roomRef.current.on(
-          'connection_quality_changed',
+          'network_metrics_changed',
           (participantId, connectionQualityMetrics, state) => {
             console.log(
-              'connection_quality_changed',
+              'network_metrics_changed',
               participantId,
               connectionQualityLevel
             );
+
             const metrics = {
-                participantId: connectionQualityMetrics?.participantId,
-                audio: {
-                  level: connectionQualityMetrics?.audio?.level || 0,
-                },
-                video: {
-                  level: connectionQualityMetrics?.video?.level || 0,
-                },
-              };
-            
-            setConnectionQualityLevel(new Map(connectionQualityLevel.set(metrics.participantId, metrics)))
+              participantId: participantId,
+              audio: {
+                level:
+                  connectionQualityMetrics?.participantId.connectionQuality ||
+                  0,
+              },
+              video: {
+                level:
+                  connectionQualityMetrics?.participantId.connectionQuality ||
+                  0,
+              },
+            };
+
+            setConnectionQualityLevel(
+              new Map(connectionQualityLevel.set(participantId, metrics))
+            );
           }
         );
-        
       }
 
       await roomRef.current.connect();
@@ -412,7 +418,7 @@ export const useRoom = ({
         presenter,
         participantsByActivity,
         messages,
-        connectionQualityLevel,
       }
     : undefined;
 };
+
