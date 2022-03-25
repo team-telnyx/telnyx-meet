@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState, useMemo } from 'react';
 import { Box, Text, Spinner } from 'grommet';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
@@ -39,7 +39,6 @@ function Feed({
     participant.origin === 'telephony_engine';
   const showAudioActivityIndicator = isSpeaking && stream?.key === 'self';
   const [showStatsOverlay, setShowStatsOverlay] = useState(false);
-  const [showStreamControls, setShowStreamControls] = useState(false);
   const [stats, setStats] = useState<any>(null);
   const [allowedBrowser, setAllowedBrowser] = useState(false);
 
@@ -74,7 +73,7 @@ function Feed({
   }
 
   function renderStats() {
-    if (!stream || !allowedBrowser || showStreamControls) {
+    if (!stream || !allowedBrowser) {
       return null;
     }
 
@@ -103,7 +102,7 @@ function Feed({
             position: 'absolute',
             top: '5px',
             left: '5px',
-            zIndex: 1,
+            zIndex: 10,
           }}
           disabled={!stream}
         >
@@ -120,49 +119,28 @@ function Feed({
     }
   }
 
-  function renderStreamControls() {
-    const localParticipant = participant.origin === 'local';
+  const renderedStreamControls = useMemo(() => {
     if (
       !stream ||
+      !stream.isConfigured ||
+      !participant ||
       !allowedBrowser ||
-      showStatsOverlay ||
-      stats ||
-      localParticipant
+      participant.origin === 'local'
     ) {
       return null;
     }
 
-    if (!showStreamControls) {
-      return (
-        <button
-          onClick={() => setShowStreamControls(true)}
-          style={{
-            position: 'absolute',
-            top: '5px',
-            right: '5px',
-            zIndex: 1,
-          }}
-          disabled={!stream}
-        >
-          substreams
-        </button>
-      );
-    } else {
-      return (
-        <StreamQualityControls
-          callOnClick={(quality: string) =>
-            updateSubscription(participant.id, stream.key, {
-              streamQuality: quality,
-            })
-          }
-          callOnClose={() => setShowStreamControls(false)}
-        ></StreamQualityControls>
-      );
-    }
-  }
+    return (
+      <StreamQualityControls
+        participantId={participant.id}
+        streamKey={stream.key}
+        updateSubscription={updateSubscription}
+        getStatsForParticipantStream={getStatsForParticipantStream}
+      />
+    );
+  }, [participant, stream, updateSubscription]);
 
   const renderedStats = renderStats();
-  const renderedStreamControls = renderStreamControls();
 
   return (
     <div
@@ -292,27 +270,6 @@ function Feed({
               <Text>
                 {context?.username}
                 {participant.origin === 'local' && <strong> (me)</strong>}
-              </Text>
-            )}
-          </Box>
-        </Box>
-
-        <Box style={{ position: 'absolute', right: 0, bottom: 0 }}>
-          <Box
-            direction='row'
-            align='center'
-            gap='xsmall'
-            background={{
-              color: 'dark-1',
-              opacity: 'medium',
-            }}
-            margin='xxsmall'
-            pad='xxsmall'
-            round='xxsmall'
-          >
-            {context && (
-              <Text color='status-disabled' size='xsmall'>
-                {context.id}
               </Text>
             )}
           </Box>
