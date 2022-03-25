@@ -73,223 +73,250 @@ export const useRoom = ({
 
   const [messages, setMessages] = useState<TelnyxRoom['messages']>([]);
 
-  const connectAndJoinRoom = async () => {
-    if (!roomRef.current) {
-      roomRef.current = await initialize({
-        roomId,
-        clientToken,
-        context: JSON.stringify(context),
-        logLevel: 'DEBUG',
-        enableMessages: true,
-      });
-
-      setState(roomRef.current.getState());
-
-      roomRef.current.on('state_changed', setState);
-      roomRef.current.on('connected', (state) => {
-        setParticipantsByActivity((value) => {
-          return new Set([
-            roomRef.current!.getLocalParticipant().id,
-            ...state.participants.keys(),
-          ]);
+  useEffect(() => {
+    const connectAndJoinRoom = async () => {
+      if (!roomRef.current) {
+        roomRef.current = await initialize({
+          roomId,
+          clientToken,
+          context: JSON.stringify(context),
+          logLevel: 'DEBUG',
+          enableMessages: true,
         });
-        state.streams.forEach((stream) => {
-          if (stream.key === 'presentation') {
-            setPresenter(state.participants.get(stream.participantId));
+
+        setState(roomRef.current.getState());
+        setDebugState(roomRef.current.getState());
+
+        roomRef.current.on('state_changed', (value) => {
+          setState(value);
+          setDebugState(value);
+        });
+
+        roomRef.current.on('connected', (state) => {
+          setParticipantsByActivity((value) => {
+            return new Set([
+              roomRef.current!.getLocalParticipant().id,
+              ...state.participants.keys(),
+            ]);
+          });
+          state.streams.forEach((stream) => {
+            if (stream.key === 'presentation') {
+              setPresenter(state.participants.get(stream.participantId));
+            }
+
+            if (
+              stream.participantId === roomRef.current?.getLocalParticipant().id
+            ) {
+              return;
+            }
+
+            roomRef.current?.addSubscription(stream.participantId, stream.key, {
+              audio: true,
+              video: true,
+            });
+          });
+          typeof callbacks?.onConnected === 'function' &&
+            callbacks.onConnected();
+        });
+
+        roomRef.current.on('disconnected', (state) => {
+          setParticipantsByActivity(new Set());
+          typeof callbacks?.onDisconnected === 'function' &&
+            callbacks.onDisconnected();
+        });
+
+        roomRef.current.on('participant_joined', (participantId) => {
+          setParticipantsByActivity((value) => {
+            return new Set([
+              roomRef.current!.getLocalParticipant().id,
+              ...value,
+              participantId,
+            ]);
+          });
+        });
+
+        roomRef.current.on(
+          'participant_leaving',
+          (participantId, reason, state) => {
+            if (reason === 'kicked') {
+              if (state.localParticipantId === participantId) {
+                sendNotification({
+                  body: 'You got kicked from the room by the moderator!',
+                });
+              } else {
+                const context = JSON.parse(
+                  state.participants.get(participantId).context
+                );
+
+                sendNotification({
+                  body: `${
+                    context.username ? context.username : participantId
+                  } has been kicked by the moderator!`,
+                });
+              }
+            }
+          }
+        );
+
+        roomRef.current.on('participant_left', (participantId) => {
+          if (presenter?.id === participantId) {
+            setPresenter(undefined);
           }
 
-          if (
-            stream.participantId === roomRef.current?.getLocalParticipant().id
-          ) {
+          if (dominantSpeakerId === participantId) {
+            setDominantSpeakerId(undefined);
+          }
+
+          setParticipantsByActivity((value) => {
+            value.delete(participantId);
+            return new Set([
+              roomRef.current!.getLocalParticipant().id,
+              ...value,
+            ]);
+          });
+        });
+
+        roomRef.current.on('stream_published', (participantId, key, state) => {
+          if (key === 'presentation') {
+            setPresenter(state.participants.get(participantId));
+          }
+
+          if (participantId === roomRef.current?.getLocalParticipant().id) {
             return;
           }
 
-          roomRef.current?.addSubscription(stream.participantId, stream.key, {
+          roomRef.current?.addSubscription(participantId, key, {
             audio: true,
             video: true,
           });
         });
-        typeof callbacks?.onConnected === 'function' && callbacks.onConnected();
-      });
-      roomRef.current.on('disconnected', (state) => {
-        setParticipantsByActivity(new Set());
-        typeof callbacks?.onDisconnected === 'function' &&
-          callbacks.onDisconnected();
-      });
-      roomRef.current.on('participant_joined', (participantId) => {
-        setParticipantsByActivity((value) => {
-          return new Set([
-            roomRef.current!.getLocalParticipant().id,
-            ...value,
-            participantId,
-          ]);
-        });
-      });
-      roomRef.current.on(
-        'participant_leaving',
-        (participantId, reason, state) => {
-          if (reason === 'kicked') {
-            if (state.localParticipantId === participantId) {
-              sendNotification({
-                body: 'You got kicked from the room by the moderator!',
-              });
-            } else {
-              const context = JSON.parse(
-                state.participants.get(participantId).context
-              );
 
-              sendNotification({
-                body: `${
-                  context.username ? context.username : participantId
-                } has been kicked by the moderator!`,
-              });
+        roomRef.current.on(
+          'stream_unpublished',
+          (participantId, key, state) => {
+            if (key === 'presentation') {
+              setPresenter(undefined);
+            }
+
+            if (dominantSpeakerId === participantId && key === 'self') {
+              setDominantSpeakerId(undefined);
             }
           }
-        }
-      );
-      roomRef.current.on('participant_left', (participantId) => {
-        if (presenter?.id === participantId) {
-          setPresenter(undefined);
-        }
+        );
 
-        if (dominantSpeakerId === participantId) {
-          setDominantSpeakerId(undefined);
-        }
+        roomRef.current.on(
+          'track_enabled',
+          (participantId, key, kind, state) => {}
+        );
+        roomRef.current.on(
+          'track_disabled',
+          (participantId, key, kind, state) => {}
+        );
 
-        setParticipantsByActivity((value) => {
-          value.delete(participantId);
-          return new Set([roomRef.current!.getLocalParticipant().id, ...value]);
-        });
-      });
-      roomRef.current.on('stream_published', (participantId, key, state) => {
-        if (key === 'presentation') {
-          setPresenter(state.participants.get(participantId));
-        }
+        roomRef.current.on(
+          'track_censored',
+          (participantId, key, kind, state) => {
+            if (kind === 'audio') {
+              if (state.localParticipantId === participantId) {
+                sendNotification({
+                  body: `Your audio from "${key}" stream has been censored by the moderator`,
+                });
+              } else {
+                const context = JSON.parse(
+                  state.participants.get(participantId).context
+                );
 
-        if (participantId === roomRef.current?.getLocalParticipant().id) {
-          return;
-        }
-
-        roomRef.current?.addSubscription(participantId, key, {
-          audio: true,
-          video: true,
-        });
-      });
-      roomRef.current.on('stream_unpublished', (participantId, key, state) => {
-        if (key === 'presentation') {
-          setPresenter(undefined);
-        }
-
-        if (dominantSpeakerId === participantId && key === 'self') {
-          setDominantSpeakerId(undefined);
-        }
-      });
-      roomRef.current.on(
-        'track_enabled',
-        (participantId, key, kind, state) => {}
-      );
-      roomRef.current.on(
-        'track_disabled',
-        (participantId, key, kind, state) => {}
-      );
-      roomRef.current.on(
-        'track_censored',
-        (participantId, key, kind, state) => {
-          if (kind === 'audio') {
-            if (state.localParticipantId === participantId) {
-              sendNotification({
-                body: `Your audio from "${key}" stream has been censored by the moderator`,
-              });
-            } else {
-              const context = JSON.parse(
-                state.participants.get(participantId).context
-              );
-
-              sendNotification({
-                body: `${
-                  context.username ? context.username : participantId
-                }'s audio from "${key}" stream has been censored by the moderator`,
-              });
+                sendNotification({
+                  body: `${
+                    context.username ? context.username : participantId
+                  }'s audio from "${key}" stream has been censored by the moderator`,
+                });
+              }
             }
           }
-        }
-      );
-      roomRef.current.on(
-        'track_uncensored',
-        (participantId, key, kind, state) => {
-          if (kind === 'audio') {
-            if (state.localParticipantId === participantId) {
-              sendNotification({
-                body: `Your audio from "${key}" stream has been uncensored by the moderator`,
-              });
-            } else {
-              const context = JSON.parse(
-                state.participants.get(participantId).context
-              );
+        );
 
-              sendNotification({
-                body: `${
-                  context.username ? context.username : participantId
-                }'s audio from "${key}" stream has been uncensored by the moderator`,
-              });
+        roomRef.current.on(
+          'track_uncensored',
+          (participantId, key, kind, state) => {
+            if (kind === 'audio') {
+              if (state.localParticipantId === participantId) {
+                sendNotification({
+                  body: `Your audio from "${key}" stream has been uncensored by the moderator`,
+                });
+              } else {
+                const context = JSON.parse(
+                  state.participants.get(participantId).context
+                );
+
+                sendNotification({
+                  body: `${
+                    context.username ? context.username : participantId
+                  }'s audio from "${key}" stream has been uncensored by the moderator`,
+                });
+              }
             }
           }
-        }
-      );
-      roomRef.current.on('audio_activity', (participantId, key) => {
-        if (
-          key !== 'presentation' &&
-          participantId !== roomRef.current?.getLocalParticipant().id
-        ) {
-          setDominantSpeakerId(participantId);
-          setParticipantsByActivity((value) => {
-            return new Set([
-              roomRef.current!.getLocalParticipant().id,
-              participantId,
-              ...value,
-            ]);
-          });
-        }
-      });
-      roomRef.current.on(
-        'subscription_started',
-        (participantId, key, state) => {}
-      );
-      roomRef.current.on(
-        'subscription_reconfigured',
-        (participantId, key, state) => {}
-      );
-      roomRef.current.on(
-        'subscription_ended',
-        (participantId, key, state) => {}
-      );
-      roomRef.current.on(
-        'message_received',
-        (participantId, message, recipients, state) => {
-          const participant = state.participants.get(participantId);
-          const fromUsername = JSON.parse(participant.context).username;
+        );
 
-          setMessages((value) => {
-            const messages = value.concat({
-              from: participantId,
-              fromUsername,
-              message,
-              recipients,
+        roomRef.current.on('audio_activity', (participantId, key) => {
+          if (
+            key !== 'presentation' &&
+            participantId !== roomRef.current?.getLocalParticipant().id
+          ) {
+            setDominantSpeakerId(participantId);
+            setParticipantsByActivity((value) => {
+              return new Set([
+                roomRef.current!.getLocalParticipant().id,
+                participantId,
+                ...value,
+              ]);
             });
+          }
+        });
 
-            return messages;
-          });
-        }
-      );
-    }
+        roomRef.current.on(
+          'subscription_started',
+          (participantId, key, state) => {}
+        );
+        roomRef.current.on(
+          'subscription_reconfigured',
+          (participantId, key, state) => {}
+        );
+        roomRef.current.on(
+          'subscription_ended',
+          (participantId, key, state) => {}
+        );
 
-    roomRef.current.connect();
-  };
+        roomRef.current.on(
+          'message_received',
+          (participantId, message, recipients, state) => {
+            const participant = state.participants.get(participantId);
+            const fromUsername = JSON.parse(participant.context).username;
 
-  useEffect(() => {
+            setMessages((value) => {
+              const messages = value.concat({
+                from: participantId,
+                fromUsername,
+                message,
+                recipients,
+              });
+
+              return messages;
+            });
+          }
+        );
+      }
+
+      await roomRef.current.connect();
+    };
+
     if (!roomRef.current) {
       connectAndJoinRoom();
     }
+
+    // Note: we only want this to run once. Probably there's a better way to structure this.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -342,7 +369,6 @@ export const useRoom = ({
   }, [tokens.refreshToken, state?.status]);
 
   useEffect(() => {
-    setDebugState(state);
     console.debug('[video-meet] React State: ', state);
   }, [state]);
 
