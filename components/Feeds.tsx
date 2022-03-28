@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Participant } from '@telnyx/video';
 
 import { Metrics, TelnyxRoom } from 'hooks/room';
@@ -15,6 +15,7 @@ function Feeds({
   getStatsForParticipantStream,
   dataTestId,
   connectionQualityLevel,
+  enableNetworkMetrics,
 }: {
   participants: TelnyxRoom['state']['participants'];
   streams: TelnyxRoom['state']['streams'];
@@ -24,8 +25,19 @@ function Feeds({
   getParticipantStream: TelnyxRoom['getParticipantStream'];
   getStatsForParticipantStream: TelnyxRoom['getWebRTCStatsForStream'];
   dataTestId: string;
-  connectionQualityLevel: Metrics
+  connectionQualityLevel: Metrics;
+  enableNetworkMetrics: any;
 }) {
+  useEffect(() => {
+    setTimeout(() => {
+      let participantIds = [];
+      participants.forEach((item) => {
+        participantIds.push(item.id);
+      });
+      enableNetworkMetrics(participantIds, { includeStreams: true });
+    }, 10000);
+  }, [participants]);
+
   if (presenter) {
     return (
       <ScreenSharingLayout
