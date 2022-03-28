@@ -79,7 +79,7 @@ export default function Rooms({
     string | undefined
   >();
 
-  const unReadMessages = useRef<TelnyxRoom['messages'] | null>(null);
+  const unreadMessages = useRef<TelnyxRoom['messages'] | null>(null);
 
   const [localTracks, setLocalTracks] = useState<{
     audio: MediaStreamTrack | undefined;
@@ -191,7 +191,7 @@ export default function Rooms({
           sendNotification,
           networkMetrics,
           setNetworkMetrics,
-          unReadMessages,
+          unreadMessages,
         }}
       >
         <Main align='center' justify='center' background='light-2'>

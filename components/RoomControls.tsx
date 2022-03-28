@@ -183,7 +183,7 @@ export default function RoomControls({
     setVideoInputDeviceId,
     localTracks,
     setLocalTracks,
-    unReadMessages,
+    unreadMessages,
   } = useContext(TelnyxMeetContext);
 
   const [devices, setDevices] = useState<any>({});
@@ -387,7 +387,7 @@ export default function RoomControls({
   const localParticipant = getLocalParticipant();
 
   const hasUnreadMessages = () => {
-    if(unReadMessages.current && unReadMessages.current.length > 0) {
+    if(unreadMessages.current && unreadMessages.current.length > 0) {
       return true;
     }
     return false;
@@ -398,9 +398,9 @@ export default function RoomControls({
       const lastMessage = messages.length - 1;
       const isNotLocalParticipantMessage =
         messages[lastMessage].from !== localParticipant.id;
-      const existUnReadMessages = hasUnreadMessages();
+      const existUnreadMessages = hasUnreadMessages();
 
-      if (isNotLocalParticipantMessage && !showChatBox && existUnReadMessages) {
+      if (isNotLocalParticipantMessage && !showChatBox && existUnreadMessages) {
         return true;
       }
       return false;
@@ -408,11 +408,11 @@ export default function RoomControls({
     return false;
   };
 
-  const getTotalUnReadMessages = () => {
-    if (!unReadMessages || !unReadMessages.current) {
+  const getTotalUnreadMessages = () => {
+    if (!unreadMessages || !unreadMessages.current) {
       return 1;
     }
-    return unReadMessages.current.length;
+    return unreadMessages.current.length;
   };
 
   const showBubbleNotification = checkBubbleNotification();
@@ -438,7 +438,7 @@ export default function RoomControls({
           messages={messages}
           onClose={() => {
             setShowChatBox(false);
-            unReadMessages.current = [];
+            unreadMessages.current = [];
           }}
           localParticipant={localParticipant}
         ></Chat>
@@ -666,7 +666,7 @@ export default function RoomControls({
               size='large'
               onClick={() => {
                 setShowChatBox((value) => !value);
-                unReadMessages.current = [];
+                unreadMessages.current = [];
               }}
             >
               <Box align='center' gap='xsmall'>
@@ -680,7 +680,7 @@ export default function RoomControls({
                           fontWeight: 'bold',
                         }}
                       >
-                        {getTotalUnReadMessages()}
+                        {getTotalUnreadMessages()}
                       </span>
                     </Bubble>
                   )}
