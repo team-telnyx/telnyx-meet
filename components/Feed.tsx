@@ -8,7 +8,7 @@ import {
 import Bowser from 'bowser';
 import { Participant, Stream } from '@telnyx/video';
 
-import { Metrics, TelnyxRoom } from 'hooks/room';
+import { NetworkMetrics, TelnyxRoom } from 'hooks/room';
 
 import VideoTrack from 'components/VideoTrack';
 import { WebRTCStats } from 'components/WebRTCStats';
@@ -32,7 +32,7 @@ function Feed({
   getStatsForParticipantStream: TelnyxRoom['getWebRTCStatsForStream'];
   mirrorVideo: boolean;
   dataId?: string;
-  connectionQualityLevel: Metrics
+  connectionQualityLevel: Map<string, NetworkMetrics>
 }) {
   const isTelephonyEngineParticipant =
     participant.origin === 'telephony_engine';
@@ -120,8 +120,6 @@ function Feed({
 
   const peerMetrics = connectionQualityLevel ? connectionQualityLevel.get(participant.id) : null;
 
-  console.log('peerMetrics', peerMetrics)
-
   return (
     <div
       // id={stream?.isSpeaking ? 'speaking-box' : ''}
@@ -184,8 +182,7 @@ function Feed({
                       marginRight: '1px',
                       height: `${STEP * (level + 1)}px`,
                       background:
-                        (peerMetrics?.video?.level ||
-                          peerMetrics?.audio?.level) > level
+                      peerMetrics[participant.id].connectionQuality > level
                           ? 'white'
                           : 'rgba(255, 255, 255, 0.2)',
                     }}

@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { Participant } from '@telnyx/video';
 
-import { Metrics, TelnyxRoom } from 'hooks/room';
+import {  NetworkMetrics, TelnyxRoom } from 'hooks/room';
 import GridLayout from 'components/GridLayout';
 import ScreenSharingLayout from 'components/ScreenSharingLayout';
 
@@ -25,7 +25,7 @@ function Feeds({
   getParticipantStream: TelnyxRoom['getParticipantStream'];
   getStatsForParticipantStream: TelnyxRoom['getWebRTCStatsForStream'];
   dataTestId: string;
-  connectionQualityLevel: Metrics;
+  connectionQualityLevel: Map<string, NetworkMetrics>;
   enableNetworkMetrics: any;
 }) {
   useEffect(() => {

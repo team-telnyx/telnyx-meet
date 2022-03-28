@@ -36,10 +36,7 @@ export type TelnyxRoom = Room & {
     message: Message;
     recipients: Array<Participant['id']> | null;
   }>;
-  connectionQualityLevel: Map<
-    string,
-    { participantId: string | undefined; audio: any; video: any }
-  >;
+  connectionQuality: Map<string, NetworkMetrics>;
   participantsByActivity: ReadonlySet<Participant['id']>;
   getWebRTCStatsForStream: (
     participantId: Participant['id'],
@@ -56,10 +53,41 @@ export type TelnyxRoom = Room & {
   }>;
 };
 
-export type Metrics = Map<
+export enum ConnectionQualityLevel {
+  excellent_network = 5,
+  good_network = 4,
+  average_network = 3,
+  below_average_network = 2,
+  bad_network = 1,
+  network_broken = 0,
+}
+
+
+export enum Direction {
+  sending = 'sending',
+  receiving = 'receiving',
+  inactive = 'inactive',
+}
+
+type Streams = Map<
   string,
-  { participantId: string | undefined; audio: any; video: any }
+  {
+    audio: {
+      direction: Direction;
+      quality: number; // 0 - 5, 0 being no audio, 1 being bad and 5 being excellent quality
+    };
+    video: {
+      direction: Direction;
+      quality: number; // 0 - 5, 0 being no video, 1 being bad and 5 being excellent quality
+    };
+  }
 >;
+export interface NetworkMetrics {
+  [participantId: string]: {
+    connectionQuality: number; // between 0 - 5, 0 being disconnected, 1 being bad and 5 being excellent. This represents the connection quality of the participant on their end.
+    streams?: Streams;
+  };
+}
 
 export const useRoom = ({
   roomId,
@@ -82,8 +110,8 @@ export const useRoom = ({
 
   const [messages, setMessages] = useState<TelnyxRoom['messages']>([]);
 
-  const [connectionQualityLevel, setConnectionQualityLevel] = useState<Metrics>(
-    new Map()
+  const [connectionQuality, setConnectionQuality] = useState<Map<string, NetworkMetrics>>(
+    new Map<string, NetworkMetrics>()
   );
 
   useEffect(() => {
@@ -322,29 +350,15 @@ export const useRoom = ({
 
         roomRef.current.on(
           'network_metrics_changed',
-          (participantId, connectionQualityMetrics, state) => {
+          (participantId, networkMetrics, state) => {
             console.log(
               'network_metrics_changed',
               participantId,
-              connectionQualityMetrics
+              networkMetrics
             );
 
-            const metrics = {
-              participantId: participantId,
-              audio: {
-                level:
-                  connectionQualityMetrics[participantId].connectionQuality ||
-                  0,
-              },
-              video: {
-                level:
-                  connectionQualityMetrics[participantId].connectionQuality ||
-                  0,
-              },
-            };
-
-            setConnectionQualityLevel(
-              new Map(connectionQualityLevel.set(participantId, metrics))
+            setConnectionQuality(
+              new Map(connectionQuality.set(participantId, networkMetrics))
             );
           }
         );
@@ -422,7 +436,7 @@ export const useRoom = ({
         presenter,
         participantsByActivity,
         messages,
-        connectionQualityLevel,
+        connectionQuality,
       }
     : undefined;
 };
