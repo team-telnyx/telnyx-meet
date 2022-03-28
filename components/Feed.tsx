@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState, useMemo } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Box, Text, Spinner } from 'grommet';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
@@ -12,7 +12,7 @@ import { TelnyxRoom } from 'hooks/room';
 
 import VideoTrack from 'components/VideoTrack';
 import { WebRTCStats } from 'components/WebRTCStats';
-import { StreamQualityControls } from 'components/StreamQualityControls';
+import { VideoBitrate } from 'components/VideoBitrate';
 
 const VIDEO_BG_COLOR = '#111';
 
@@ -117,7 +117,7 @@ function Feed({
     }
   }
 
-  const renderedStreamControls = useMemo(() => {
+  const renderVideoBitrate = () => {
     if (
       !stream ||
       !stream.isConfigured ||
@@ -129,16 +129,16 @@ function Feed({
     }
 
     return (
-      <StreamQualityControls
+      <VideoBitrate
         participantId={participant.id}
         streamKey={stream.key}
         getStatsForParticipantStream={getStatsForParticipantStream}
       />
     );
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [participant, stream, updateSubscription]);
+  };
 
   const renderedStats = renderStats();
+  const renderedVideoBitrate = renderVideoBitrate();
 
   return (
     <div
@@ -161,7 +161,7 @@ function Feed({
       }}
     >
       {renderedStats}
-      {renderedStreamControls}
+      {renderedVideoBitrate}
       <div
         style={{
           position: 'absolute',

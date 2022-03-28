@@ -1,34 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Box, Text } from 'grommet';
-import styled from 'styled-components';
 import { Participant, Stream } from '@telnyx/video';
 
 import { TelnyxRoom } from 'hooks/room';
 
-const Container = styled.div`
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  z-index: 1;
-  top: 0;
-  padding: 0px 5px;
-`;
-
-const TabButtonContainer = styled.div`
-  position: absolute;
-  top: 5px;
-  right: 5px;
-  z-index: 1;
-`;
-
-const TabButton = styled.button<{ active: boolean }>`
-  min-width: 42px;
-  font-size: 11px;
-  ${(props) => (props.active ? `border-bottom: 2px solid red;` : '')}
-  cursor: pointer;
-`;
-
-function StreamQualityControls({
+function VideoBitrate({
   participantId,
   streamKey,
   getStatsForParticipantStream,
@@ -37,7 +13,6 @@ function StreamQualityControls({
   streamKey: Stream['key'];
   getStatsForParticipantStream: TelnyxRoom['getWebRTCStatsForStream'];
 }) {
-  const [tab, setTab] = React.useState('medium');
   const [bitrate, setBitrate] = useState(0);
   const [currentBytesReceived, setCurrentBytesReceived] = useState(0);
   const [previousBytesReceived, setPreviousBytesReceived] = useState(0);
@@ -87,53 +62,25 @@ function StreamQualityControls({
 
     setBitrate(8 * (currentBytesReceived - previousBytesReceived));
     setPreviousBytesReceived(currentBytesReceived);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentBytesReceived]);
 
   return (
-    <Container>
-      <TabButtonContainer>
-        <TabButton
-          active={tab === 'low'}
-          onClick={() => {
-            setTab('low');
-          }}
-        >
-          l
-        </TabButton>
-        <TabButton
-          active={tab === 'medium'}
-          onClick={() => {
-            setTab('medium');
-          }}
-        >
-          m
-        </TabButton>
-        <TabButton
-          active={tab === 'high'}
-          onClick={() => {
-            setTab('high');
-          }}
-        >
-          h
-        </TabButton>
-      </TabButtonContainer>
-      <Box style={{ position: 'absolute', right: 0, bottom: 0 }}>
-        <Box
-          direction='row'
-          align='center'
-          gap='xsmall'
-          background={{ color: 'dark-1', opacity: 'medium' }}
-          margin='xxsmall'
-          pad='xxsmall'
-          round='xxsmall'
-        >
-          <Text color='status-disabled' size='xsmall'>
-            {Math.floor(bitrate / 1000)} kbps
-          </Text>
-        </Box>
+    <Box style={{ position: 'absolute', right: 0, bottom: 0, zIndex: 1 }}>
+      <Box
+        direction='row'
+        align='center'
+        gap='xsmall'
+        background={{ color: 'dark-1', opacity: 'medium' }}
+        margin='xxsmall'
+        pad='xxsmall'
+        round='xxsmall'
+      >
+        <Text color='status-disabled' size='xsmall'>
+          {Math.floor(bitrate / 1000)} kbps
+        </Text>
       </Box>
-    </Container>
+    </Box>
   );
 }
-export { StreamQualityControls };
+export { VideoBitrate };
