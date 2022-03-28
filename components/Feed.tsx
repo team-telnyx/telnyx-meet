@@ -24,14 +24,12 @@ function Feed({
   isSpeaking,
   mirrorVideo = false,
   getStatsForParticipantStream,
-  updateSubscription,
   dataId,
 }: {
   participant: Participant;
   stream?: Stream;
   isSpeaking: boolean;
   getStatsForParticipantStream: TelnyxRoom['getWebRTCStatsForStream'];
-  updateSubscription: TelnyxRoom['updateSubscription'];
   mirrorVideo: boolean;
   dataId?: string;
 }) {
@@ -134,7 +132,6 @@ function Feed({
       <StreamQualityControls
         participantId={participant.id}
         streamKey={stream.key}
-        updateSubscription={updateSubscription}
         getStatsForParticipantStream={getStatsForParticipantStream}
       />
     );

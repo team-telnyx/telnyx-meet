@@ -31,12 +31,10 @@ const TabButton = styled.button<{ active: boolean }>`
 function StreamQualityControls({
   participantId,
   streamKey,
-  updateSubscription,
   getStatsForParticipantStream,
 }: {
   participantId: Participant['id'];
   streamKey: Stream['key'];
-  updateSubscription: TelnyxRoom['updateSubscription'];
   getStatsForParticipantStream: TelnyxRoom['getWebRTCStatsForStream'];
 }) {
   const [tab, setTab] = React.useState('medium');
@@ -92,12 +90,6 @@ function StreamQualityControls({
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentBytesReceived]);
 
-  const handleStreamQualityClick = (quality: string) => {
-    updateSubscription(participantId, streamKey, {
-      streamQuality: quality,
-    });
-  };
-
   return (
     <Container>
       <TabButtonContainer>
@@ -105,7 +97,6 @@ function StreamQualityControls({
           active={tab === 'low'}
           onClick={() => {
             setTab('low');
-            handleStreamQualityClick('low');
           }}
         >
           l
@@ -114,7 +105,6 @@ function StreamQualityControls({
           active={tab === 'medium'}
           onClick={() => {
             setTab('medium');
-            handleStreamQualityClick('medium');
           }}
         >
           m
@@ -123,7 +113,6 @@ function StreamQualityControls({
           active={tab === 'high'}
           onClick={() => {
             setTab('high');
-            handleStreamQualityClick('high');
           }}
         >
           h

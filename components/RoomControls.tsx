@@ -224,7 +224,7 @@ export default function RoomControls({
 
   useEffect(() => {
     if (!selfStream) {
-      addStream('self', localTracks, { enableSimulcast: true });
+      addStream('self', localTracks, { x_enableSimulcast: true });
 
       return;
     }
@@ -244,7 +244,7 @@ export default function RoomControls({
     if (presentationTracks.video) {
       if (!presentationStream) {
         addStream('presentation', presentationTracks, {
-          enableSimulcast: true,
+          x_enableSimulcast: true,
         });
       } else {
         updateStream('presentation', presentationTracks);

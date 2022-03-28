@@ -13,7 +13,6 @@ function Feeds({
   presenter,
   getParticipantStream,
   getStatsForParticipantStream,
-  updateSubscription,
   dataTestId,
 }: {
   participants: TelnyxRoom['state']['participants'];
@@ -23,7 +22,6 @@ function Feeds({
   dominantSpeakerId?: Participant['id'];
   getParticipantStream: TelnyxRoom['getParticipantStream'];
   getStatsForParticipantStream: TelnyxRoom['getWebRTCStatsForStream'];
-  updateSubscription: TelnyxRoom['updateSubscription'],
   dataTestId: string;
 }) {
   if (presenter) {
@@ -37,7 +35,6 @@ function Feeds({
         dominantSpeakerId={dominantSpeakerId}
         getParticipantStream={getParticipantStream}
         getStatsForParticipantStream={getStatsForParticipantStream}
-        updateSubscription={updateSubscription}
       />
     );
   }
@@ -51,7 +48,6 @@ function Feeds({
       dominantSpeakerId={dominantSpeakerId}
       getParticipantStream={getParticipantStream}
       getStatsForParticipantStream={getStatsForParticipantStream}
-      updateSubscription={updateSubscription}
     />
   );
 }

@@ -40,7 +40,6 @@ function GridLayout({
   participantsByActivity,
   getParticipantStream,
   getStatsForParticipantStream,
-  updateSubscription,
   dataTestId,
 }: {
   participants: TelnyxRoom['state']['participants'];
@@ -49,7 +48,6 @@ function GridLayout({
   participantsByActivity: TelnyxRoom['participantsByActivity'];
   getParticipantStream: TelnyxRoom['getParticipantStream'];
   getStatsForParticipantStream: TelnyxRoom['getWebRTCStatsForStream'];
-  updateSubscription: TelnyxRoom['updateSubscription'],
   dataTestId: string;
 }) {
   const NAVIGATION_BUTTONS_HEIGHT = 96;
@@ -104,7 +102,6 @@ function GridLayout({
           isSpeaking={dominantSpeakerId === participant.id}
           mirrorVideo={participant.origin === 'local'}
           getStatsForParticipantStream={getStatsForParticipantStream}
-          updateSubscription={updateSubscription}
         />
       );
     })

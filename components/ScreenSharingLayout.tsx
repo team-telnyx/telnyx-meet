@@ -39,7 +39,6 @@ function ScreenSharingLayout({
   dominantSpeakerId,
   getParticipantStream,
   getStatsForParticipantStream,
-  updateSubscription,
   dataTestId,
 }: {
   participants: TelnyxRoom['state']['participants'];
@@ -49,7 +48,6 @@ function ScreenSharingLayout({
   dominantSpeakerId?: Participant['id'];
   getParticipantStream: TelnyxRoom['getParticipantStream'];
   getStatsForParticipantStream: TelnyxRoom['getWebRTCStatsForStream'];
-  updateSubscription: TelnyxRoom['updateSubscription'];
   dataTestId: string;
 }) {
   const USERS_PER_PAGE = 3;
@@ -95,7 +93,6 @@ function ScreenSharingLayout({
           isSpeaking={dominantSpeakerId === participant.id}
           mirrorVideo={participant.origin === 'local'}
           getStatsForParticipantStream={getStatsForParticipantStream}
-          updateSubscription={updateSubscription}
         />
       );
     })
@@ -132,7 +129,6 @@ function ScreenSharingLayout({
           stream={getParticipantStream(presenter.id, 'presentation')}
           isSpeaking={false}
           getStatsForParticipantStream={getStatsForParticipantStream}
-          updateSubscription={updateSubscription}
           mirrorVideo={false}
         />
       </div>
