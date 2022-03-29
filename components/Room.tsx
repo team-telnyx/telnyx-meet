@@ -66,7 +66,12 @@ function Room({
     );
   }
 
+
   const state = room.getState();
+  const participantIds: Array<string> = [];
+  state.participants.forEach((item) => {
+    participantIds.push(item.id);
+  })
 
   return (
     <Box fill background='#1b1b1b' overflow='hidden'>
@@ -92,6 +97,7 @@ function Room({
 
           {state.status === 'connected' && (
             <div>
+              <button onClick={() => room.enableNetworkMetrics(participantIds)}>Start Metrics</button>
               <button onClick={() => room.disableNetworkMetrics()}>STOP Metrics</button>
             <Feeds
               enableNetworkMetrics={room.enableNetworkMetrics}

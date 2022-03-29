@@ -28,15 +28,6 @@ function Feeds({
   connectionQualityLevel: Map<string, NetworkMetrics>;
   enableNetworkMetrics: any;
 }) {
-  useEffect(() => {
-    setTimeout(() => {
-      let participantIds = [];
-      participants.forEach((item) => {
-        participantIds.push(item.id);
-      });
-      enableNetworkMetrics(participantIds, { includeStreams: true });
-    }, 10000);
-  }, [participants]);
 
   if (presenter) {
     return (

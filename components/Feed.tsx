@@ -32,7 +32,7 @@ function Feed({
   getStatsForParticipantStream: TelnyxRoom['getWebRTCStatsForStream'];
   mirrorVideo: boolean;
   dataId?: string;
-  connectionQualityLevel: Map<string, NetworkMetrics>
+  connectionQualityLevel: NetworkMetrics
 }) {
   const isTelephonyEngineParticipant =
     participant.origin === 'telephony_engine';
@@ -118,7 +118,7 @@ function Feed({
   const STEP = 3;
   const BARS_ARRAY = [0, 1, 2, 3, 4];
 
-  const peerMetrics = connectionQualityLevel ? connectionQualityLevel.get(participant.id) : null;
+  const peerMetrics = connectionQualityLevel ? connectionQualityLevel[participant.id] : null;
 
   return (
     <div
@@ -182,7 +182,7 @@ function Feed({
                       marginRight: '1px',
                       height: `${STEP * (level + 1)}px`,
                       background:
-                      peerMetrics[participant.id].connectionQuality > level
+                      peerMetrics.connectionQuality > level
                           ? 'white'
                           : 'rgba(255, 255, 255, 0.2)',
                     }}

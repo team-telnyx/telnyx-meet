@@ -36,7 +36,7 @@ export type TelnyxRoom = Room & {
     message: Message;
     recipients: Array<Participant['id']> | null;
   }>;
-  connectionQuality: Map<string, NetworkMetrics>;
+  connectionQuality: NetworkMetrics | undefined;
   participantsByActivity: ReadonlySet<Participant['id']>;
   getWebRTCStatsForStream: (
     participantId: Participant['id'],
@@ -61,7 +61,6 @@ export enum ConnectionQualityLevel {
   bad_network = 1,
   network_broken = 0,
 }
-
 
 export enum Direction {
   sending = 'sending',
@@ -110,9 +109,7 @@ export const useRoom = ({
 
   const [messages, setMessages] = useState<TelnyxRoom['messages']>([]);
 
-  const [connectionQuality, setConnectionQuality] = useState<Map<string, NetworkMetrics>>(
-    new Map<string, NetworkMetrics>()
-  );
+  const [connectionQuality, setConnectionQuality] = useState<NetworkMetrics>();
 
   useEffect(() => {
     const connectAndJoinRoom = async () => {
@@ -348,20 +345,11 @@ export const useRoom = ({
           }
         );
 
-        roomRef.current.on(
-          'network_metrics_changed',
-          (participantId, networkMetrics, state) => {
-            console.log(
-              'network_metrics_changed',
-              participantId,
-              networkMetrics
-            );
+        roomRef.current.on('network_metrics_changed', (networkMetrics) => {
+          console.log('network_metrics_changed', networkMetrics);
 
-            setConnectionQuality(
-              new Map(connectionQuality.set(participantId, networkMetrics))
-            );
-          }
-        );
+          setConnectionQuality(networkMetrics);
+        });
       }
 
       await roomRef.current.connect();
