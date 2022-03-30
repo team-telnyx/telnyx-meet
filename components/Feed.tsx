@@ -13,6 +13,7 @@ import { TelnyxRoom } from 'hooks/room';
 import VideoTrack from 'components/VideoTrack';
 import { WebRTCStats } from 'components/WebRTCStats';
 import { TelnyxMeetContext } from 'contexts/TelnyxMeetContext';
+import { NetworkMetricsMonitor } from './NetworkMetricsMonitor';
 
 const VIDEO_BG_COLOR = '#111';
 
@@ -115,9 +116,6 @@ function Feed({
 
   const renderedStats = renderStats();
 
-  const STEP = 3;
-  const BARS_ARRAY = [0, 1, 2, 3, 4];
-
   const peerMetrics = networkMetrics ? networkMetrics[participant.id] : null;
 
   return (
@@ -157,39 +155,9 @@ function Feed({
         >
           {renderedStats}
           {!showStatsOverlay && peerMetrics && (
-            <div
-              style={{
-                borderRadius: 4,
-                backgroundColor: '#84807C',
-                width: 20,
-                margin: 4,
-              }}
-            >
-              <div
-                style={{
-                  display: 'flex',
-                  flexDirection: 'row',
-                  height: '20px',
-                  alignItems: 'flex-end',
-                  justifyContent: 'flex-end',
-                }}
-              >
-                {BARS_ARRAY.map((level) => (
-                  <div
-                    key={level}
-                    style={{
-                      width: '2px',
-                      marginRight: '1px',
-                      height: `${STEP * (level + 1)}px`,
-                      background:
-                        peerMetrics.connectionQuality > level
-                          ? 'white'
-                          : 'rgba(255, 255, 255, 0.2)',
-                    }}
-                  />
-                ))}
-              </div>
-            </div>
+            <NetworkMetricsMonitor
+              connectionQuality={peerMetrics.connectionQuality}
+            />
           )}
         </div>
       </div>
