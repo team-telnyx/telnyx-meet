@@ -8,7 +8,7 @@ import {
 import Bowser from 'bowser';
 import { Participant, Stream } from '@telnyx/video';
 
-import { NetworkMetrics, TelnyxRoom } from 'hooks/room';
+import { TelnyxRoom } from 'hooks/room';
 
 import VideoTrack from 'components/VideoTrack';
 import { WebRTCStats } from 'components/WebRTCStats';
