@@ -1,10 +1,9 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { Participant } from '@telnyx/video';
 
 import { TelnyxRoom } from 'hooks/room';
 import GridLayout from 'components/GridLayout';
 import ScreenSharingLayout from 'components/ScreenSharingLayout';
-import { NetworkMetrics } from '@telnyx/video/lib/metrics/interfaces';
 
 function Feeds({
   participants,
@@ -15,7 +14,6 @@ function Feeds({
   getParticipantStream,
   getStatsForParticipantStream,
   dataTestId,
-  networkMetrics,
 }: {
   participants: TelnyxRoom['state']['participants'];
   streams: TelnyxRoom['state']['streams'];
@@ -25,9 +23,7 @@ function Feeds({
   getParticipantStream: TelnyxRoom['getParticipantStream'];
   getStatsForParticipantStream: TelnyxRoom['getWebRTCStatsForStream'];
   dataTestId: string;
-  networkMetrics: TelnyxRoom['networkMetrics']
 }) {
-
   if (presenter) {
     return (
       <ScreenSharingLayout
@@ -52,7 +48,6 @@ function Feeds({
       dominantSpeakerId={dominantSpeakerId}
       getParticipantStream={getParticipantStream}
       getStatsForParticipantStream={getStatsForParticipantStream}
-      networkMetrics={networkMetrics}
     />
   );
 }

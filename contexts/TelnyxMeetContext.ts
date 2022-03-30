@@ -1,9 +1,11 @@
+import { NetworkMetrics } from '@telnyx/video';
 import React, { Dispatch, SetStateAction } from 'react';
 
 const TelnyxMeetContext = React.createContext<{
   audioInputDeviceId: string | undefined;
   audioOutputDeviceId: string | undefined;
   videoInputDeviceId: string | undefined;
+  networkMetrics: NetworkMetrics | undefined;
 
   setAudioInputDeviceId: Dispatch<SetStateAction<string | undefined>>;
   setAudioOutputDeviceId: Dispatch<SetStateAction<string | undefined>>;
@@ -19,12 +21,14 @@ const TelnyxMeetContext = React.createContext<{
       video: MediaStreamTrack | undefined;
     }>
   >;
+  setNetworkMetrics: Dispatch<SetStateAction<NetworkMetrics | undefined>>;
 
   sendNotification: (message: { body: string }) => void;
 }>({
   audioInputDeviceId: undefined,
   audioOutputDeviceId: undefined,
   videoInputDeviceId: undefined,
+  networkMetrics: undefined,
   setAudioInputDeviceId: (
     value: React.SetStateAction<string | undefined>
   ) => {},
@@ -40,6 +44,9 @@ const TelnyxMeetContext = React.createContext<{
       audio: MediaStreamTrack | undefined;
       video: MediaStreamTrack | undefined;
     }>
+  ) => {},
+  setNetworkMetrics: (
+    value: React.SetStateAction<NetworkMetrics | undefined>
   ) => {},
   sendNotification: (message: { body: string }) => {},
 });

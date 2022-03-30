@@ -10,7 +10,6 @@ import {
 
 import { DebugContext } from 'contexts/DebugContext';
 import { TelnyxMeetContext } from 'contexts/TelnyxMeetContext';
-import { NetworkMetrics } from '@telnyx/video';
 
 const TOKEN_TTL = 50;
 
@@ -37,7 +36,6 @@ export type TelnyxRoom = Room & {
     message: Message;
     recipients: Array<Participant['id']> | null;
   }>;
-  networkMetrics: NetworkMetrics | undefined;
   participantsByActivity: ReadonlySet<Participant['id']>;
   getWebRTCStatsForStream: (
     participantId: Participant['id'],
@@ -61,7 +59,7 @@ export const useRoom = ({
   callbacks,
 }: Props): TelnyxRoom | undefined => {
   const [_, setDebugState] = useContext(DebugContext);
-  const { sendNotification } = useContext(TelnyxMeetContext);
+  const { sendNotification, setNetworkMetrics } = useContext(TelnyxMeetContext);
   const roomRef = useRef<Room>();
   const [state, setState] = useState<State>();
   const [clientToken, setClientToken] = useState<string>(tokens.clientToken);
@@ -74,8 +72,6 @@ export const useRoom = ({
     useState<Participant['id']>();
 
   const [messages, setMessages] = useState<TelnyxRoom['messages']>([]);
-
-  const [networkMetrics, setNetworkMetrics] = useState<NetworkMetrics>();
 
   useEffect(() => {
     const connectAndJoinRoom = async () => {
@@ -311,7 +307,7 @@ export const useRoom = ({
           }
         );
 
-        roomRef.current.on('network_metrics_changed', (networkMetrics) => {
+        roomRef.current.on('network_metrics_report', (networkMetrics) => {
           console.log('network_metrics_report', networkMetrics);
 
           setNetworkMetrics(networkMetrics);
@@ -390,7 +386,6 @@ export const useRoom = ({
         presenter,
         participantsByActivity,
         messages,
-        networkMetrics,
       }
     : undefined;
 };

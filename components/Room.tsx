@@ -94,10 +94,12 @@ function Room({
 
           {state.status === 'connected' && (
             <div>
-              <button onClick={() => room.enableNetworkMetrics(participantIds)}>
+              <button
+                onClick={() => room.enableNetworkMetricsReport(participantIds)}
+              >
                 Start Metrics
               </button>
-              <button onClick={() => room.disableNetworkMetrics()}>
+              <button onClick={() => room.disableNetworkMetricsReport()}>
                 STOP Metrics
               </button>
               <Feeds
@@ -109,7 +111,6 @@ function Room({
                 streams={room.state.streams}
                 getParticipantStream={room.getParticipantStream}
                 getStatsForParticipantStream={room.getWebRTCStatsForStream}
-                networkMetrics={room.networkMetrics}
               />
             </div>
           )}

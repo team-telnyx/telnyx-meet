@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useContext, useEffect, useRef, useState } from 'react';
 import { Box, Text, Spinner } from 'grommet';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
@@ -12,6 +12,7 @@ import { TelnyxRoom } from 'hooks/room';
 
 import VideoTrack from 'components/VideoTrack';
 import { WebRTCStats } from 'components/WebRTCStats';
+import { TelnyxMeetContext } from 'contexts/TelnyxMeetContext';
 
 const VIDEO_BG_COLOR = '#111';
 
@@ -24,7 +25,6 @@ function Feed({
   mirrorVideo = false,
   getStatsForParticipantStream,
   dataId,
-  networkMetrics,
 }: {
   participant: Participant;
   stream?: Stream;
@@ -32,8 +32,8 @@ function Feed({
   getStatsForParticipantStream: TelnyxRoom['getWebRTCStatsForStream'];
   mirrorVideo: boolean;
   dataId?: string;
-  networkMetrics: TelnyxRoom['networkMetrics']
 }) {
+  const { networkMetrics } = useContext(TelnyxMeetContext);
   const isTelephonyEngineParticipant =
     participant.origin === 'telephony_engine';
   const showAudioActivityIndicator = isSpeaking && stream?.key === 'self';
@@ -182,7 +182,7 @@ function Feed({
                       marginRight: '1px',
                       height: `${STEP * (level + 1)}px`,
                       background:
-                      peerMetrics.connectionQuality > level
+                        peerMetrics.connectionQuality > level
                           ? 'white'
                           : 'rgba(255, 255, 255, 0.2)',
                     }}

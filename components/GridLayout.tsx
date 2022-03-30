@@ -41,7 +41,6 @@ function GridLayout({
   getParticipantStream,
   getStatsForParticipantStream,
   dataTestId,
-  networkMetrics,
 }: {
   participants: TelnyxRoom['state']['participants'];
   streams: TelnyxRoom['state']['streams']; // if this is removed, the feeds will not rerender when the streams update
@@ -50,7 +49,6 @@ function GridLayout({
   getParticipantStream: TelnyxRoom['getParticipantStream'];
   getStatsForParticipantStream: TelnyxRoom['getWebRTCStatsForStream'];
   dataTestId: string;
-  networkMetrics: TelnyxRoom['networkMetrics']
 }) {
   const NAVIGATION_BUTTONS_HEIGHT = 96;
   const REPORT_BUTTON_HEIGHT = 32;
@@ -104,7 +102,6 @@ function GridLayout({
           isSpeaking={dominantSpeakerId === participant.id}
           mirrorVideo={participant.origin === 'local'}
           getStatsForParticipantStream={getStatsForParticipantStream}
-          networkMetrics={networkMetrics}
         />
       );
     })
