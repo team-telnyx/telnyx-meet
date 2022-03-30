@@ -10,7 +10,7 @@ import {
 
 import { DebugContext } from 'contexts/DebugContext';
 import { TelnyxMeetContext } from 'contexts/TelnyxMeetContext';
-import { NetworkMetrics } from '@telnyx/video/lib/metrics/interfaces';
+import { NetworkMetrics } from '@telnyx/video';
 
 const TOKEN_TTL = 50;
 
