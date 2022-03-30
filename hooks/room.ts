@@ -312,7 +312,7 @@ export const useRoom = ({
         );
 
         roomRef.current.on('network_metrics_changed', (networkMetrics) => {
-          console.log('network_metrics_changed', networkMetrics);
+          console.log('network_metrics_report', networkMetrics);
 
           setNetworkMetrics(networkMetrics);
         });

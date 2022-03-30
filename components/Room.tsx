@@ -38,8 +38,6 @@ function Room({
     },
   });
 
-
-
   if (!room) {
     return (
       <Box fill background='#1b1b1b' overflow='hidden'>
@@ -66,12 +64,11 @@ function Room({
     );
   }
 
-
   const state = room.getState();
   const participantIds: Array<string> = [];
   state.participants.forEach((item) => {
     participantIds.push(item.id);
-  })
+  });
 
   return (
     <Box fill background='#1b1b1b' overflow='hidden'>
@@ -97,19 +94,23 @@ function Room({
 
           {state.status === 'connected' && (
             <div>
-              <button onClick={() => room.enableNetworkMetrics(participantIds)}>Start Metrics</button>
-              <button onClick={() => room.disableNetworkMetrics()}>STOP Metrics</button>
-            <Feeds
-              dataTestId='feeds'
-              participants={state.participants}
-              participantsByActivity={room.participantsByActivity}
-              dominantSpeakerId={room.dominantSpeakerId}
-              presenter={room.presenter}
-              streams={room.state.streams}
-              getParticipantStream={room.getParticipantStream}
-              getStatsForParticipantStream={room.getWebRTCStatsForStream}
-              networkMetrics={room.networkMetrics}
-            />
+              <button onClick={() => room.enableNetworkMetrics(participantIds)}>
+                Start Metrics
+              </button>
+              <button onClick={() => room.disableNetworkMetrics()}>
+                STOP Metrics
+              </button>
+              <Feeds
+                dataTestId='feeds'
+                participants={state.participants}
+                participantsByActivity={room.participantsByActivity}
+                dominantSpeakerId={room.dominantSpeakerId}
+                presenter={room.presenter}
+                streams={room.state.streams}
+                getParticipantStream={room.getParticipantStream}
+                getStatsForParticipantStream={room.getWebRTCStatsForStream}
+                networkMetrics={room.networkMetrics}
+              />
             </div>
           )}
         </Box>
