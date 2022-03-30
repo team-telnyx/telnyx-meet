@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Box, Text } from 'grommet';
+import { Box, Text, Button } from 'grommet';
 import { useRoom } from 'hooks/room';
 
 import Feeds from 'components/Feeds';
@@ -92,28 +92,38 @@ function Room({
             </Box>
           )}
 
-          {state.status === 'connected' && (
-            <div>
-              <button
+          {state.status === 'connected' && [
+            <div key='report-actions'>
+              <Button
+                color='#7D4CDB'
+                primary
+                size='small'
+                label='Start Metrics'
                 onClick={() => room.enableNetworkMetricsReport(participantIds)}
-              >
-                Start Metrics
-              </button>
-              <button onClick={() => room.disableNetworkMetricsReport()}>
-                STOP Metrics
-              </button>
-              <Feeds
-                dataTestId='feeds'
-                participants={state.participants}
-                participantsByActivity={room.participantsByActivity}
-                dominantSpeakerId={room.dominantSpeakerId}
-                presenter={room.presenter}
-                streams={room.state.streams}
-                getParticipantStream={room.getParticipantStream}
-                getStatsForParticipantStream={room.getWebRTCStatsForStream}
+                style={{ marginRight: 4 }}
               />
-            </div>
-          )}
+
+              <Button
+                primary
+                color='#cecece'
+                size='small'
+                label='Stop Metrics'
+                onClick={() => room.disableNetworkMetricsReport()}
+              />
+            </div>,
+
+            <Feeds
+              key='feeds'
+              dataTestId='feeds'
+              participants={state.participants}
+              participantsByActivity={room.participantsByActivity}
+              dominantSpeakerId={room.dominantSpeakerId}
+              presenter={room.presenter}
+              streams={room.state.streams}
+              getParticipantStream={room.getParticipantStream}
+              getStatsForParticipantStream={room.getWebRTCStatsForStream}
+            />,
+          ]}
         </Box>
 
         {state.status === 'connected' && isParticipantsListVisible && (
