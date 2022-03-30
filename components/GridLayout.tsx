@@ -1,7 +1,7 @@
 import React, { ReactChild, ReactElement, useEffect } from 'react';
 import { Participant } from '@telnyx/video';
 
-import { Metrics, TelnyxRoom } from 'hooks/room';
+import { TelnyxRoom } from 'hooks/room';
 import { useWindowSize, getWindowSize } from 'hooks/windowSize';
 import Feed from 'components/Feed';
 import { Pagination } from 'components/Pagination';
@@ -41,7 +41,7 @@ function GridLayout({
   getParticipantStream,
   getStatsForParticipantStream,
   dataTestId,
-  connectionQualityLevel,
+  networkMetrics,
 }: {
   participants: TelnyxRoom['state']['participants'];
   streams: TelnyxRoom['state']['streams']; // if this is removed, the feeds will not rerender when the streams update
@@ -50,7 +50,7 @@ function GridLayout({
   getParticipantStream: TelnyxRoom['getParticipantStream'];
   getStatsForParticipantStream: TelnyxRoom['getWebRTCStatsForStream'];
   dataTestId: string;
-  connectionQualityLevel: Metrics
+  networkMetrics: TelnyxRoom['networkMetrics']
 }) {
   const NAVIGATION_BUTTONS_HEIGHT = 96;
   const REPORT_BUTTON_HEIGHT = 32;
@@ -104,7 +104,7 @@ function GridLayout({
           isSpeaking={dominantSpeakerId === participant.id}
           mirrorVideo={participant.origin === 'local'}
           getStatsForParticipantStream={getStatsForParticipantStream}
-          connectionQualityLevel={connectionQualityLevel}
+          networkMetrics={networkMetrics}
         />
       );
     })
