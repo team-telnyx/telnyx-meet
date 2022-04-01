@@ -100,7 +100,7 @@ function Feed({
             position: 'absolute',
             top: '5px',
             left: '5px',
-            zIndex: 10,
+            zIndex: 1,
           }}
           disabled={!stream}
         >
