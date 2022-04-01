@@ -130,8 +130,8 @@ function Feed({
 
     return (
       <VideoBitrate
-        participantId={participant.id}
-        streamKey={stream.key}
+        participant={participant}
+        stream={stream}
         getStatsForParticipantStream={getStatsForParticipantStream}
       />
     );

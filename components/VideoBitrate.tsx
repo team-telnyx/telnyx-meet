@@ -5,12 +5,12 @@ import { Participant, Stream } from '@telnyx/video';
 import { TelnyxRoom } from 'hooks/room';
 
 function VideoBitrate({
-  participantId,
-  streamKey,
+  participant,
+  stream,
   getStatsForParticipantStream,
 }: {
-  participantId: Participant['id'];
-  streamKey: Stream['key'];
+  participant: Participant;
+  stream: Stream;
   getStatsForParticipantStream: TelnyxRoom['getWebRTCStatsForStream'];
 }) {
   const [bitrate, setBitrate] = useState(0);
@@ -21,8 +21,8 @@ function VideoBitrate({
     const interval = setInterval(async () => {
       try {
         const stats = await getStatsForParticipantStream(
-          participantId,
-          streamKey
+          participant.id,
+          stream.key
         );
 
         let inboundRTPVideo: any;
@@ -47,7 +47,7 @@ function VideoBitrate({
     }, 1000);
 
     return () => clearInterval(interval);
-  }, [participantId, streamKey, getStatsForParticipantStream]);
+  }, [participant, stream, getStatsForParticipantStream]);
 
   useEffect(() => {
     if (previousBytesReceived === currentBytesReceived) {
@@ -76,10 +76,11 @@ function VideoBitrate({
         round='xxsmall'
       >
         <Text color='status-disabled' size='xsmall'>
-          {Math.floor(bitrate / 1000)} kbps
+          {stream?.isVideoEnabled ? Math.floor(bitrate / 1000) : 0} kbps
         </Text>
       </Box>
     </Box>
   );
 }
+
 export { VideoBitrate };
