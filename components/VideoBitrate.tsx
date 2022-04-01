@@ -69,12 +69,14 @@ function VideoBitrate({
       <Box
         direction='row'
         align='center'
-        gap='xsmall'
+        justify='between'
         background={{ color: 'dark-1', opacity: 'medium' }}
         margin='xxsmall'
         pad='xxsmall'
         round='xxsmall'
+        width='106px'
       >
+        <Text color='status-disabled' size='xsmall'>Video:</Text>
         <Text color='status-disabled' size='xsmall'>
           {stream?.isVideoEnabled ? Math.floor(bitrate / 1000) : 0} kbps
         </Text>
