@@ -38,6 +38,7 @@ function VideoBitrate({
           });
         }
       } catch (error) {
+        clearInterval(interval);
         setBitrate(0);
         setCurrentBytesReceived(0);
         setPreviousBytesReceived(0);
