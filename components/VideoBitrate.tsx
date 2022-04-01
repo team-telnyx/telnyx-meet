@@ -49,8 +49,7 @@ function VideoBitrate({
   }, [participantId, streamKey, getStatsForParticipantStream]);
 
   useEffect(() => {
-    if (currentBytesReceived === 0) {
-      setBitrate(0);
+    if (previousBytesReceived === currentBytesReceived) {
       return;
     }
 
@@ -62,8 +61,7 @@ function VideoBitrate({
 
     setBitrate(8 * (currentBytesReceived - previousBytesReceived));
     setPreviousBytesReceived(currentBytesReceived);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentBytesReceived]);
+  }, [previousBytesReceived, currentBytesReceived]);
 
   return (
     <Box style={{ position: 'absolute', right: 0, bottom: 0, zIndex: 1 }}>
