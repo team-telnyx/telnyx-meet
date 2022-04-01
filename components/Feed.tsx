@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { Box, Text, Spinner } from 'grommet';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
@@ -12,6 +12,7 @@ import { TelnyxRoom } from 'hooks/room';
 
 import VideoTrack from 'components/VideoTrack';
 import { WebRTCStats } from 'components/WebRTCStats';
+import { VideoBitrate } from 'components/VideoBitrate';
 
 const VIDEO_BG_COLOR = '#111';
 
@@ -116,7 +117,25 @@ function Feed({
     }
   }
 
-  const renderedStats = renderStats();
+  const renderVideoBitrate = useCallback(() => {
+    if (
+      !stream ||
+      !stream.isConfigured ||
+      !participant ||
+      !allowedBrowser ||
+      participant.origin === 'local'
+    ) {
+      return null;
+    }
+
+    return (
+      <VideoBitrate
+        participant={participant}
+        stream={stream}
+        getStatsForParticipantStream={getStatsForParticipantStream}
+      />
+    );
+  }, [stream, participant, allowedBrowser, getStatsForParticipantStream]);
 
   return (
     <div
@@ -138,7 +157,8 @@ function Feed({
         height: isPresentation ? '100%' : 'unset',
       }}
     >
-      {renderedStats}
+      {renderStats()}
+      {renderVideoBitrate()}
       <div
         style={{
           position: 'absolute',
@@ -245,27 +265,6 @@ function Feed({
               <Text>
                 {context?.username}
                 {participant.origin === 'local' && <strong> (me)</strong>}
-              </Text>
-            )}
-          </Box>
-        </Box>
-
-        <Box style={{ position: 'absolute', right: 0, bottom: 0 }}>
-          <Box
-            direction='row'
-            align='center'
-            gap='xsmall'
-            background={{
-              color: 'dark-1',
-              opacity: 'medium',
-            }}
-            margin='xxsmall'
-            pad='xxsmall'
-            round='xxsmall'
-          >
-            {context && (
-              <Text color='status-disabled' size='xsmall'>
-                {context.id}
               </Text>
             )}
           </Box>

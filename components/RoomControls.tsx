@@ -156,7 +156,9 @@ export default function RoomControls({
   onChangeParticipantsListVisible: Function;
   streams: { [key: string]: Stream };
   disableScreenshare: boolean;
-  onAudioOutputDeviceChange: React.Dispatch<React.SetStateAction<string | undefined>>;
+  onAudioOutputDeviceChange: React.Dispatch<
+    React.SetStateAction<string | undefined>
+  >;
   sendMessage: Room['sendMessage'];
   messages: TelnyxRoom['messages'];
   getLocalParticipant: () => Participant;
@@ -222,7 +224,10 @@ export default function RoomControls({
 
   useEffect(() => {
     if (!selfStream) {
-      addStream('self', localTracks);
+      addStream('self', {
+        audio: localTracks.audio,
+        video: { track: localTracks.video, options: { enableSimulcast: true } },
+      });
 
       return;
     }
@@ -241,7 +246,13 @@ export default function RoomControls({
   useEffect(() => {
     if (presentationTracks.video) {
       if (!presentationStream) {
-        addStream('presentation', presentationTracks);
+        addStream('presentation', {
+          audio: presentationTracks.audio,
+          video: {
+            track: presentationTracks.video,
+            options: { enableSimulcast: true },
+          },
+        });
       } else {
         updateStream('presentation', presentationTracks);
       }
@@ -465,7 +476,7 @@ export default function RoomControls({
                   audio: false,
                   video: videoInputDeviceId
                     ? { deviceId: videoInputDeviceId }
-                    : true,
+                    : { width: 1280, height: 720 },
                 })
                   .then((stream) => {
                     setLocalTracks((value) => ({
