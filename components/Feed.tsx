@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { Box, Text, Spinner } from 'grommet';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
@@ -117,7 +117,7 @@ function Feed({
     }
   }
 
-  const renderVideoBitrate = () => {
+  const renderVideoBitrate = useCallback(() => {
     if (
       !stream ||
       !stream.isConfigured ||
@@ -135,10 +135,7 @@ function Feed({
         getStatsForParticipantStream={getStatsForParticipantStream}
       />
     );
-  };
-
-  const renderedStats = renderStats();
-  const renderedVideoBitrate = renderVideoBitrate();
+  }, [stream, participant, allowedBrowser, getStatsForParticipantStream]);
 
   return (
     <div
@@ -160,8 +157,8 @@ function Feed({
         height: isPresentation ? '100%' : 'unset',
       }}
     >
-      {renderedStats}
-      {renderedVideoBitrate}
+      {renderStats()}
+      {renderVideoBitrate()}
       <div
         style={{
           position: 'absolute',
