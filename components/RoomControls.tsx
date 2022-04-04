@@ -137,7 +137,6 @@ export default function RoomControls({
   onChangeParticipantsListVisible,
   streams,
   disableScreenshare,
-  onAudioOutputDeviceChange,
   participantsByActivity,
   addStream,
   removeStream,
@@ -156,9 +155,6 @@ export default function RoomControls({
   onChangeParticipantsListVisible: Function;
   streams: { [key: string]: Stream };
   disableScreenshare: boolean;
-  onAudioOutputDeviceChange: React.Dispatch<
-    React.SetStateAction<string | undefined>
-  >;
   sendMessage: Room['sendMessage'];
   messages: TelnyxRoom['messages'];
   getLocalParticipant: () => Participant;
@@ -358,10 +354,8 @@ export default function RoomControls({
   };
 
   useEffect(() => {
-    onAudioOutputDeviceChange(audioOutputDeviceId);
-    // TODO: avoid disable line
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [audioOutputDeviceId]);
+    setAudioOutputDeviceId(audioOutputDeviceId);
+  }, [audioOutputDeviceId, setAudioOutputDeviceId]);
 
   const removeMediaTracks = () => {
     localTracks?.audio?.stop();

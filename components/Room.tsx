@@ -27,7 +27,6 @@ function Room({
 }) {
   const [isParticipantsListVisible, setIsParticipantsListVisible] =
     useState<boolean>(false);
-  const [audioOutputDeviceId, setAudioOutputDeviceId] = useState<string>();
 
   const room = useRoom({
     roomId,
@@ -128,7 +127,6 @@ function Room({
                 ? room.presenter.id !== room.getLocalParticipant().id
                 : false
             }
-            onAudioOutputDeviceChange={setAudioOutputDeviceId}
             sendMessage={room.sendMessage}
             messages={room.messages}
             getLocalParticipant={room.getLocalParticipant}
@@ -138,7 +136,6 @@ function Room({
             participants={state.participants}
             streams={state.streams}
             mixedAudioTrack={state.mixedAudioTrack}
-            audioOutputDeviceId={audioOutputDeviceId}
           />
         </>
       )}
