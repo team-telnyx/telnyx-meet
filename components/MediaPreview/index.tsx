@@ -41,7 +41,6 @@ function MediaPreview({ error, setError }: { error: any; setError: any }) {
   const {
     audioInputDeviceId,
     videoInputDeviceId,
-    setVideoInputDeviceId,
     localTracks,
     setLocalTracks,
   } = useContext(TelnyxMeetContext);
@@ -123,7 +122,6 @@ function MediaPreview({ error, setError }: { error: any; setError: any }) {
             localTracks={localTracks}
             setLocalTracks={setLocalTracks}
             audioInputDeviceId={audioInputDeviceId}
-            setVideoInputDeviceId={setVideoInputDeviceId}
             videoInputDeviceId={videoInputDeviceId}
             setError={setError}
           />

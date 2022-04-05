@@ -136,7 +136,6 @@ export default function Rooms({ id }: { id: string }) {
           if (isVideoEnabled === 'yes') {
             const localVideoTrack = stream?.getVideoTracks()[0];
             setLocalTracks((value) => ({ ...value, video: localVideoTrack }));
-            setVideoInputDeviceId(localVideoTrack.id);
           }
 
           setError(undefined);

@@ -27,7 +27,6 @@ const FontAwesomeIcon = styled(BaseFontAwesomeIcon)`
 
 function MediaControlBar({
   audioInputDeviceId,
-  setVideoInputDeviceId,
   videoInputDeviceId,
   setError,
   localTracks,
@@ -44,7 +43,6 @@ function MediaControlBar({
     }>
   >;
   audioInputDeviceId: string | undefined;
-  setVideoInputDeviceId: Dispatch<SetStateAction<string | undefined>>;
   videoInputDeviceId: string | undefined;
   setError: Dispatch<
     SetStateAction<{ title: string; body: string } | undefined>
@@ -79,7 +77,6 @@ function MediaControlBar({
     if (localTracks?.video) {
       localTracks.video.stop();
       setLocalTracks((value) => ({ ...value, video: undefined }));
-      setVideoInputDeviceId(undefined);
       saveItem(USER_PREFERENCE_VIDEO_ENABLED, 'no');
     } else {
       getUserMedia({
@@ -92,7 +89,6 @@ function MediaControlBar({
             video: stream?.getVideoTracks()[0],
           }));
 
-          setVideoInputDeviceId(stream?.getVideoTracks()[0].id);
           saveItem(USER_PREFERENCE_VIDEO_ENABLED, 'yes');
         })
         // TODO: avoid disable line

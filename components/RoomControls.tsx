@@ -457,7 +457,6 @@ export default function RoomControls({
             size='large'
             onClick={() => {
               if (localTracks.video) {
-                setVideoInputDeviceId('');
                 localTracks.video.stop();
                 if (selfStream?.videoTrack) {
                   selfStream?.videoTrack.stop();
@@ -475,7 +474,6 @@ export default function RoomControls({
                       ...value,
                       video: stream?.getVideoTracks()[0],
                     }));
-                    setVideoInputDeviceId(stream?.getVideoTracks()[0].id);
                   })
                   .catch((err) => {
                     handleMediaError(err, 'video');
