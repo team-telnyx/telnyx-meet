@@ -405,7 +405,6 @@ export default function RoomControls({
                 if (selfStream?.audioTrack) {
                   selfStream?.audioTrack.stop();
                 }
-                setAudioInputDeviceId('');
                 setLocalTracks((value) => ({ ...value, audio: undefined }));
               } else {
                 getUserMedia({
@@ -419,7 +418,6 @@ export default function RoomControls({
                       ...value,
                       audio: stream?.getAudioTracks()[0],
                     }));
-                    setAudioInputDeviceId(stream?.getAudioTracks()[0].id);
                   })
                   .catch((err) => {
                     handleMediaError(err, 'audio');

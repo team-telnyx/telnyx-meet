@@ -26,7 +26,6 @@ const FontAwesomeIcon = styled(BaseFontAwesomeIcon)`
 `;
 
 function MediaControlBar({
-  setAudioInputDeviceId,
   audioInputDeviceId,
   setVideoInputDeviceId,
   videoInputDeviceId,
@@ -44,7 +43,6 @@ function MediaControlBar({
       video: MediaStreamTrack | undefined;
     }>
   >;
-  setAudioInputDeviceId: Dispatch<SetStateAction<string | undefined>>;
   audioInputDeviceId: string | undefined;
   setVideoInputDeviceId: Dispatch<SetStateAction<string | undefined>>;
   videoInputDeviceId: string | undefined;
@@ -56,7 +54,6 @@ function MediaControlBar({
     if (localTracks?.audio) {
       localTracks.audio.stop();
       setLocalTracks((value) => ({ ...value, audio: undefined }));
-      setAudioInputDeviceId(undefined);
       saveItem(USER_PREFERENCE_AUDIO_ENABLED, 'no');
     } else {
       getUserMedia({
@@ -68,7 +65,6 @@ function MediaControlBar({
             ...value,
             audio: stream?.getAudioTracks()[0],
           }));
-          setAudioInputDeviceId(stream?.getAudioTracks()[0].id);
           saveItem(USER_PREFERENCE_AUDIO_ENABLED, 'yes');
         })
         // TODO: avoid disable line

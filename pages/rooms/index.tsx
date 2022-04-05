@@ -131,7 +131,6 @@ export default function Rooms({ id }: { id: string }) {
           if (isAudioEnabled === 'yes') {
             const localAudioTrack = stream?.getAudioTracks()[0];
             setLocalTracks((value) => ({ ...value, audio: localAudioTrack }));
-            setAudioInputDeviceId(localAudioTrack.id);
           }
 
           if (isVideoEnabled === 'yes') {
