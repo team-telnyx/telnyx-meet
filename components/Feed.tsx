@@ -1,4 +1,10 @@
-import React, { useContext, useEffect, useRef, useState } from 'react';
+import React, {
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+  useCallback,
+} from 'react';
 import { Box, Text, Spinner } from 'grommet';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
@@ -14,6 +20,7 @@ import VideoTrack from 'components/VideoTrack';
 import { WebRTCStats } from 'components/WebRTCStats';
 import { TelnyxMeetContext } from 'contexts/TelnyxMeetContext';
 import { NetworkMetricsMonitor } from './NetworkMetricsMonitor';
+import { VideoBitrate } from 'components/VideoBitrate';
 
 const VIDEO_BG_COLOR = '#111';
 
@@ -114,7 +121,25 @@ function Feed({
     }
   }
 
-  const renderedStats = renderStats();
+  const renderVideoBitrate = useCallback(() => {
+    if (
+      !stream ||
+      !stream.isConfigured ||
+      !participant ||
+      !allowedBrowser ||
+      participant.origin === 'local'
+    ) {
+      return null;
+    }
+
+    return (
+      <VideoBitrate
+        participant={participant}
+        stream={stream}
+        getStatsForParticipantStream={getStatsForParticipantStream}
+      />
+    );
+  }, [stream, participant, allowedBrowser, getStatsForParticipantStream]);
 
   const peerMetrics = networkMetrics ? networkMetrics[participant.id] : null;
 
@@ -153,7 +178,8 @@ function Feed({
             justifyContent: 'space-between',
           }}
         >
-          {renderedStats}
+          {renderStats()}
+          {renderVideoBitrate()}
           {!showStatsOverlay && peerMetrics && (
             <NetworkMetricsMonitor
               connectionQuality={peerMetrics.connectionQuality}
@@ -268,27 +294,6 @@ function Feed({
               <Text>
                 {context?.username}
                 {participant.origin === 'local' && <strong> (me)</strong>}
-              </Text>
-            )}
-          </Box>
-        </Box>
-
-        <Box style={{ position: 'absolute', right: 0, bottom: 0 }}>
-          <Box
-            direction='row'
-            align='center'
-            gap='xsmall'
-            background={{
-              color: 'dark-1',
-              opacity: 'medium',
-            }}
-            margin='xxsmall'
-            pad='xxsmall'
-            round='xxsmall'
-          >
-            {context && (
-              <Text color='status-disabled' size='xsmall'>
-                {context.id}
               </Text>
             )}
           </Box>
