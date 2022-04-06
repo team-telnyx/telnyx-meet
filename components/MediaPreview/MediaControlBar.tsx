@@ -26,9 +26,7 @@ const FontAwesomeIcon = styled(BaseFontAwesomeIcon)`
 `;
 
 function MediaControlBar({
-  setAudioInputDeviceId,
   audioInputDeviceId,
-  setVideoInputDeviceId,
   videoInputDeviceId,
   setError,
   localTracks,
@@ -44,9 +42,7 @@ function MediaControlBar({
       video: MediaStreamTrack | undefined;
     }>
   >;
-  setAudioInputDeviceId: Dispatch<SetStateAction<string | undefined>>;
   audioInputDeviceId: string | undefined;
-  setVideoInputDeviceId: Dispatch<SetStateAction<string | undefined>>;
   videoInputDeviceId: string | undefined;
   setError: Dispatch<
     SetStateAction<{ title: string; body: string } | undefined>
@@ -56,7 +52,6 @@ function MediaControlBar({
     if (localTracks?.audio) {
       localTracks.audio.stop();
       setLocalTracks((value) => ({ ...value, audio: undefined }));
-      setAudioInputDeviceId(undefined);
       saveItem(USER_PREFERENCE_AUDIO_ENABLED, 'no');
     } else {
       getUserMedia({
@@ -68,7 +63,6 @@ function MediaControlBar({
             ...value,
             audio: stream?.getAudioTracks()[0],
           }));
-          setAudioInputDeviceId(stream?.getAudioTracks()[0].id);
           saveItem(USER_PREFERENCE_AUDIO_ENABLED, 'yes');
         })
         // TODO: avoid disable line
@@ -83,7 +77,6 @@ function MediaControlBar({
     if (localTracks?.video) {
       localTracks.video.stop();
       setLocalTracks((value) => ({ ...value, video: undefined }));
-      setVideoInputDeviceId(undefined);
       saveItem(USER_PREFERENCE_VIDEO_ENABLED, 'no');
     } else {
       getUserMedia({
@@ -96,7 +89,6 @@ function MediaControlBar({
             video: stream?.getVideoTracks()[0],
           }));
 
-          setVideoInputDeviceId(stream?.getVideoTracks()[0].id);
           saveItem(USER_PREFERENCE_VIDEO_ENABLED, 'yes');
         })
         // TODO: avoid disable line

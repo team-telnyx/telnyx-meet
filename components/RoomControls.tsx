@@ -137,7 +137,6 @@ export default function RoomControls({
   onChangeParticipantsListVisible,
   streams,
   disableScreenshare,
-  onAudioOutputDeviceChange,
   participantsByActivity,
   addStream,
   removeStream,
@@ -156,9 +155,6 @@ export default function RoomControls({
   onChangeParticipantsListVisible: Function;
   streams: { [key: string]: Stream };
   disableScreenshare: boolean;
-  onAudioOutputDeviceChange: React.Dispatch<
-    React.SetStateAction<string | undefined>
-  >;
   sendMessage: Room['sendMessage'];
   messages: TelnyxRoom['messages'];
   getLocalParticipant: () => Participant;
@@ -358,10 +354,8 @@ export default function RoomControls({
   };
 
   useEffect(() => {
-    onAudioOutputDeviceChange(audioOutputDeviceId);
-    // TODO: avoid disable line
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [audioOutputDeviceId]);
+    setAudioOutputDeviceId(audioOutputDeviceId);
+  }, [audioOutputDeviceId, setAudioOutputDeviceId]);
 
   const removeMediaTracks = () => {
     localTracks?.audio?.stop();
@@ -411,7 +405,6 @@ export default function RoomControls({
                 if (selfStream?.audioTrack) {
                   selfStream?.audioTrack.stop();
                 }
-                setAudioInputDeviceId('');
                 setLocalTracks((value) => ({ ...value, audio: undefined }));
               } else {
                 getUserMedia({
@@ -425,7 +418,6 @@ export default function RoomControls({
                       ...value,
                       audio: stream?.getAudioTracks()[0],
                     }));
-                    setAudioInputDeviceId(stream?.getAudioTracks()[0].id);
                   })
                   .catch((err) => {
                     handleMediaError(err, 'audio');
@@ -465,7 +457,6 @@ export default function RoomControls({
             size='large'
             onClick={() => {
               if (localTracks.video) {
-                setVideoInputDeviceId('');
                 localTracks.video.stop();
                 if (selfStream?.videoTrack) {
                   selfStream?.videoTrack.stop();
@@ -483,7 +474,6 @@ export default function RoomControls({
                       ...value,
                       video: stream?.getVideoTracks()[0],
                     }));
-                    setVideoInputDeviceId(stream?.getVideoTracks()[0].id);
                   })
                   .catch((err) => {
                     handleMediaError(err, 'video');

@@ -1,6 +1,7 @@
-import React, { useMemo } from 'react';
+import React, { useContext, useMemo } from 'react';
 
 import { TelnyxRoom } from 'hooks/room';
+import { TelnyxMeetContext } from 'contexts/TelnyxMeetContext';
 import AudioTrack from 'components/AudioTrack';
 
 export default function RoomAudio({
@@ -8,14 +9,14 @@ export default function RoomAudio({
   streams,
   useAudioMixer,
   mixedAudioTrack,
-  audioOutputDeviceId,
 }: {
   participants: TelnyxRoom['state']['participants'];
   streams: TelnyxRoom['state']['streams'];
   useAudioMixer: boolean;
   mixedAudioTrack?: MediaStreamTrack;
-  audioOutputDeviceId?: MediaDeviceInfo['deviceId'];
 }) {
+  const { audioOutputDeviceId } = useContext(TelnyxMeetContext);
+
   const audioTracks = useMemo(() => {
     if (useAudioMixer) {
       return [];
