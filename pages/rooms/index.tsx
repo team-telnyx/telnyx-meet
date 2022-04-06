@@ -21,6 +21,7 @@ import {
   USER_PREFERENCE_AUDIO_ENABLED,
   USER_PREFERENCE_VIDEO_ENABLED,
 } from 'utils/storage';
+import { NetworkMetrics } from '@telnyx/video';
 
 const breakpointMedium = 1021;
 
@@ -89,6 +90,8 @@ export default function Rooms({ id }: { id: string }) {
       },
     });
   };
+
+  const [networkMetrics, setNetworkMetrics] = useState<NetworkMetrics>();
 
   useEffect(() => {
     setUsername(getUserName());
@@ -175,6 +178,8 @@ export default function Rooms({ id }: { id: string }) {
           localTracks,
           setLocalTracks,
           sendNotification,
+          networkMetrics,
+          setNetworkMetrics,
         }}
       >
         <Main align='center' justify='center' background='light-2'>

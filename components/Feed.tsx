@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useContext, useEffect, useRef, useState } from 'react';
 import { Box, Text, Spinner } from 'grommet';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
@@ -12,6 +12,8 @@ import { TelnyxRoom } from 'hooks/room';
 
 import VideoTrack from 'components/VideoTrack';
 import { WebRTCStats } from 'components/WebRTCStats';
+import { TelnyxMeetContext } from 'contexts/TelnyxMeetContext';
+import { NetworkMetricsMonitor } from './NetworkMetricsMonitor';
 
 const VIDEO_BG_COLOR = '#111';
 
@@ -32,6 +34,7 @@ function Feed({
   mirrorVideo: boolean;
   dataId?: string;
 }) {
+  const { networkMetrics } = useContext(TelnyxMeetContext);
   const isTelephonyEngineParticipant =
     participant.origin === 'telephony_engine';
   const showAudioActivityIndicator = isSpeaking && stream?.key === 'self';
@@ -77,6 +80,7 @@ function Feed({
     if (!showStatsOverlay || !stats) {
       return (
         <button
+          style={{ margin: 4 }}
           onClick={async () => {
             intervalStatsId.current = setInterval(async () => {
               try {
@@ -95,12 +99,6 @@ function Feed({
               }
             }, 500);
           }}
-          style={{
-            position: 'absolute',
-            top: '5px',
-            left: '5px',
-            zIndex: 1,
-          }}
           disabled={!stream}
         >
           stats
@@ -117,6 +115,8 @@ function Feed({
   }
 
   const renderedStats = renderStats();
+
+  const peerMetrics = networkMetrics ? networkMetrics[participant.id] : null;
 
   return (
     <div
@@ -138,7 +138,30 @@ function Feed({
         height: isPresentation ? '100%' : 'unset',
       }}
     >
-      {renderedStats}
+      <div
+        style={{
+          position: 'absolute',
+          top: '0px',
+          zIndex: 1,
+          width: '100%',
+          height: '100%',
+        }}
+      >
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+          }}
+        >
+          {renderedStats}
+          {!showStatsOverlay && peerMetrics && (
+            <NetworkMetricsMonitor
+              connectionQuality={peerMetrics.connectionQuality}
+            />
+          )}
+        </div>
+      </div>
+
       <div
         style={{
           position: 'absolute',

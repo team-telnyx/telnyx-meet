@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Box, Text } from 'grommet';
+import { Box, Text, Button } from 'grommet';
 import { useRoom } from 'hooks/room';
 
 import Feeds from 'components/Feeds';
@@ -65,6 +65,10 @@ function Room({
   }
 
   const state = room.getState();
+  const participantIds: Array<string> = [];
+  state.participants.forEach((item) => {
+    participantIds.push(item.id);
+  });
 
   return (
     <Box fill background='#1b1b1b' overflow='hidden'>
@@ -88,8 +92,28 @@ function Room({
             </Box>
           )}
 
-          {state.status === 'connected' && (
+          {state.status === 'connected' && [
+            <div key='report-actions'>
+              <Button
+                color='#7D4CDB'
+                primary
+                size='small'
+                label='Start Metrics'
+                onClick={() => room.enableNetworkMetricsReport(participantIds)}
+                style={{ marginRight: 4 }}
+              />
+
+              <Button
+                primary
+                color='#cecece'
+                size='small'
+                label='Stop Metrics'
+                onClick={() => room.disableNetworkMetricsReport()}
+              />
+            </div>,
+
             <Feeds
+              key='feeds'
               dataTestId='feeds'
               participants={state.participants}
               participantsByActivity={room.participantsByActivity}
@@ -98,8 +122,8 @@ function Room({
               streams={room.state.streams}
               getParticipantStream={room.getParticipantStream}
               getStatsForParticipantStream={room.getWebRTCStatsForStream}
-            />
-          )}
+            />,
+          ]}
         </Box>
 
         {state.status === 'connected' && isParticipantsListVisible && (
