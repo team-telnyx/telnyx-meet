@@ -5,11 +5,16 @@ import Rooms from './';
 
 const RoomId = () => {
   const router = useRouter();
-  const { roomId } = router.query as { roomId: string };
+  const { roomId, network_metrics } = router.query as {
+    roomId: string;
+    network_metrics: string;
+  };
+
+  const showMetricsActionButton = network_metrics === 'true' ? true : false;
 
   return (
     <Fragment>
-      <Rooms id={roomId} />
+      <Rooms id={roomId} showMetricsActionButton={showMetricsActionButton} />
     </Fragment>
   );
 };

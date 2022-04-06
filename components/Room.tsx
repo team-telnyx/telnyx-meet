@@ -10,11 +10,13 @@ import RoomAudio from 'components/RoomAudio';
 
 function Room({
   roomId,
+  showMetricsActionButton,
   tokens,
   context,
   onDisconnected,
 }: {
   roomId: string;
+  showMetricsActionButton: boolean;
   tokens: {
     clientToken: string;
     refreshToken: string;
@@ -91,38 +93,44 @@ function Room({
             </Box>
           )}
 
-          {state.status === 'connected' && [
-            <div key='report-actions'>
-              <Button
-                color='#7D4CDB'
-                primary
-                size='small'
-                label='Start Metrics'
-                onClick={() => room.enableNetworkMetricsReport(participantIds)}
-                style={{ marginRight: 4 }}
-              />
+          {state.status === 'connected' && (
+            <React.Fragment>
+              {showMetricsActionButton && (
+                <div key='report-actions'>
+                  <Button
+                    color='#7D4CDB'
+                    primary
+                    size='small'
+                    label='Start Metrics'
+                    onClick={() =>
+                      room.enableNetworkMetricsReport(participantIds)
+                    }
+                    style={{ marginRight: 4 }}
+                  />
 
-              <Button
-                primary
-                color='#cecece'
-                size='small'
-                label='Stop Metrics'
-                onClick={() => room.disableNetworkMetricsReport()}
-              />
-            </div>,
+                  <Button
+                    primary
+                    color='#cecece'
+                    size='small'
+                    label='Stop Metrics'
+                    onClick={() => room.disableNetworkMetricsReport()}
+                  />
+                </div>
+              )}
 
-            <Feeds
-              key='feeds'
-              dataTestId='feeds'
-              participants={state.participants}
-              participantsByActivity={room.participantsByActivity}
-              dominantSpeakerId={room.dominantSpeakerId}
-              presenter={room.presenter}
-              streams={room.state.streams}
-              getParticipantStream={room.getParticipantStream}
-              getStatsForParticipantStream={room.getWebRTCStatsForStream}
-            />,
-          ]}
+              <Feeds
+                key='feeds'
+                dataTestId='feeds'
+                participants={state.participants}
+                participantsByActivity={room.participantsByActivity}
+                dominantSpeakerId={room.dominantSpeakerId}
+                presenter={room.presenter}
+                streams={room.state.streams}
+                getParticipantStream={room.getParticipantStream}
+                getStatsForParticipantStream={room.getWebRTCStatsForStream}
+              />
+            </React.Fragment>
+          )}
         </Box>
 
         {state.status === 'connected' && isParticipantsListVisible && (

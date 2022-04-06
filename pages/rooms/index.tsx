@@ -45,7 +45,13 @@ function getUserName(): string {
     return generateUsername();
   }
 }
-export default function Rooms({ id }: { id: string }) {
+export default function Rooms({
+  id,
+  showMetricsActionButton,
+}: {
+  id: string;
+  showMetricsActionButton: boolean;
+}) {
   const [roomId, setRoomId] = useState<string>();
 
   const [username, setUsername] = useState<string>('');
@@ -186,6 +192,7 @@ export default function Rooms({ id }: { id: string }) {
           {roomId && isReady ? (
             <Room
               roomId={roomId}
+              showMetricsActionButton={showMetricsActionButton}
               tokens={tokens}
               context={{
                 id: generateId(),
