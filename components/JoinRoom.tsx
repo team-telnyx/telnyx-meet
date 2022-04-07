@@ -54,6 +54,7 @@ const JoinRoom = ({
         clientToken,
         refreshToken,
       });
+
       return;
     }
 
