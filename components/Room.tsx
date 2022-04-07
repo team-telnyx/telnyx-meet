@@ -29,6 +29,8 @@ function Room({
 }) {
   const [isParticipantsListVisible, setIsParticipantsListVisible] =
     useState<boolean>(false);
+  const [isInviteParticipantVisible, setIsInviteParticipantVisible] =
+    useState<boolean>(false);
 
   const room = useRoom({
     roomId,
@@ -147,7 +149,9 @@ function Room({
         <>
           <RoomControls
             isParticipantsListVisible={isParticipantsListVisible}
+            isInviteParticipantVisible={isInviteParticipantVisible}
             onChangeParticipantsListVisible={setIsParticipantsListVisible}
+            onChangeInviteParticipantVisible={setIsInviteParticipantVisible}
             participantsByActivity={room.participantsByActivity}
             addStream={room.addStream}
             removeStream={room.removeStream}

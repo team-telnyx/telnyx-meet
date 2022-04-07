@@ -1,7 +1,11 @@
 import { useContext, useEffect, useState } from 'react';
 import { getDevices, Participant, Room, Stream } from '@telnyx/video';
 import { Box, Button, Menu, Text } from 'grommet';
-import { Group as GroupIcon, Chat as ChatIcon } from 'grommet-icons';
+import {
+  Group as GroupIcon,
+  Chat as ChatIcon,
+  UserAdd as InviteIcon,
+} from 'grommet-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   faMicrophone,
@@ -28,19 +32,7 @@ const RightBoxMenu = styled(Box)`
   justify-content: center;
 `;
 
-const ScreenShareBox = styled(Box)`
-  @media (max-width: ${breakpointMedium}px) {
-    display: none;
-  }
-`;
-
-const ParticipantBox = styled(Box)`
-  @media (max-width: ${breakpointMedium}px) {
-    display: none;
-  }
-`;
-
-const ChatBox = styled(Box)`
+const ControllerBox = styled(Box)`
   @media (max-width: ${breakpointMedium}px) {
     display: none;
   }
@@ -134,7 +126,9 @@ function DeviceSelect({
 
 export default function RoomControls({
   isParticipantsListVisible,
+  isInviteParticipantVisible,
   onChangeParticipantsListVisible,
+  onChangeInviteParticipantVisible,
   streams,
   disableScreenshare,
   participantsByActivity,
@@ -147,12 +141,18 @@ export default function RoomControls({
   getLocalParticipant,
 }: {
   isParticipantsListVisible: boolean;
+  isInviteParticipantVisible: boolean;
   participantsByActivity: TelnyxRoom['participantsByActivity'];
   addStream: TelnyxRoom['addStream'];
   removeStream: TelnyxRoom['removeStream'];
   updateStream: TelnyxRoom['updateStream'];
   disconnect: TelnyxRoom['disconnect'];
-  onChangeParticipantsListVisible: Function;
+  onChangeParticipantsListVisible: React.Dispatch<
+    React.SetStateAction<boolean>
+  >;
+  onChangeInviteParticipantVisible: React.Dispatch<
+    React.SetStateAction<boolean>
+  >;
   streams: { [key: string]: Stream };
   disableScreenshare: boolean;
   sendMessage: Room['sendMessage'];
@@ -504,7 +504,7 @@ export default function RoomControls({
           </Button>
         </Box>
 
-        <ScreenShareBox width='80px'>
+        <ControllerBox width='80px'>
           <Button
             data-testid='btn-toggle-screen-sharing'
             size='large'
@@ -549,13 +549,16 @@ export default function RoomControls({
               </Text>
             </Box>
           </Button>
-        </ScreenShareBox>
+        </ControllerBox>
 
-        <ParticipantBox width='80px'>
+        <ControllerBox width='80px'>
           <Button
             data-testid='btn-toggle-participant-list'
             size='large'
             onClick={() => {
+              if (isInviteParticipantVisible) {
+                onChangeInviteParticipantVisible(false);
+              }
               onChangeParticipantsListVisible(!isParticipantsListVisible);
             }}
           >
@@ -581,9 +584,33 @@ export default function RoomControls({
               </Text>
             </Box>
           </Button>
-        </ParticipantBox>
+        </ControllerBox>
+
+        <ControllerBox width='80px'>
+          <Button
+            data-testid='btn-invite-participant'
+            size='large'
+            onClick={() => {
+              if (isParticipantsListVisible) {
+                onChangeParticipantsListVisible(false);
+              }
+              onChangeInviteParticipantVisible(!isInviteParticipantVisible);
+            }}
+          >
+            <Box align='center' gap='xsmall'>
+              <InviteIcon
+                size='large'
+                color={isInviteParticipantVisible ? 'accent-1' : 'light-5'}
+              />
+              <Text size='xsmall' color='light-6'>
+                Invite
+              </Text>
+            </Box>
+          </Button>
+        </ControllerBox>
+
         {localParticipant.canReceiveMessages && (
-          <ChatBox>
+          <ControllerBox>
             <Button
               data-testid='btn-toggle-chat'
               size='large'
@@ -603,7 +630,7 @@ export default function RoomControls({
                 </Text>
               </Box>
             </Button>
-          </ChatBox>
+          </ControllerBox>
         )}
       </Box>
 
