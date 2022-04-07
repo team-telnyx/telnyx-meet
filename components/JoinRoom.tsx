@@ -21,6 +21,8 @@ const JoinRoom = ({
   updateRoomId,
   updateUsername,
   updateTokens,
+  clientToken,
+  refreshToken,
 }: Props) => {
   const [error, setError] = useState<
     { title: string; body: string } | undefined
@@ -47,6 +49,15 @@ const JoinRoom = ({
   };
 
   const joinRoom = async () => {
+    if (clientToken && refreshToken) {
+      updateTokens({
+        clientToken,
+        refreshToken,
+      });
+
+      return;
+    }
+
     const response = await fetch('/api/client_token', {
       method: 'POST',
       body: JSON.stringify({

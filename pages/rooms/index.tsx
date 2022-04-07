@@ -44,7 +44,15 @@ function getUserName(): string {
     return generateUsername();
   }
 }
-export default function Rooms({ id }: { id: string }) {
+export default function Rooms({
+  id,
+  clientToken,
+  refreshToken,
+}: {
+  id: string;
+  clientToken: string;
+  refreshToken: string;
+}) {
   const [roomId, setRoomId] = useState<string>();
 
   const [username, setUsername] = useState<string>('');
@@ -197,6 +205,8 @@ export default function Rooms({ id }: { id: string }) {
                 updateUsername={setUsername}
                 updateRoomId={setRoomId}
                 updateTokens={setTokens}
+                clientToken={clientToken}
+                refreshToken={refreshToken}
               />
             </GridPreviewContainer>
           )}
