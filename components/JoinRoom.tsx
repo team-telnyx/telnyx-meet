@@ -13,6 +13,8 @@ interface Props {
   updateTokens: React.Dispatch<
     React.SetStateAction<{ clientToken: string; refreshToken: string }>
   >;
+  clientToken: string;
+  refreshToken: string;
 }
 
 const JoinRoom = ({
