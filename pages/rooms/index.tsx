@@ -48,9 +48,13 @@ function getUserName(): string {
 export default function Rooms({
   id,
   showMetricsActionButton,
+  clientToken,
+  refreshToken,
 }: {
   id: string;
   showMetricsActionButton: boolean;
+  clientToken: string;
+  refreshToken: string;
 }) {
   const [roomId, setRoomId] = useState<string>();
 
@@ -209,6 +213,8 @@ export default function Rooms({
                 updateUsername={setUsername}
                 updateRoomId={setRoomId}
                 updateTokens={setTokens}
+                clientToken={clientToken}
+                refreshToken={refreshToken}
               />
             </GridPreviewContainer>
           )}
