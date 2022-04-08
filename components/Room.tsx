@@ -6,6 +6,7 @@ import Feeds from 'components/Feeds';
 import RoomInfo from 'components/RoomInfo';
 import RoomControls from 'components/RoomControls';
 import ParticipantsList from 'components/ParticipantsList';
+import InviteParticipant from 'components/InviteParticipant';
 import RoomAudio from 'components/RoomAudio';
 
 function Room({
@@ -141,6 +142,15 @@ function Room({
               participants={state.participants}
               getParticipantStream={room.getParticipantStream}
               onChangeParticipantsListVisible={setIsParticipantsListVisible}
+            />
+          </Box>
+        )}
+
+        {state.status === 'connected' && isInviteParticipantVisible && (
+          <Box width='medium' fill='vertical'>
+            <InviteParticipant
+              roomId={roomId}
+              onChangeInviteParticipantVisible={setIsInviteParticipantVisible}
             />
           </Box>
         )}
