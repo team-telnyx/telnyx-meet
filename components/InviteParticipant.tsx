@@ -19,7 +19,8 @@ export default function InviteParticipant({
     React.SetStateAction<boolean>
   >;
 }) {
-  const { sendNotification } = useContext(TelnyxMeetContext);
+  const { participantJoined, setParticipantJoined, sendNotification } =
+    useContext(TelnyxMeetContext);
   const [phoneNumber, setPhoneNumber] = useState('');
   const [isButtonDisabled, setIsButtonDisabled] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
@@ -85,13 +86,29 @@ export default function InviteParticipant({
 
     const participantJoinTimeoutId = setTimeout(() => {
       setIsLoading(false);
+      setParticipantJoined(undefined);
       sendNotification({
         body: `No answer from phone number "${phoneNumber}".`,
       });
-    }, 60000);
+    }, 30000);
+
+    if (participantJoined === phoneNumber) {
+      setIsLoading(false);
+      setParticipantJoined(undefined);
+      sendNotification({
+        body: `${phoneNumber} has entered the room.`,
+      });
+      clearTimeout(participantJoinTimeoutId);
+    }
 
     return () => clearTimeout(participantJoinTimeoutId);
-  }, [isLoading, sendNotification, phoneNumber]);
+  }, [
+    isLoading,
+    participantJoined,
+    setParticipantJoined,
+    sendNotification,
+    phoneNumber,
+  ]);
 
   return (
     <Box background='#2a2a2a' round='xsmall' fill>

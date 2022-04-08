@@ -59,7 +59,8 @@ export const useRoom = ({
   callbacks,
 }: Props): TelnyxRoom | undefined => {
   const [_, setDebugState] = useContext(DebugContext);
-  const { sendNotification, setNetworkMetrics } = useContext(TelnyxMeetContext);
+  const { sendNotification, setNetworkMetrics, setParticipantJoined } =
+    useContext(TelnyxMeetContext);
   const roomRef = useRef<Room>();
   const [state, setState] = useState<State>();
   const [clientToken, setClientToken] = useState<string>(tokens.clientToken);
@@ -125,7 +126,11 @@ export const useRoom = ({
             callbacks.onDisconnected();
         });
 
-        roomRef.current.on('participant_joined', (participantId) => {
+        roomRef.current.on('participant_joined', (participantId, state) => {
+          const context = JSON.parse(
+            state.participants.get(participantId).context
+          );
+          setParticipantJoined(context.username);
           setParticipantsByActivity((value) => {
             return new Set([
               roomRef.current!.getLocalParticipant().id,

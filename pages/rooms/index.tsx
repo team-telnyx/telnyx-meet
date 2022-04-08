@@ -77,6 +77,9 @@ export default function Rooms({
   const [videoInputDeviceId, setVideoInputDeviceId] = useState<
     string | undefined
   >();
+  const [participantJoined, setParticipantJoined] = useState<
+    string | undefined
+  >(undefined);
 
   const [localTracks, setLocalTracks] = useState<{
     audio: MediaStreamTrack | undefined;
@@ -180,9 +183,11 @@ export default function Rooms({
           audioInputDeviceId,
           audioOutputDeviceId,
           videoInputDeviceId,
+          participantJoined,
           setAudioInputDeviceId,
           setAudioOutputDeviceId,
           setVideoInputDeviceId,
+          setParticipantJoined,
           localTracks,
           setLocalTracks,
           sendNotification,
