@@ -20,6 +20,7 @@
     "bowser": "^2.11.0",
     "generate-unique-id": "^2.0.1",
     "grommet": "^2.17.4",
+    "libphonenumber-js": "^1.9.50",
     "memory-cache": "^0.2.0",
     "next": "12.1.0",
     "next-pwa": "^5.4.4",
