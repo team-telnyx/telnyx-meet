@@ -308,7 +308,7 @@ export const useRoom = ({
         );
 
         roomRef.current.on('network_metrics_report', (networkMetrics) => {
-          console.log('network_metrics_report', networkMetrics);
+          console.debug('network_metrics_report', networkMetrics);
 
           setNetworkMetrics(networkMetrics);
         });
@@ -326,7 +326,7 @@ export const useRoom = ({
   }, []);
 
   useEffect(() => {
-    console.log(participantsByActivity);
+    console.debug(participantsByActivity);
   }, [participantsByActivity]);
 
   useEffect(() => {
