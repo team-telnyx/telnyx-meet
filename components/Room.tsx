@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Box, Text } from 'grommet';
+import { Box, Text, Button } from 'grommet';
 import { useRoom } from 'hooks/room';
 
 import Feeds from 'components/Feeds';
@@ -10,11 +10,13 @@ import RoomAudio from 'components/RoomAudio';
 
 function Room({
   roomId,
+  showMetricsActionButton,
   tokens,
   context,
   onDisconnected,
 }: {
   roomId: string;
+  showMetricsActionButton: boolean;
   tokens: {
     clientToken: string;
     refreshToken: string;
@@ -64,6 +66,10 @@ function Room({
   }
 
   const state = room.getState();
+  const participantIds: Array<string> = [];
+  state.participants.forEach((item) => {
+    participantIds.push(item.id);
+  });
 
   return (
     <Box fill background='#1b1b1b' overflow='hidden'>
@@ -88,16 +94,42 @@ function Room({
           )}
 
           {state.status === 'connected' && (
-            <Feeds
-              dataTestId='feeds'
-              participants={state.participants}
-              participantsByActivity={room.participantsByActivity}
-              dominantSpeakerId={room.dominantSpeakerId}
-              presenter={room.presenter}
-              streams={room.state.streams}
-              getParticipantStream={room.getParticipantStream}
-              getStatsForParticipantStream={room.getWebRTCStatsForStream}
-            />
+            <React.Fragment>
+              {showMetricsActionButton && (
+                <div key='report-actions'>
+                  <Button
+                    color='#7D4CDB'
+                    primary
+                    size='small'
+                    label='Start Metrics'
+                    onClick={() =>
+                      room.enableNetworkMetricsReport(participantIds)
+                    }
+                    style={{ marginRight: 4 }}
+                  />
+
+                  <Button
+                    primary
+                    color='#cecece'
+                    size='small'
+                    label='Stop Metrics'
+                    onClick={() => room.disableNetworkMetricsReport()}
+                  />
+                </div>
+              )}
+
+              <Feeds
+                key='feeds'
+                dataTestId='feeds'
+                participants={state.participants}
+                participantsByActivity={room.participantsByActivity}
+                dominantSpeakerId={room.dominantSpeakerId}
+                presenter={room.presenter}
+                streams={room.state.streams}
+                getParticipantStream={room.getParticipantStream}
+                getStatsForParticipantStream={room.getWebRTCStatsForStream}
+              />
+            </React.Fragment>
           )}
         </Box>
 

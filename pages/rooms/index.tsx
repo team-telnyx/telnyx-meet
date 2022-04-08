@@ -21,6 +21,7 @@ import {
   USER_PREFERENCE_AUDIO_ENABLED,
   USER_PREFERENCE_VIDEO_ENABLED,
 } from 'utils/storage';
+import { NetworkMetrics } from '@telnyx/video';
 
 const breakpointMedium = 1021;
 
@@ -46,10 +47,12 @@ function getUserName(): string {
 }
 export default function Rooms({
   id,
+  showMetricsActionButton,
   clientToken,
   refreshToken,
 }: {
   id: string;
+  showMetricsActionButton: boolean;
   clientToken: string;
   refreshToken: string;
 }) {
@@ -97,6 +100,8 @@ export default function Rooms({
       },
     });
   };
+
+  const [networkMetrics, setNetworkMetrics] = useState<NetworkMetrics>();
 
   useEffect(() => {
     setUsername(getUserName());
@@ -181,6 +186,8 @@ export default function Rooms({
           localTracks,
           setLocalTracks,
           sendNotification,
+          networkMetrics,
+          setNetworkMetrics,
         }}
       >
         <Main align='center' justify='center' background='light-2'>
@@ -189,6 +196,7 @@ export default function Rooms({
           {roomId && isReady ? (
             <Room
               roomId={roomId}
+              showMetricsActionButton={showMetricsActionButton}
               tokens={tokens}
               context={{
                 id: generateId(),

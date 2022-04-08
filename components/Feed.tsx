@@ -1,4 +1,10 @@
-import React, { useEffect, useRef, useState, useCallback } from 'react';
+import React, {
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+  useCallback,
+} from 'react';
 import { Box, Text, Spinner } from 'grommet';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
@@ -12,6 +18,8 @@ import { TelnyxRoom } from 'hooks/room';
 
 import VideoTrack from 'components/VideoTrack';
 import { WebRTCStats } from 'components/WebRTCStats';
+import { TelnyxMeetContext } from 'contexts/TelnyxMeetContext';
+import { NetworkMetricsMonitor } from './NetworkMetricsMonitor';
 import { VideoBitrate } from 'components/VideoBitrate';
 
 const VIDEO_BG_COLOR = '#111';
@@ -33,6 +41,7 @@ function Feed({
   mirrorVideo: boolean;
   dataId?: string;
 }) {
+  const { networkMetrics } = useContext(TelnyxMeetContext);
   const isTelephonyEngineParticipant =
     participant.origin === 'telephony_engine';
   const showAudioActivityIndicator = isSpeaking && stream?.key === 'self';
@@ -78,6 +87,7 @@ function Feed({
     if (!showStatsOverlay || !stats) {
       return (
         <button
+          style={{ margin: 4 }}
           onClick={async () => {
             intervalStatsId.current = setInterval(async () => {
               try {
@@ -95,12 +105,6 @@ function Feed({
                 throw error;
               }
             }, 500);
-          }}
-          style={{
-            position: 'absolute',
-            top: '5px',
-            left: '5px',
-            zIndex: 1,
           }}
           disabled={!stream}
         >
@@ -137,6 +141,8 @@ function Feed({
     );
   }, [stream, participant, allowedBrowser, getStatsForParticipantStream]);
 
+  const peerMetrics = networkMetrics ? networkMetrics[participant.id] : null;
+
   return (
     <div
       // id={stream?.isSpeaking ? 'speaking-box' : ''}
@@ -157,8 +163,31 @@ function Feed({
         height: isPresentation ? '100%' : 'unset',
       }}
     >
-      {renderStats()}
-      {renderVideoBitrate()}
+      <div
+        style={{
+          position: 'absolute',
+          top: '0px',
+          zIndex: 1,
+          width: '100%',
+          height: '100%',
+        }}
+      >
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+          }}
+        >
+          {renderStats()}
+          {renderVideoBitrate()}
+          {!showStatsOverlay && peerMetrics && (
+            <NetworkMetricsMonitor
+              connectionQuality={peerMetrics.connectionQuality}
+            />
+          )}
+        </div>
+      </div>
+
       <div
         style={{
           position: 'absolute',

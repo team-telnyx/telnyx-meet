@@ -59,7 +59,7 @@ export const useRoom = ({
   callbacks,
 }: Props): TelnyxRoom | undefined => {
   const [_, setDebugState] = useContext(DebugContext);
-  const { sendNotification } = useContext(TelnyxMeetContext);
+  const { sendNotification, setNetworkMetrics } = useContext(TelnyxMeetContext);
   const roomRef = useRef<Room>();
   const [state, setState] = useState<State>();
   const [clientToken, setClientToken] = useState<string>(tokens.clientToken);
@@ -306,6 +306,12 @@ export const useRoom = ({
             });
           }
         );
+
+        roomRef.current.on('network_metrics_report', (networkMetrics) => {
+          console.debug('network_metrics_report', networkMetrics);
+
+          setNetworkMetrics(networkMetrics);
+        });
       }
 
       await roomRef.current.connect();
@@ -320,7 +326,7 @@ export const useRoom = ({
   }, []);
 
   useEffect(() => {
-    console.log(participantsByActivity);
+    console.debug(participantsByActivity);
   }, [participantsByActivity]);
 
   useEffect(() => {
