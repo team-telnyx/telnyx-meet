@@ -20,7 +20,11 @@ export default async function handler(
           `${process.env.TELNYX_CALL_CONTROL_API_HOST}/dial_out`,
           {
             method: 'POST',
-            body: JSON.stringify(req.body),
+            body: JSON.stringify({
+              video_room_id: req.body.video_room_id,
+              video_room_context: JSON.stringify(req.body.video_room_context),
+              to: req.body.to,
+            }),
             headers: {
               'Content-Type': 'application/json',
             },
