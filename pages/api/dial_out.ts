@@ -28,7 +28,8 @@ export default async function handler(
         );
 
         if (response.ok) {
-          res.status(200).json(response);
+          const json = await response.json();
+          res.status(200).json(json);
         } else {
           notify(`${response.status}: Failed to dial out`);
           if (response.status >= 500) {
