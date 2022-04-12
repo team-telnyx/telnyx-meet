@@ -141,7 +141,7 @@ function Room({
             <ParticipantsList
               participants={state.participants}
               getParticipantStream={room.getParticipantStream}
-              onChangeParticipantsListVisible={setIsParticipantsListVisible}
+              setIsParticipantsListVisible={setIsParticipantsListVisible}
             />
           </Box>
         )}
@@ -150,7 +150,7 @@ function Room({
           <Box width='medium' fill='vertical'>
             <InviteParticipant
               roomId={roomId}
-              onChangeInviteParticipantVisible={setIsInviteParticipantVisible}
+              setIsInviteParticipantVisible={setIsInviteParticipantVisible}
             />
           </Box>
         )}
@@ -160,8 +160,8 @@ function Room({
           <RoomControls
             isParticipantsListVisible={isParticipantsListVisible}
             isInviteParticipantVisible={isInviteParticipantVisible}
-            onChangeParticipantsListVisible={setIsParticipantsListVisible}
-            onChangeInviteParticipantVisible={setIsInviteParticipantVisible}
+            setIsParticipantsListVisible={setIsParticipantsListVisible}
+            setIsInviteParticipantVisible={setIsInviteParticipantVisible}
             participantsByActivity={room.participantsByActivity}
             addStream={room.addStream}
             removeStream={room.removeStream}

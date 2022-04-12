@@ -12,10 +12,10 @@ import {
 
 export default function InviteParticipant({
   roomId,
-  onChangeInviteParticipantVisible,
+  setIsInviteParticipantVisible,
 }: {
   roomId: string;
-  onChangeInviteParticipantVisible: React.Dispatch<
+  setIsInviteParticipantVisible: React.Dispatch<
     React.SetStateAction<boolean>
   >;
 }) {
@@ -120,7 +120,7 @@ export default function InviteParticipant({
         <Box>
           <Button
             icon={<FormCloseIcon />}
-            onClick={() => onChangeInviteParticipantVisible(false)}
+            onClick={() => setIsInviteParticipantVisible(false)}
             plain
           />
         </Box>

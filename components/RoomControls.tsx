@@ -127,8 +127,8 @@ function DeviceSelect({
 export default function RoomControls({
   isParticipantsListVisible,
   isInviteParticipantVisible,
-  onChangeParticipantsListVisible,
-  onChangeInviteParticipantVisible,
+  setIsParticipantsListVisible,
+  setIsInviteParticipantVisible,
   streams,
   disableScreenshare,
   participantsByActivity,
@@ -147,10 +147,10 @@ export default function RoomControls({
   removeStream: TelnyxRoom['removeStream'];
   updateStream: TelnyxRoom['updateStream'];
   disconnect: TelnyxRoom['disconnect'];
-  onChangeParticipantsListVisible: React.Dispatch<
+  setIsParticipantsListVisible: React.Dispatch<
     React.SetStateAction<boolean>
   >;
-  onChangeInviteParticipantVisible: React.Dispatch<
+  setIsInviteParticipantVisible: React.Dispatch<
     React.SetStateAction<boolean>
   >;
   streams: { [key: string]: Stream };
@@ -557,9 +557,9 @@ export default function RoomControls({
             size='large'
             onClick={() => {
               if (isInviteParticipantVisible) {
-                onChangeInviteParticipantVisible(false);
+                setIsInviteParticipantVisible(false);
               }
-              onChangeParticipantsListVisible(!isParticipantsListVisible);
+              setIsParticipantsListVisible(!isParticipantsListVisible);
             }}
           >
             <Box align='center' gap='xsmall'>
@@ -592,9 +592,9 @@ export default function RoomControls({
             size='large'
             onClick={() => {
               if (isParticipantsListVisible) {
-                onChangeParticipantsListVisible(false);
+                setIsParticipantsListVisible(false);
               }
-              onChangeInviteParticipantVisible(!isInviteParticipantVisible);
+              setIsInviteParticipantVisible(!isInviteParticipantVisible);
             }}
           >
             <Box align='center' gap='xsmall'>
