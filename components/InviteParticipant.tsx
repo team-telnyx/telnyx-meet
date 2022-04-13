@@ -1,4 +1,4 @@
-import { useState, useEffect, useContext } from 'react';
+import { useState, useEffect, useContext, useCallback } from 'react';
 import { Box, Button, Heading, Text, TextInput, Spinner } from 'grommet';
 import { FormClose as FormCloseIcon } from 'grommet-icons';
 
@@ -13,14 +13,17 @@ import {
 export default function InviteParticipant({
   roomId,
   setIsInviteParticipantVisible,
+  invitedParticipants,
+  setInvitedParticipants,
 }: {
   roomId: string;
-  setIsInviteParticipantVisible: React.Dispatch<
-    React.SetStateAction<boolean>
+  setIsInviteParticipantVisible: React.Dispatch<React.SetStateAction<boolean>>;
+  invitedParticipants: Map<string, boolean>;
+  setInvitedParticipants: React.Dispatch<
+    React.SetStateAction<Map<string, boolean>>
   >;
 }) {
-  const { participantJoined, setParticipantJoined, sendNotification } =
-    useContext(TelnyxMeetContext);
+  const { sendNotification } = useContext(TelnyxMeetContext);
   const [phoneNumber, setPhoneNumber] = useState('');
   const [isButtonDisabled, setIsButtonDisabled] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
@@ -40,8 +43,31 @@ export default function InviteParticipant({
     setPhoneNumber(parsedNumber);
   };
 
+  const handleResolveInvite = useCallback(
+    ({
+      invitedParticipant,
+      message,
+    }: {
+      invitedParticipant: string;
+      message: string;
+    }) => {
+      setIsLoading(false);
+      setInvitedParticipants((invitedParticipantsObject) => {
+        invitedParticipantsObject.delete(invitedParticipant);
+
+        return new Map([...invitedParticipantsObject]);
+      });
+      sendNotification({ body: message });
+    },
+    [setInvitedParticipants, sendNotification]
+  );
+
   const handleSendInvite = async () => {
     setIsLoading(true);
+
+    setInvitedParticipants((invitedParticipantsObject) => {
+      return new Map([...invitedParticipantsObject, [phoneNumber, false]]);
+    });
 
     const response = await fetch('/api/dial_out', {
       method: 'POST',
@@ -59,9 +85,9 @@ export default function InviteParticipant({
     });
 
     if (!response.ok) {
-      setIsLoading(false);
-      sendNotification({
-        body: `Request to invite participant failed.`,
+      handleResolveInvite({
+        invitedParticipant: phoneNumber,
+        message: 'Request to invite participant failed.',
       });
     }
   };
@@ -85,30 +111,26 @@ export default function InviteParticipant({
     }
 
     const participantJoinTimeoutId = setTimeout(() => {
-      setIsLoading(false);
-      setParticipantJoined(undefined);
-      sendNotification({
-        body: `No answer from phone number "${phoneNumber}".`,
+      handleResolveInvite({
+        invitedParticipant: phoneNumber,
+        message: `No answer from phone number "${phoneNumber}".`,
       });
     }, 30000);
 
-    if (participantJoined === phoneNumber) {
-      setIsLoading(false);
-      setParticipantJoined(undefined);
-      sendNotification({
-        body: `${phoneNumber} has entered the room.`,
+    const hasInvitedParticipantJoined = invitedParticipants.get(phoneNumber);
+
+    if (hasInvitedParticipantJoined) {
+      handleResolveInvite({
+        invitedParticipant: phoneNumber,
+        message: `${phoneNumber} has entered the room.`,
       });
       clearTimeout(participantJoinTimeoutId);
     }
 
-    return () => clearTimeout(participantJoinTimeoutId);
-  }, [
-    isLoading,
-    participantJoined,
-    setParticipantJoined,
-    sendNotification,
-    phoneNumber,
-  ]);
+    return () => {
+      clearTimeout(participantJoinTimeoutId);
+    };
+  }, [phoneNumber, isLoading, invitedParticipants, handleResolveInvite]);
 
   return (
     <Box background='#2a2a2a' round='xsmall' fill>

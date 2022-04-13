@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { Box, Text, Button } from 'grommet';
+import { State, Participant } from '@telnyx/video';
+
 import { useRoom } from 'hooks/room';
 
 import Feeds from 'components/Feeds';
@@ -32,6 +34,27 @@ function Room({
     useState<boolean>(false);
   const [isInviteParticipantVisible, setIsInviteParticipantVisible] =
     useState<boolean>(false);
+  const [invitedParticipants, setInvitedParticipants] = useState<
+    Map<string, boolean>
+  >(new Map());
+
+  const onParticipantJoined = (
+    participantId: Participant['id'],
+    state: State
+  ) => {
+    const context = JSON.parse(state.participants.get(participantId).context);
+
+    setInvitedParticipants((invitedParticipantsObject) => {
+      if (invitedParticipantsObject.has(context.username)) {
+        return new Map([
+          ...invitedParticipantsObject,
+          [context.username, true],
+        ]);
+      }
+
+      return invitedParticipantsObject;
+    });
+  };
 
   const room = useRoom({
     roomId,
@@ -39,6 +62,7 @@ function Room({
     context,
     callbacks: {
       onDisconnected,
+      onParticipantJoined,
     },
   });
 
@@ -151,6 +175,8 @@ function Room({
             <InviteParticipant
               roomId={roomId}
               setIsInviteParticipantVisible={setIsInviteParticipantVisible}
+              invitedParticipants={invitedParticipants}
+              setInvitedParticipants={setInvitedParticipants}
             />
           </Box>
         )}
