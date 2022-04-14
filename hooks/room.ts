@@ -23,6 +23,10 @@ interface Props {
   callbacks?: {
     onConnected?: () => void;
     onDisconnected?: () => void;
+    onParticipantJoined?: (
+      participantId: Participant['id'],
+      state: State
+    ) => void;
   };
 }
 
@@ -125,7 +129,7 @@ export const useRoom = ({
             callbacks.onDisconnected();
         });
 
-        roomRef.current.on('participant_joined', (participantId) => {
+        roomRef.current.on('participant_joined', (participantId, state) => {
           setParticipantsByActivity((value) => {
             return new Set([
               roomRef.current!.getLocalParticipant().id,
@@ -133,6 +137,9 @@ export const useRoom = ({
               participantId,
             ]);
           });
+
+          typeof callbacks?.onParticipantJoined === 'function' &&
+            callbacks.onParticipantJoined(participantId, state);
         });
 
         roomRef.current.on(

@@ -13,11 +13,11 @@ import { TelnyxRoom } from 'hooks/room';
 export default function ParticipantsList({
   participants,
   getParticipantStream,
-  onChangeParticipantsListVisible,
+  setIsParticipantsListVisible,
 }: {
   participants: TelnyxRoom['state']['participants'];
   getParticipantStream: TelnyxRoom['getParticipantStream'];
-  onChangeParticipantsListVisible: Function;
+  setIsParticipantsListVisible: Function;
 }) {
   console.log('participants:', participants);
 
@@ -31,7 +31,7 @@ export default function ParticipantsList({
         <Box>
           <Button
             icon={<FormCloseIcon />}
-            onClick={() => onChangeParticipantsListVisible(false)}
+            onClick={() => setIsParticipantsListVisible(false)}
             plain
           />
         </Box>
