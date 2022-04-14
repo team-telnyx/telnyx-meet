@@ -222,7 +222,7 @@ export default function RoomControls({
     if (!selfStream) {
       addStream('self', {
         audio: localTracks.audio,
-        video: { track: localTracks.video, options: { enableSimulcast: true } },
+        video: { track: localTracks.video, options: { enableSimulcast: false } },
       });
 
       return;
@@ -246,7 +246,7 @@ export default function RoomControls({
           audio: presentationTracks.audio,
           video: {
             track: presentationTracks.video,
-            options: { enableSimulcast: true },
+            options: { enableSimulcast: false },
           },
         });
       } else {
@@ -467,7 +467,7 @@ export default function RoomControls({
                   audio: false,
                   video: videoInputDeviceId
                     ? { deviceId: videoInputDeviceId }
-                    : { width: 1280, height: 720 },
+                    : true,
                 })
                   .then((stream) => {
                     setLocalTracks((value) => ({
