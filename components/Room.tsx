@@ -122,7 +122,7 @@ function Room({
 
           {state.status === 'connected' && (
             <React.Fragment>
-              {optionalFeatures['network_metrics'] && (
+              {optionalFeatures.isNetworkMetricsEnabled && (
                 <div key='report-actions'>
                   <Button
                     color='#7D4CDB'

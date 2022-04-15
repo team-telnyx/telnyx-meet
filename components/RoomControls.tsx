@@ -221,7 +221,7 @@ export default function RoomControls({
         audio: localTracks.audio,
         video: {
           track: localTracks.video,
-          options: { enableSimulcast: optionalFeatures['simulcast'] },
+          options: { enableSimulcast: optionalFeatures.isSimulcastEnabled },
         },
       });
 
@@ -247,7 +247,7 @@ export default function RoomControls({
           video: {
             track: presentationTracks.video,
             options: {
-              enableSimulcast: optionalFeatures['simulcast'],
+              enableSimulcast: optionalFeatures.isSimulcastEnabled,
             },
           },
         });
@@ -465,7 +465,7 @@ export default function RoomControls({
                 }
                 setLocalTracks((value) => ({ ...value, video: undefined }));
               } else {
-                const videoConstraints = optionalFeatures['simulcast']
+                const videoConstraints = optionalFeatures.isSimulcastEnabled
                   ? { width: 1280, height: 720 }
                   : true;
 
@@ -592,7 +592,7 @@ export default function RoomControls({
           </Button>
         </ControllerBox>
 
-        {optionalFeatures['dial_out'] && (
+        {optionalFeatures.isDialOutEnabled && (
           <ControllerBox width='80px'>
             <Button
               data-testid='btn-invite-participant'
