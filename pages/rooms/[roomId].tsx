@@ -10,11 +10,13 @@ const RoomId = () => {
     client_token,
     refresh_token,
     network_metrics,
+    simulcast,
   } = router.query as {
     roomId: string;
     client_token: string;
     refresh_token: string;
     network_metrics: string;
+    simulcast: string;
   };
 
   const isFeatureEnabled = (feature: string) =>
@@ -22,6 +24,7 @@ const RoomId = () => {
 
   const enableExperimentalFeature = {
     network_metrics: isFeatureEnabled(network_metrics),
+    simulcast: isFeatureEnabled(simulcast),
   };
 
   return (
