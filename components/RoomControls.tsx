@@ -164,7 +164,7 @@ export default function RoomControls({
     setVideoInputDeviceId,
     localTracks,
     setLocalTracks,
-    enableExperimentalFeature,
+    optionalFeatures,
   } = useContext(TelnyxMeetContext);
 
   const [devices, setDevices] = useState<any>({});
@@ -221,7 +221,7 @@ export default function RoomControls({
         audio: localTracks.audio,
         video: {
           track: localTracks.video,
-          options: { enableSimulcast: enableExperimentalFeature['simulcast'] },
+          options: { enableSimulcast: optionalFeatures['simulcast'] },
         },
       });
 
@@ -247,7 +247,7 @@ export default function RoomControls({
           video: {
             track: presentationTracks.video,
             options: {
-              enableSimulcast: enableExperimentalFeature['simulcast'],
+              enableSimulcast: optionalFeatures['simulcast'],
             },
           },
         });
@@ -465,7 +465,7 @@ export default function RoomControls({
                 }
                 setLocalTracks((value) => ({ ...value, video: undefined }));
               } else {
-                const videoConstraints = enableExperimentalFeature['simulcast']
+                const videoConstraints = optionalFeatures['simulcast']
                   ? { width: 1280, height: 720 }
                   : true;
 
@@ -592,7 +592,7 @@ export default function RoomControls({
           </Button>
         </ControllerBox>
 
-        {enableExperimentalFeature['dial_out'] && (
+        {optionalFeatures['dial_out'] && (
           <ControllerBox width='80px'>
             <Button
               data-testid='btn-invite-participant'

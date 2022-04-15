@@ -24,7 +24,7 @@ const RoomId = () => {
   const isFeatureEnabled = (feature: string) =>
     feature === 'true' ? true : false;
 
-  const enableExperimentalFeature = {
+  const optionalFeatures = {
     network_metrics: isFeatureEnabled(network_metrics),
     simulcast: isFeatureEnabled(simulcast),
     dial_out: isFeatureEnabled(dial_out),
@@ -36,7 +36,7 @@ const RoomId = () => {
         id={roomId}
         clientToken={client_token}
         refreshToken={refresh_token}
-        enableExperimentalFeature={enableExperimentalFeature}
+        optionalFeatures={optionalFeatures}
       />
     </Fragment>
   );

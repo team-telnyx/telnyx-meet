@@ -49,12 +49,12 @@ export default function Rooms({
   id,
   clientToken,
   refreshToken,
-  enableExperimentalFeature,
+  optionalFeatures,
 }: {
   id: string;
   clientToken: string;
   refreshToken: string;
-  enableExperimentalFeature: { [key: string]: boolean };
+  optionalFeatures: { [key: string]: boolean };
 }) {
   const [roomId, setRoomId] = useState<string>();
 
@@ -188,7 +188,7 @@ export default function Rooms({
           sendNotification,
           networkMetrics,
           setNetworkMetrics,
-          enableExperimentalFeature,
+          optionalFeatures,
         }}
       >
         <Main align='center' justify='center' background='light-2'>

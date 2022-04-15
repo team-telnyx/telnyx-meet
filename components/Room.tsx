@@ -29,7 +29,7 @@ function Room({
   };
   onDisconnected: () => void;
 }) {
-  const { enableExperimentalFeature } = useContext(TelnyxMeetContext);
+  const { optionalFeatures } = useContext(TelnyxMeetContext);
   const [isParticipantsListVisible, setIsParticipantsListVisible] =
     useState<boolean>(false);
   const [isInviteParticipantVisible, setIsInviteParticipantVisible] =
@@ -122,7 +122,7 @@ function Room({
 
           {state.status === 'connected' && (
             <React.Fragment>
-              {enableExperimentalFeature['network_metrics'] && (
+              {optionalFeatures['network_metrics'] && (
                 <div key='report-actions'>
                   <Button
                     color='#7D4CDB'

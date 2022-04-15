@@ -26,7 +26,7 @@ const TelnyxMeetContext = React.createContext<{
   networkMetrics: NetworkMetrics | undefined;
   setNetworkMetrics: Dispatch<SetStateAction<NetworkMetrics | undefined>>;
 
-  enableExperimentalFeature: {[key: string]: boolean};
+  optionalFeatures: {[key: string]: boolean};
 }>({
   audioInputDeviceId: undefined,
   audioOutputDeviceId: undefined,
@@ -52,7 +52,7 @@ const TelnyxMeetContext = React.createContext<{
   setNetworkMetrics: (
     value: React.SetStateAction<NetworkMetrics | undefined>
   ) => {},
-  enableExperimentalFeature: {},
+  optionalFeatures: {},
 });
 
 export { TelnyxMeetContext };
