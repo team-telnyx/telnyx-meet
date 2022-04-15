@@ -592,28 +592,30 @@ export default function RoomControls({
           </Button>
         </ControllerBox>
 
-        <ControllerBox width='80px'>
-          <Button
-            data-testid='btn-invite-participant'
-            size='large'
-            onClick={() => {
-              if (isParticipantsListVisible) {
-                setIsParticipantsListVisible(false);
-              }
-              setIsInviteParticipantVisible(!isInviteParticipantVisible);
-            }}
-          >
-            <Box align='center' gap='xsmall'>
-              <InviteIcon
-                size='large'
-                color={isInviteParticipantVisible ? 'accent-1' : 'light-5'}
-              />
-              <Text size='xsmall' color='light-6'>
-                Invite
-              </Text>
-            </Box>
-          </Button>
-        </ControllerBox>
+        {enableExperimentalFeature['dial_out'] && (
+          <ControllerBox width='80px'>
+            <Button
+              data-testid='btn-invite-participant'
+              size='large'
+              onClick={() => {
+                if (isParticipantsListVisible) {
+                  setIsParticipantsListVisible(false);
+                }
+                setIsInviteParticipantVisible(!isInviteParticipantVisible);
+              }}
+            >
+              <Box align='center' gap='xsmall'>
+                <InviteIcon
+                  size='large'
+                  color={isInviteParticipantVisible ? 'accent-1' : 'light-5'}
+                />
+                <Text size='xsmall' color='light-6'>
+                  Invite
+                </Text>
+              </Box>
+            </Button>
+          </ControllerBox>
+        )}
 
         {localParticipant.canReceiveMessages && (
           <ControllerBox>
