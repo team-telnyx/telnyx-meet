@@ -147,12 +147,8 @@ export default function RoomControls({
   removeStream: TelnyxRoom['removeStream'];
   updateStream: TelnyxRoom['updateStream'];
   disconnect: TelnyxRoom['disconnect'];
-  setIsParticipantsListVisible: React.Dispatch<
-    React.SetStateAction<boolean>
-  >;
-  setIsInviteParticipantVisible: React.Dispatch<
-    React.SetStateAction<boolean>
-  >;
+  setIsParticipantsListVisible: React.Dispatch<React.SetStateAction<boolean>>;
+  setIsInviteParticipantVisible: React.Dispatch<React.SetStateAction<boolean>>;
   streams: { [key: string]: Stream };
   disableScreenshare: boolean;
   sendMessage: Room['sendMessage'];
@@ -168,6 +164,7 @@ export default function RoomControls({
     setVideoInputDeviceId,
     localTracks,
     setLocalTracks,
+    optionalFeatures,
   } = useContext(TelnyxMeetContext);
 
   const [devices, setDevices] = useState<any>({});
@@ -222,7 +219,10 @@ export default function RoomControls({
     if (!selfStream) {
       addStream('self', {
         audio: localTracks.audio,
-        video: { track: localTracks.video, options: { enableSimulcast: false } },
+        video: {
+          track: localTracks.video,
+          options: { enableSimulcast: optionalFeatures.isSimulcastEnabled },
+        },
       });
 
       return;
@@ -246,7 +246,9 @@ export default function RoomControls({
           audio: presentationTracks.audio,
           video: {
             track: presentationTracks.video,
-            options: { enableSimulcast: false },
+            options: {
+              enableSimulcast: optionalFeatures.isSimulcastEnabled,
+            },
           },
         });
       } else {
@@ -463,11 +465,15 @@ export default function RoomControls({
                 }
                 setLocalTracks((value) => ({ ...value, video: undefined }));
               } else {
+                const videoConstraints = optionalFeatures.isSimulcastEnabled
+                  ? { width: 1280, height: 720 }
+                  : true;
+
                 getUserMedia({
                   audio: false,
                   video: videoInputDeviceId
                     ? { deviceId: videoInputDeviceId }
-                    : true,
+                    : videoConstraints,
                 })
                   .then((stream) => {
                     setLocalTracks((value) => ({
@@ -586,28 +592,30 @@ export default function RoomControls({
           </Button>
         </ControllerBox>
 
-        <ControllerBox width='80px'>
-          <Button
-            data-testid='btn-invite-participant'
-            size='large'
-            onClick={() => {
-              if (isParticipantsListVisible) {
-                setIsParticipantsListVisible(false);
-              }
-              setIsInviteParticipantVisible(!isInviteParticipantVisible);
-            }}
-          >
-            <Box align='center' gap='xsmall'>
-              <InviteIcon
-                size='large'
-                color={isInviteParticipantVisible ? 'accent-1' : 'light-5'}
-              />
-              <Text size='xsmall' color='light-6'>
-                Invite
-              </Text>
-            </Box>
-          </Button>
-        </ControllerBox>
+        {optionalFeatures.isDialOutEnabled && (
+          <ControllerBox width='80px'>
+            <Button
+              data-testid='btn-invite-participant'
+              size='large'
+              onClick={() => {
+                if (isParticipantsListVisible) {
+                  setIsParticipantsListVisible(false);
+                }
+                setIsInviteParticipantVisible(!isInviteParticipantVisible);
+              }}
+            >
+              <Box align='center' gap='xsmall'>
+                <InviteIcon
+                  size='large'
+                  color={isInviteParticipantVisible ? 'accent-1' : 'light-5'}
+                />
+                <Text size='xsmall' color='light-6'>
+                  Invite
+                </Text>
+              </Box>
+            </Button>
+          </ControllerBox>
+        )}
 
         {localParticipant.canReceiveMessages && (
           <ControllerBox>

@@ -47,14 +47,14 @@ function getUserName(): string {
 }
 export default function Rooms({
   id,
-  showMetricsActionButton,
   clientToken,
   refreshToken,
+  optionalFeatures,
 }: {
   id: string;
-  showMetricsActionButton: boolean;
   clientToken: string;
   refreshToken: string;
+  optionalFeatures: { [key: string]: boolean };
 }) {
   const [roomId, setRoomId] = useState<string>();
 
@@ -188,6 +188,7 @@ export default function Rooms({
           sendNotification,
           networkMetrics,
           setNetworkMetrics,
+          optionalFeatures,
         }}
       >
         <Main align='center' justify='center' background='light-2'>
@@ -196,7 +197,6 @@ export default function Rooms({
           {roomId && isReady ? (
             <Room
               roomId={roomId}
-              showMetricsActionButton={showMetricsActionButton}
               tokens={tokens}
               context={{
                 id: generateId(),

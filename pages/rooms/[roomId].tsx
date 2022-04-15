@@ -5,23 +5,28 @@ import Rooms from './';
 
 const RoomId = () => {
   const router = useRouter();
-  const { roomId, network_metrics, client_token, refresh_token } =
-    router.query as {
-      roomId: string;
-      network_metrics: string;
-      client_token: string;
-      refresh_token: string;
-    };
+  const queryParameters = router.query as {
+    roomId: string;
+    client_token: string;
+    refresh_token: string;
+    network_metrics: string;
+    simulcast: string;
+    dial_out: string;
+  };
 
-  const showMetricsActionButton = network_metrics === 'true' ? true : false;
+  const optionalFeatures = {
+    isNetworkMetricsEnabled: queryParameters.network_metrics === 'true',
+    isSimulcastEnabled: queryParameters.simulcast === 'true',
+    isDialOutEnabled: queryParameters.dial_out === 'true',
+  };
 
   return (
     <Fragment>
       <Rooms
-        id={roomId}
-        showMetricsActionButton={showMetricsActionButton}
-        clientToken={client_token}
-        refreshToken={refresh_token}
+        id={queryParameters.roomId}
+        clientToken={queryParameters.client_token}
+        refreshToken={queryParameters.refresh_token}
+        optionalFeatures={optionalFeatures}
       />
     </Fragment>
   );
