@@ -10,6 +10,7 @@ import JoinRoom from 'components/JoinRoom';
 import MediaPreview from 'components/MediaPreview';
 
 import { generateUsername, generateId } from 'utils/helpers';
+import { getVideoConstraints } from 'utils/videoConstraints';
 import { TelnyxMeetContext } from 'contexts/TelnyxMeetContext';
 import {
   getUserMedia,
@@ -133,12 +134,14 @@ export default function Rooms({
       });
 
       let isVideoEnabled = getItem(USER_PREFERENCE_VIDEO_ENABLED) || null;
-
       let isAudioEnabled = getItem(USER_PREFERENCE_AUDIO_ENABLED) || null;
 
       getUserMedia({
-        video: isVideoEnabled && isVideoEnabled === 'yes' ? true : false,
         audio: isAudioEnabled && isAudioEnabled === 'yes' ? true : false,
+        video:
+          isVideoEnabled && isVideoEnabled === 'yes'
+            ? getVideoConstraints(videoInputDeviceId, optionalFeatures)
+            : false,
       })
         .then((stream) => {
           if (isAudioEnabled === 'yes') {

@@ -16,6 +16,7 @@ import {
 } from 'utils/storage';
 
 import { getUserMedia, MediaDeviceErrors } from './helper';
+import { getVideoConstraints } from 'utils/videoConstraints';
 
 const breakpointLarge = 1450;
 
@@ -31,6 +32,7 @@ function MediaControlBar({
   setError,
   localTracks,
   setLocalTracks,
+  optionalFeatures,
 }: {
   localTracks: {
     audio: MediaStreamTrack | undefined;
@@ -47,6 +49,7 @@ function MediaControlBar({
   setError: Dispatch<
     SetStateAction<{ title: string; body: string } | undefined>
   >;
+  optionalFeatures: { [key: string]: boolean };
 }) {
   const handleAudioClick = () => {
     if (localTracks?.audio) {
@@ -81,7 +84,7 @@ function MediaControlBar({
     } else {
       getUserMedia({
         audio: false,
-        video: videoInputDeviceId ? { deviceId: videoInputDeviceId } : true,
+        video: getVideoConstraints(videoInputDeviceId, optionalFeatures),
       })
         .then((stream) => {
           setLocalTracks((value) => ({

@@ -1,4 +1,4 @@
-import { Fragment } from 'react';
+import { useState, useEffect, Fragment } from 'react';
 import { useRouter } from 'next/router';
 
 import Rooms from './';
@@ -14,20 +14,32 @@ const RoomId = () => {
     dial_out: string;
   };
 
+  const [isRouterReady, setIsRouterReady] = useState(false);
+
   const optionalFeatures = {
     isNetworkMetricsEnabled: queryParameters.network_metrics === 'true',
     isSimulcastEnabled: queryParameters.simulcast === 'true',
     isDialOutEnabled: queryParameters.dial_out === 'true',
   };
 
+  useEffect(() => {
+    if (!router.isReady) {
+      return;
+    }
+
+    setIsRouterReady(true);
+  }, [router.isReady]);
+
   return (
     <Fragment>
-      <Rooms
-        id={queryParameters.roomId}
-        clientToken={queryParameters.client_token}
-        refreshToken={queryParameters.refresh_token}
-        optionalFeatures={optionalFeatures}
-      />
+      {isRouterReady && (
+        <Rooms
+          id={queryParameters.roomId}
+          clientToken={queryParameters.client_token}
+          refreshToken={queryParameters.refresh_token}
+          optionalFeatures={optionalFeatures}
+        />
+      )}
     </Fragment>
   );
 };

@@ -22,6 +22,8 @@ import { TelnyxMeetContext } from 'contexts/TelnyxMeetContext';
 import ErrorDialog from 'components/ErrorDialog';
 import { Chat } from './Chat';
 
+import { getVideoConstraints } from 'utils/videoConstraints';
+
 const breakpointMedium = 1023;
 
 const RightBoxMenu = styled(Box)`
@@ -334,9 +336,7 @@ export default function RoomControls({
         localTracks.video.stop();
         getUserMedia({
           audio: false,
-          video: {
-            deviceId,
-          },
+          video: getVideoConstraints(deviceId, optionalFeatures),
         })
           .then((stream) => {
             setLocalTracks((value) => ({
@@ -465,15 +465,12 @@ export default function RoomControls({
                 }
                 setLocalTracks((value) => ({ ...value, video: undefined }));
               } else {
-                const videoConstraints = optionalFeatures.isSimulcastEnabled
-                  ? { width: 1280, height: 720 }
-                  : true;
-
                 getUserMedia({
                   audio: false,
-                  video: videoInputDeviceId
-                    ? { deviceId: videoInputDeviceId }
-                    : videoConstraints,
+                  video: getVideoConstraints(
+                    videoInputDeviceId,
+                    optionalFeatures
+                  ),
                 })
                   .then((stream) => {
                     setLocalTracks((value) => ({
