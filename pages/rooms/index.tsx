@@ -165,7 +165,7 @@ export default function Rooms({
           }
         });
     }
-  }, [isReady]);
+  }, [isReady, videoInputDeviceId, optionalFeatures]);
 
   const onDisconnected = () => {
     setTokens({ clientToken: '', refreshToken: '' });
