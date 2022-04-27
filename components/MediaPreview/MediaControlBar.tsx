@@ -1,4 +1,4 @@
-import React, { Dispatch, SetStateAction } from 'react';
+import React, { useEffect, Dispatch, SetStateAction } from 'react';
 import {
   faMicrophone,
   faMicrophoneSlash,
@@ -11,12 +11,10 @@ import styled from 'styled-components';
 
 import {
   saveItem,
+  getItem,
   USER_PREFERENCE_AUDIO_ENABLED,
   USER_PREFERENCE_VIDEO_ENABLED,
 } from 'utils/storage';
-
-import { getUserMedia, MediaDeviceErrors } from './helper';
-import { getVideoConstraints } from 'utils/videoConstraints';
 
 const breakpointLarge = 1450;
 
@@ -27,121 +25,93 @@ const FontAwesomeIcon = styled(BaseFontAwesomeIcon)`
 `;
 
 function MediaControlBar({
-  audioInputDeviceId,
-  videoInputDeviceId,
-  setError,
-  localTracks,
-  setLocalTracks,
-  optionalFeatures,
+  isAudioTrackEnabled,
+  isVideoTrackEnabled,
+  setIsAudioTrackEnabled,
+  setIsVideoTrackEnabled,
+  error,
 }: {
-  localTracks: {
-    audio: MediaStreamTrack | undefined;
-    video: MediaStreamTrack | undefined;
-  };
-  setLocalTracks: Dispatch<
-    SetStateAction<{
-      audio: MediaStreamTrack | undefined;
-      video: MediaStreamTrack | undefined;
-    }>
-  >;
-  audioInputDeviceId: string | undefined;
-  videoInputDeviceId: string | undefined;
-  setError: Dispatch<
-    SetStateAction<{ title: string; body: string } | undefined>
-  >;
-  optionalFeatures: { [key: string]: boolean };
+  isAudioTrackEnabled: boolean;
+  isVideoTrackEnabled: boolean;
+  setIsAudioTrackEnabled: Dispatch<SetStateAction<boolean>>;
+  setIsVideoTrackEnabled: Dispatch<SetStateAction<boolean>>;
+  error: any;
 }) {
-  const handleAudioClick = () => {
-    if (localTracks?.audio) {
-      localTracks.audio.stop();
-      setLocalTracks((value) => ({ ...value, audio: undefined }));
+  const handleAudioClick = (isAudioEnabled: boolean) => {
+    setIsAudioTrackEnabled(isAudioEnabled);
+    saveItem(USER_PREFERENCE_AUDIO_ENABLED, isAudioEnabled ? 'yes' : 'no');
+  };
+
+  const handleVideoClick = (isVideoEnabled: boolean) => {
+    setIsVideoTrackEnabled(isVideoEnabled);
+    saveItem(USER_PREFERENCE_VIDEO_ENABLED, isVideoEnabled ? 'yes' : 'no');
+  };
+
+  useEffect(() => {
+    const isAudioEnabled = getItem(USER_PREFERENCE_AUDIO_ENABLED) || null;
+    const isVideoEnabled = getItem(USER_PREFERENCE_VIDEO_ENABLED) || null;
+
+    setIsAudioTrackEnabled(
+      isAudioEnabled && isAudioEnabled === 'yes' ? true : false
+    );
+    setIsVideoTrackEnabled(
+      isVideoEnabled && isVideoEnabled === 'yes' ? true : false
+    );
+  }, [setIsAudioTrackEnabled, setIsVideoTrackEnabled]);
+
+  useEffect(() => {
+    if (!error) {
+      return;
+    }
+
+    if (error.type === 'audioBlocked') {
       saveItem(USER_PREFERENCE_AUDIO_ENABLED, 'no');
-    } else {
-      getUserMedia({
-        audio: audioInputDeviceId ? { deviceId: audioInputDeviceId } : true,
-        video: false,
-      })
-        .then((stream) => {
-          setLocalTracks((value) => ({
-            ...value,
-            audio: stream?.getAudioTracks()[0],
-          }));
-          saveItem(USER_PREFERENCE_AUDIO_ENABLED, 'yes');
-        })
-        // TODO: avoid disable line
-        // eslint-disable-next-line no-unused-vars
-        .catch((err) => {
-          setError(MediaDeviceErrors.mediaBlocked);
-        });
     }
-  };
 
-  const handleVideoClick = () => {
-    if (localTracks?.video) {
-      localTracks.video.stop();
-      setLocalTracks((value) => ({ ...value, video: undefined }));
+    if (error.type === 'videoBlocked') {
       saveItem(USER_PREFERENCE_VIDEO_ENABLED, 'no');
-    } else {
-      getUserMedia({
-        audio: false,
-        video: getVideoConstraints(videoInputDeviceId, optionalFeatures),
-      })
-        .then((stream) => {
-          setLocalTracks((value) => ({
-            ...value,
-            video: stream?.getVideoTracks()[0],
-          }));
-
-          saveItem(USER_PREFERENCE_VIDEO_ENABLED, 'yes');
-        })
-        // TODO: avoid disable line
-        // eslint-disable-next-line no-unused-vars
-        .catch((err) => {
-          setError(MediaDeviceErrors.mediaBlocked);
-        });
     }
-  };
+  }, [error]);
 
   return (
     <React.Fragment>
-      <Button onClick={handleAudioClick} style={{ marginRight: 20 }}>
+      <Button
+        onClick={() => handleAudioClick(!isAudioTrackEnabled)}
+        style={{ marginRight: 20 }}
+      >
         <Box align='center' gap='xsmall'>
           <Box>
             <Text
               size='40.3px' // kinda hacky, make fa icon 48px
-              color={!localTracks?.audio?.enabled ? 'status-error' : 'accent-1'}
+              color={isAudioTrackEnabled ? 'accent-1' : 'status-error'}
             >
               <FontAwesomeIcon
-                icon={
-                  !localTracks?.audio?.enabled
-                    ? faMicrophoneSlash
-                    : faMicrophone
-                }
+                icon={isAudioTrackEnabled ? faMicrophone : faMicrophoneSlash}
                 fixedWidth
               />
             </Text>
           </Box>
           <Text size='xsmall' color='light-6'>
-            {!localTracks?.audio?.enabled ? 'Unmute mic' : 'Mute mic'}
+            {isAudioTrackEnabled ? 'Mute mic' : 'Unmute mic'}
           </Text>
         </Box>
       </Button>
 
-      <Button onClick={handleVideoClick}>
+      <Button onClick={() => handleVideoClick(!isVideoTrackEnabled)}>
         <Box align='center' gap='xsmall'>
           <Box>
             <Text
               size='40.3px' // kinda hacky, make fa icon 48px
-              color={!localTracks?.video?.enabled ? 'status-error' : 'accent-1'}
+              color={isVideoTrackEnabled ? 'accent-1' : 'status-error'}
             >
               <FontAwesomeIcon
-                icon={!localTracks?.video?.enabled ? faVideoSlash : faVideo}
+                icon={isVideoTrackEnabled ? faVideo : faVideoSlash}
                 fixedWidth
               />
             </Text>
           </Box>
           <Text size='xsmall' color='light-6'>
-            {!localTracks?.video?.enabled ? 'Start video' : 'Stop video'}
+            {isVideoTrackEnabled ? 'Stop video' : 'Start video'}
           </Text>
         </Box>
       </Button>

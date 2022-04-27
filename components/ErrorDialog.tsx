@@ -5,12 +5,10 @@ import { FormClose } from 'grommet-icons';
 
 const ErrorDialog = ({
   onClose,
-  title,
-  body,
+  error,
 }: {
   onClose: () => void;
-  title: string;
-  body: string;
+  error: { message: { title: string; body: string } };
 }) => {
   return (
     <Layer
@@ -22,9 +20,9 @@ const ErrorDialog = ({
       <Box pad='medium' gap='small' width='medium'>
         <Button alignSelf='end' icon={<FormClose />} onClick={onClose} />
         <Heading level={3} margin='none'>
-          {title}
+          {error.message.title}
         </Heading>
-        <Text>{body}</Text>
+        <Text>{error.message.body}</Text>
         <Box
           as='footer'
           gap='small'

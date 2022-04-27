@@ -3,10 +3,12 @@ import { Text } from 'grommet';
 import styled from 'styled-components';
 
 import { TelnyxMeetContext } from 'contexts/TelnyxMeetContext';
+import { useMediaController } from 'hooks/mediaController';
 
 import ErrorDialog from 'components/ErrorDialog';
 
 import { MediaControlBar } from './MediaControlBar';
+import { MediaDeviceErrors } from './helper';
 
 const breakpointSmall = 400;
 const breakpointMedium = 530;
@@ -37,14 +39,17 @@ const VideoPreview = styled.div`
   }
 `;
 
-function MediaPreview({ error, setError }: { error: any; setError: any }) {
+function MediaPreview() {
   const {
-    audioInputDeviceId,
-    videoInputDeviceId,
-    localTracks,
-    setLocalTracks,
-    optionalFeatures,
+    isAudioTrackEnabled,
+    isVideoTrackEnabled,
+    setIsAudioTrackEnabled,
+    setIsVideoTrackEnabled,
+    error,
+    setError,
   } = useContext(TelnyxMeetContext);
+
+  const localTracks = useMediaController();
 
   const videoElRef = useRef<HTMLVideoElement>(null);
 
@@ -52,17 +57,27 @@ function MediaPreview({ error, setError }: { error: any; setError: any }) {
     if (!videoElRef.current) {
       return;
     }
-    if (localTracks?.video) {
-      const stream = new MediaStream();
-      stream.addTrack(localTracks.video);
 
-      videoElRef.current.srcObject = stream;
+    if (localTracks?.video) {
+      videoElRef.current.srcObject = new MediaStream([localTracks.video]);
     }
   }, [localTracks?.video]);
 
-  const onClose = () => {
-    setError(undefined);
-  };
+  useEffect(() => {
+    navigator.mediaDevices.enumerateDevices().then((devices) => {
+      const audioinput = devices.filter(
+        (device) => device.kind === 'audioinput'
+      )[0];
+      const videoinput = devices.filter(
+        (device) => device.kind === 'videoinput'
+      )[0];
+
+      if (!audioinput.label && !videoinput.label) {
+        setError(MediaDeviceErrors.allowMediaWarning);
+      }
+    });
+
+  }, [setError]);
 
   return (
     <div
@@ -75,10 +90,13 @@ function MediaPreview({ error, setError }: { error: any; setError: any }) {
       }}
     >
       {error && (
-        <ErrorDialog onClose={onClose} title={error.title} body={error.body} />
+        <ErrorDialog
+          onClose={() => setError(undefined)}
+          error={error}
+        />
       )}
       <VideoPreview id='preview-video'>
-        {localTracks?.video?.enabled && (
+        {isVideoTrackEnabled ? (
           <video
             id='video-preview'
             ref={videoElRef}
@@ -96,8 +114,7 @@ function MediaPreview({ error, setError }: { error: any; setError: any }) {
               objectFit: 'cover',
             }}
           ></video>
-        )}
-        {!localTracks?.video?.enabled && (
+        ) : (
           <Text
             style={{
               position: 'absolute',
@@ -120,12 +137,11 @@ function MediaPreview({ error, setError }: { error: any; setError: any }) {
           }}
         >
           <MediaControlBar
-            localTracks={localTracks}
-            setLocalTracks={setLocalTracks}
-            audioInputDeviceId={audioInputDeviceId}
-            videoInputDeviceId={videoInputDeviceId}
-            optionalFeatures={optionalFeatures}
-            setError={setError}
+            isAudioTrackEnabled={isAudioTrackEnabled}
+            isVideoTrackEnabled={isVideoTrackEnabled}
+            setIsAudioTrackEnabled={setIsAudioTrackEnabled}
+            setIsVideoTrackEnabled={setIsVideoTrackEnabled}
+            error={error}
           />
         </div>
       </VideoPreview>

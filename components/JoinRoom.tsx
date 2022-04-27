@@ -1,9 +1,12 @@
-import React, { useState } from 'react';
+import React, { useContext } from 'react';
 import { Box, Button, TextInput } from 'grommet';
 
-import { saveItem, USERNAME_KEY } from 'utils/storage';
+import { TelnyxMeetContext } from 'contexts/TelnyxMeetContext';
+
 import ErrorDialog from 'components/ErrorDialog';
 import { MediaDeviceErrors } from 'components/MediaPreview/helper';
+
+import { saveItem, USERNAME_KEY } from 'utils/storage';
 
 interface Props {
   roomId: string;
@@ -26,9 +29,10 @@ const JoinRoom = ({
   clientToken,
   refreshToken,
 }: Props) => {
-  const [error, setError] = useState<
-    { title: string; body: string } | undefined
-  >(undefined);
+  const {
+    error,
+    setError,
+  } = useContext(TelnyxMeetContext);
 
   const checkAudioBrowserPermission = async () => {
     const result = await window?.navigator?.mediaDevices
@@ -80,10 +84,6 @@ const JoinRoom = ({
     }
   };
 
-  const onClose = () => {
-    setError(undefined);
-  };
-
   return (
     <Box
       pad='small'
@@ -93,7 +93,10 @@ const JoinRoom = ({
       }}
     >
       {error && (
-        <ErrorDialog onClose={onClose} title={error.title} body={error.body} />
+        <ErrorDialog
+          onClose={() => setError(undefined)}
+          error={error}
+        />
       )}
       <Box
         background={{ color: 'white', opacity: 'weak' }}
@@ -132,7 +135,7 @@ const JoinRoom = ({
           if (hasAudioPermission) {
             joinRoom();
           } else {
-            setError(MediaDeviceErrors.mediaBlocked);
+            setError(MediaDeviceErrors.audioBlocked);
           }
         }}
       />
