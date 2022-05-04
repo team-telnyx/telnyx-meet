@@ -1220,10 +1220,10 @@
     magic-string "^0.25.0"
     string.prototype.matchall "^4.0.6"
 
-"@telnyx/video@^0.2.0-alpha.17":
-  version "0.2.0-alpha.17"
-  resolved "https://registry.yarnpkg.com/@telnyx/video/-/video-0.2.0-alpha.17.tgz#2d96800f16679e9a0d887d1a4b311acb193bd6cc"
-  integrity sha512-Stf0A5rt2QJNPMGFMMrl3UiDXPiLT1No9UcMs6slABVAgyro/I4clc8M1G4bCZewidSayge/xnAiBlpVuy+hEw==
+"@telnyx/video@^0.2.0-alpha.18":
+  version "0.2.0-alpha.18"
+  resolved "https://registry.yarnpkg.com/@telnyx/video/-/video-0.2.0-alpha.18.tgz#bd07bf92544d2155c2f6721a8f40dbd8e33dab0e"
+  integrity sha512-eVG48eYsDgQ7zohp15eIg0L/L421IskDSbsyXk000reQnP89oaHE7JmOSiqDiLptIgerEkm3pfZihIHPbzdVHQ==
   dependencies:
     "@types/uuid" "^8.3.0"
     events "^3.3.0"

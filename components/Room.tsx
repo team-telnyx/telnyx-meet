@@ -29,7 +29,7 @@ function Room({
   };
   onDisconnected: () => void;
 }) {
-  const { optionalFeatures } = useContext(TelnyxMeetContext);
+  const { optionalFeatures, setNetworkMetrics } = useContext(TelnyxMeetContext);
   const [isParticipantsListVisible, setIsParticipantsListVisible] =
     useState<boolean>(false);
   const [isInviteParticipantVisible, setIsInviteParticipantVisible] =
@@ -140,7 +140,10 @@ function Room({
                     color='#cecece'
                     size='small'
                     label='Stop Metrics'
-                    onClick={() => room.disableNetworkMetricsReport()}
+                    onClick={() => {
+                      room.disableNetworkMetricsReport();
+                      setNetworkMetrics(undefined);
+                    }}
                   />
                 </div>
               )}
