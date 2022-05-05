@@ -76,26 +76,33 @@ function MediaPreview({ error, setError }: { error: any; setError: any }) {
       {error && (
         <ErrorDialog onClose={onClose} title={error.title} body={error.body} />
       )}
+
       <VideoPreview id='preview-video'>
-        {localTracks?.video?.enabled && (
-          <video
-            id='video-preview'
-            ref={videoElRef}
-            playsInline={true}
-            autoPlay={true}
-            muted={true}
-            style={{
-              position: 'absolute',
-              left: 0,
-              top: 0,
-              height: '100%',
-              width: '100%',
-              borderRadius: '8px',
-              transform: 'scaleX(-1)',
-              objectFit: 'cover',
-            }}
-          ></video>
-        )}
+        <canvas
+          id='canvas'
+          className='hide'
+          width='500'
+          height='250'
+          style={{ display: 'block', margin: 'auto', padding: 0 }}
+        ></canvas>
+
+        <video
+          id='video-preview'
+          ref={videoElRef}
+          playsInline={true}
+          autoPlay={true}
+          muted={true}
+          style={{
+            position: 'absolute',
+            left: 0,
+            top: 0,
+            height: '100%',
+            width: '100%',
+            borderRadius: '8px',
+            transform: 'scaleX(-1)',
+            objectFit: 'cover',
+          }}
+        ></video>
         {!localTracks?.video?.enabled && (
           <Text
             style={{

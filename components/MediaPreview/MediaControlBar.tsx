@@ -16,6 +16,7 @@ import {
 } from 'utils/storage';
 
 import { getUserMedia, MediaDeviceErrors } from './helper';
+import { createVirtualBackgroundStream } from 'utils/virtualBackground';
 
 const breakpointLarge = 1450;
 
@@ -83,10 +84,16 @@ function MediaControlBar({
         audio: false,
         video: videoInputDeviceId ? { deviceId: videoInputDeviceId } : true,
       })
-        .then((stream) => {
+        .then(async (stream) => {
+          const canvasStream = await createVirtualBackgroundStream(
+            stream,
+            'video-preview'
+          );
+
+          debugger;
           setLocalTracks((value) => ({
             ...value,
-            video: stream?.getVideoTracks()[0],
+            video: canvasStream?.getVideoTracks()[0],
           }));
 
           saveItem(USER_PREFERENCE_VIDEO_ENABLED, 'yes');
