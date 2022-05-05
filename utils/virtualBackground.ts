@@ -8,8 +8,9 @@ import {
 
 function handleSegmentationResults(results: any, { canvas, context }) {
   const image = new Image();
-  debugger;
+
   image.src = '/retro.webp';
+
   if (!context) {
     return;
   }
@@ -52,7 +53,7 @@ function getSelfieSegmentation({ canvas, context }) {
   selfieSegmentation.setOptions({
     modelSelection: 1,
   });
-  debugger;
+
   selfieSegmentation.onResults((results) =>
     handleSegmentationResults(results, { canvas, context })
   );
@@ -72,7 +73,6 @@ export function createVirtualBackgroundStream(
       return resolve(stream);
     }
 
-    debugger;
     let canvas = document.getElementById('canvas') as HTMLCanvasElement;
 
     if (!canvas) {
@@ -108,21 +108,22 @@ export function createVirtualBackgroundStream(
       canvas.height = height;
 
       // Draw the video element on top of the canvas
-      let lastTime = new Date().getTime();
+      let lastTime = 0;
       async function getFrames() {
         const now = videoElement.currentTime;
-        if (now > lastTime)
+        if (now > lastTime) {
           await getSelfieSegmentation({ canvas, context }).send({
             image: videoElement,
           });
-        lastTime = now;
-        requestAnimationFrame(getFrames);
+          lastTime = now;
+          requestAnimationFrame(getFrames);
+        }
       }
       getFrames();
       // Capture the canvas as a local MediaStream
 
       canvasStream = canvas.captureStream();
-      // canvasStream.addTrack(stream.getAudioTracks()[0]);
+      canvasStream.addTrack(stream.getAudioTracks()[0]);
       resolve(canvasStream);
     });
     resolve(canvasStream);
