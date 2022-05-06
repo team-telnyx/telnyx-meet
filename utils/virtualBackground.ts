@@ -6,7 +6,7 @@ import {
 
 // This is the callback we invoke on the segmentation result
 
-function handleSegmentationResults(results: any, { canvas, context }) {
+function handleSegmentationResults(results: any, { canvasElement, context }) {
   const image = new Image();
 
   image.src = '/retro.webp';
@@ -16,13 +16,13 @@ function handleSegmentationResults(results: any, { canvas, context }) {
   }
   // Prepare the new frame
   context.save();
-  context.clearRect(0, 0, canvas.width, canvas.height);
+  context.clearRect(0, 0, canvasElement.width, canvasElement.height);
   context.drawImage(
     results.segmentationMask,
     0,
     0,
-    canvas.width,
-    canvas.height
+    canvasElement.width,
+    canvasElement.height
   );
   // Draw the image as the new background, and the segmented video on top of that
   context.globalCompositeOperation = 'source-out';
@@ -34,16 +34,22 @@ function handleSegmentationResults(results: any, { canvas, context }) {
     image.height,
     0,
     0,
-    canvas.width,
-    canvas.height
+    canvasElement.width,
+    canvasElement.height
   );
   context.globalCompositeOperation = 'destination-atop';
-  context.drawImage(results.image, 0, 0, canvas.width, canvas.height);
+  context.drawImage(
+    results.image,
+    0,
+    0,
+    canvasElement.width,
+    canvasElement.height
+  );
   // Done
   context.restore();
 }
 
-function getSelfieSegmentation({ canvas, context }) {
+function getSelfieSegmentation({ canvasElement, context }) {
   const selfieSegmentation = new SelfieSegmentation({
     locateFile: (file) => {
       return `https://cdn.jsdelivr.net/npm/@mediapipe/selfie_segmentation/${file}`;
@@ -55,7 +61,7 @@ function getSelfieSegmentation({ canvas, context }) {
   });
 
   selfieSegmentation.onResults((results) =>
-    handleSegmentationResults(results, { canvas, context })
+    handleSegmentationResults(results, { canvasElement, context })
   );
   return selfieSegmentation;
 }
@@ -73,13 +79,13 @@ export function createVirtualBackgroundStream(
       return resolve(stream);
     }
 
-    let canvas = document.getElementById('canvas') as HTMLCanvasElement;
+    let canvasElement = document.getElementById('canvas') as HTMLCanvasElement;
 
-    if (!canvas) {
+    if (!canvasElement) {
       return resolve(stream);
     }
 
-    let context = canvas.getContext('2d');
+    let context = canvasElement.getContext('2d');
 
     let width = 640,
       height = 360;
@@ -104,15 +110,15 @@ export function createVirtualBackgroundStream(
         width = videoElement.videoWidth;
         height = videoElement.videoHeight;
       }
-      canvas.width = width;
-      canvas.height = height;
+      canvasElement.width = width;
+      canvasElement.height = height;
 
       // Draw the video element on top of the canvas
       let lastTime = 0;
       async function getFrames() {
         const now = videoElement.currentTime;
         if (now > lastTime) {
-          await getSelfieSegmentation({ canvas, context }).send({
+          await getSelfieSegmentation({ canvasElement, context }).send({
             image: videoElement,
           });
           lastTime = now;
@@ -122,8 +128,8 @@ export function createVirtualBackgroundStream(
       getFrames();
       // Capture the canvas as a local MediaStream
 
-      canvasStream = canvas.captureStream();
-      canvasStream.addTrack(stream.getAudioTracks()[0]);
+      canvasStream = canvasElement.captureStream();
+      // canvasStream.addTrack(stream.getAudioTracks()[0]);
       resolve(canvasStream);
     });
     resolve(canvasStream);

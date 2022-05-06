@@ -77,7 +77,8 @@ function MediaPreview({ error, setError }: { error: any; setError: any }) {
         <ErrorDialog onClose={onClose} title={error.title} body={error.body} />
       )}
 
-      <VideoPreview id='preview-video'>
+      {/* <VideoPreview id='preview-video'> */}
+      <div>
         <canvas
           id='canvas'
           className='hide'
@@ -92,16 +93,6 @@ function MediaPreview({ error, setError }: { error: any; setError: any }) {
           playsInline={true}
           autoPlay={true}
           muted={true}
-          style={{
-            position: 'absolute',
-            left: 0,
-            top: 0,
-            height: '100%',
-            width: '100%',
-            borderRadius: '8px',
-            transform: 'scaleX(-1)',
-            objectFit: 'cover',
-          }}
         ></video>
         {!localTracks?.video?.enabled && (
           <Text
@@ -118,12 +109,12 @@ function MediaPreview({ error, setError }: { error: any; setError: any }) {
         )}
 
         <div
-          style={{
-            position: 'absolute',
-            bottom: 5,
-            left: '50%',
-            transform: 'translateX(-50%)',
-          }}
+        // style={{
+        //   position: 'absolute',
+        //   bottom: 5,
+        //   left: '50%',
+        //   transform: 'translateX(-50%)',
+        // }}
         >
           <MediaControlBar
             localTracks={localTracks}
@@ -133,7 +124,8 @@ function MediaPreview({ error, setError }: { error: any; setError: any }) {
             setError={setError}
           />
         </div>
-      </VideoPreview>
+      </div>
+      {/* </VideoPreview> */}
     </div>
   );
 }
