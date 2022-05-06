@@ -6,50 +6,56 @@ import {
 
 // This is the callback we invoke on the segmentation result
 
-function handleSegmentationResults(results: any, { canvasElement, context }) {
-  const image = new Image();
-
-  image.src = '/retro.webp';
-
-  if (!context) {
+function handleSegmentationResults(
+  results: any,
+  { canvasElement, canvasContext }
+) {
+  if (!canvasContext) {
     return;
   }
-  // Prepare the new frame
-  context.save();
-  context.clearRect(0, 0, canvasElement.width, canvasElement.height);
-  context.drawImage(
-    results.segmentationMask,
-    0,
-    0,
-    canvasElement.width,
-    canvasElement.height
-  );
-  // Draw the image as the new background, and the segmented video on top of that
-  context.globalCompositeOperation = 'source-out';
-  context.drawImage(
-    image,
-    0,
-    0,
-    image.width,
-    image.height,
-    0,
-    0,
-    canvasElement.width,
-    canvasElement.height
-  );
-  context.globalCompositeOperation = 'destination-atop';
-  context.drawImage(
-    results.image,
-    0,
-    0,
-    canvasElement.width,
-    canvasElement.height
-  );
-  // Done
-  context.restore();
+  const image = new Image(996, 664);
+
+  image.src = 'http://localhost:3000/mansao.webp';
+  image.onload = function () {
+    // At this point, the image is fully loaded
+    // So do your thing!
+    // Prepare the new frame
+    canvasContext.save();
+    canvasContext.clearRect(0, 0, canvasElement.width, canvasElement.height);
+    canvasContext.drawImage(
+      results.segmentationMask,
+      0,
+      0,
+      canvasElement.width,
+      canvasElement.height
+    );
+    // Draw the image as the new background, and the segmented video on top of that
+    canvasContext.globalCompositeOperation = 'source-out';
+    canvasContext.drawImage(
+      image,
+      0,
+      0,
+      image.width,
+      image.height,
+      0,
+      0,
+      canvasElement.width,
+      canvasElement.height
+    );
+    canvasContext.globalCompositeOperation = 'destination-atop';
+    canvasContext.drawImage(
+      results.image,
+      0,
+      0,
+      canvasElement.width,
+      canvasElement.height
+    );
+    // Done
+    canvasContext.restore();
+  };
 }
 
-function getSelfieSegmentation({ canvasElement, context }) {
+function getSelfieSegmentation({ canvasElement, canvasContext }) {
   const selfieSegmentation = new SelfieSegmentation({
     locateFile: (file) => {
       return `https://cdn.jsdelivr.net/npm/@mediapipe/selfie_segmentation/${file}`;
@@ -61,7 +67,7 @@ function getSelfieSegmentation({ canvasElement, context }) {
   });
 
   selfieSegmentation.onResults((results) =>
-    handleSegmentationResults(results, { canvasElement, context })
+    handleSegmentationResults(results, { canvasElement, canvasContext })
   );
   return selfieSegmentation;
 }
@@ -85,7 +91,7 @@ export function createVirtualBackgroundStream(
       return resolve(stream);
     }
 
-    let context = canvasElement.getContext('2d');
+    let canvasContext = canvasElement.getContext('2d');
 
     let width = 640,
       height = 360;
@@ -118,7 +124,7 @@ export function createVirtualBackgroundStream(
       async function getFrames() {
         const now = videoElement.currentTime;
         if (now > lastTime) {
-          await getSelfieSegmentation({ canvasElement, context }).send({
+          await getSelfieSegmentation({ canvasElement, canvasContext }).send({
             image: videoElement,
           });
           lastTime = now;
