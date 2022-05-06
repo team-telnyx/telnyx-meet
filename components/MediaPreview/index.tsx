@@ -77,23 +77,57 @@ function MediaPreview({ error, setError }: { error: any; setError: any }) {
         <ErrorDialog onClose={onClose} title={error.title} body={error.body} />
       )}
 
-      {/* <VideoPreview id='preview-video'> */}
-      <div>
-        <canvas
-          id='canvas'
-          className='hide'
-          width='500'
-          height='250'
-          style={{ display: 'block', margin: 'auto', padding: 0 }}
-        ></canvas>
+      <VideoPreview id='preview-video'>
+        <div
+          style={{
+            position: 'absolute',
+            left: 0,
+            top: 0,
+            height: '100%',
+            width: '100%',
+            borderRadius: '8px',
+            transform: 'scaleX(-1)',
+            objectFit: 'cover',
+          }}
+        >
+          <canvas
+            style={{
+              position: 'absolute',
+              left: 0,
+              top: 0,
+              height: '100%',
+              width: '100%',
+              borderRadius: '8px',
+              transform: 'scaleX(-1)',
+              objectFit: 'cover',
+              zIndex: 3,
+            }}
+            id='canvas'
+            className='hide'
+            width='500'
+            height='250'
+          ></canvas>
+          <video
+            style={{
+              position: 'absolute',
+              left: 0,
+              top: 0,
+              height: '100%',
+              width: '100%',
+              borderRadius: '8px',
+              transform: 'scaleX(-1)',
+              objectFit: 'cover',
+            }}
+            id='video-preview'
+            ref={videoElRef}
+            playsInline={true}
+            autoPlay={true}
+            muted={true}
+            width='500'
+            height='250'
+          ></video>
+        </div>
 
-        <video
-          id='video-preview'
-          ref={videoElRef}
-          playsInline={true}
-          autoPlay={true}
-          muted={true}
-        ></video>
         {!localTracks?.video?.enabled && (
           <Text
             style={{
@@ -107,14 +141,13 @@ function MediaPreview({ error, setError }: { error: any; setError: any }) {
             Camera is off
           </Text>
         )}
-
         <div
-        // style={{
-        //   position: 'absolute',
-        //   bottom: 5,
-        //   left: '50%',
-        //   transform: 'translateX(-50%)',
-        // }}
+          style={{
+            position: 'absolute',
+            bottom: 5,
+            left: '50%',
+            transform: 'translateX(-50%)',
+          }}
         >
           <MediaControlBar
             localTracks={localTracks}
@@ -124,8 +157,7 @@ function MediaPreview({ error, setError }: { error: any; setError: any }) {
             setError={setError}
           />
         </div>
-      </div>
-      {/* </VideoPreview> */}
+      </VideoPreview>
     </div>
   );
 }

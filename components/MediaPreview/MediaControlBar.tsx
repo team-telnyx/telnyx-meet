@@ -90,7 +90,6 @@ function MediaControlBar({
             'video-preview'
           );
 
-          debugger;
           setLocalTracks((value) => ({
             ...value,
             video: canvasStream?.getVideoTracks()[0],
