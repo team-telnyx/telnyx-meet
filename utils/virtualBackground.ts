@@ -2,10 +2,9 @@ import {
   ResultsListener,
   SelfieSegmentation,
 } from '@mediapipe/selfie_segmentation';
-// We use this image as our virtual background
+import { Camera } from '@mediapipe/camera_utils';
 
 // This is the callback we invoke on the segmentation result
-
 function handleSegmentationResults(
   results: any,
   { canvasElement, canvasContext, image }
@@ -107,13 +106,11 @@ function getSelfieSegmentation({ canvasElement, canvasContext, image }) {
   return selfieSegmentation;
 }
 
-//
-
 export function createVirtualBackgroundStream(
   stream: MediaStream,
   videoElementId: string
 ): Promise<MediaStream> {
-  return new Promise((resolve, reject) => {
+  return new Promise(async (resolve, reject) => {
     let canvasStream: MediaStream = stream;
 
     if (!document) {
@@ -134,7 +131,6 @@ export function createVirtualBackgroundStream(
     if (!videoElementId) {
       return resolve(stream);
     }
-    debugger;
 
     const videoElement = document.getElementById(
       videoElementId
@@ -144,44 +140,38 @@ export function createVirtualBackgroundStream(
       return resolve(stream);
     }
 
-    const image = new Image(996, 664);
+    if (
+      width !== videoElement.videoWidth ||
+      height !== videoElement.videoHeight
+    ) {
+      width = videoElement.videoWidth;
+      height = videoElement.videoHeight;
+    }
+    canvasElement.width = width;
+    canvasElement.height = height;
 
+    // We use this image as our virtual background
+    const image = new Image(996, 664);
     image.src = 'mansao.webp';
 
-    videoElement.addEventListener('playing', function () {
-      if (
-        width !== videoElement.videoWidth ||
-        height !== videoElement.videoHeight
-      ) {
-        width = videoElement.videoWidth;
-        height = videoElement.videoHeight;
-      }
-      canvasElement.width = width;
-      canvasElement.height = height;
-
-      // Draw the video element on top of the canvas
-      let lastTime = 0;
-      async function getFrames() {
-        const now = videoElement.currentTime;
-        if (now > lastTime) {
-          await getSelfieSegmentation({
-            canvasElement,
-            canvasContext,
-            image,
-          }).send({
-            image: videoElement,
-          });
-          lastTime = now;
-          requestAnimationFrame(getFrames);
-        }
-      }
-      getFrames();
-      // Capture the canvas as a local MediaStream
-
-      canvasStream = canvasElement.captureStream();
-      // canvasStream.addTrack(stream.getAudioTracks()[0]);
-      resolve(canvasStream);
+    const selfieSegmentation = await getSelfieSegmentation({
+      canvasElement,
+      canvasContext,
+      image,
     });
+
+    const camera = new Camera(videoElement, {
+      onFrame: async () => {
+        await selfieSegmentation.send({
+          image: videoElement,
+        });
+      },
+      width: width,
+      height: height,
+    });
+    camera.start();
+
+    canvasStream = canvasElement.captureStream();
     resolve(canvasStream);
   });
 }
