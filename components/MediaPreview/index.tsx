@@ -98,14 +98,11 @@ function MediaPreview({ error, setError }: { error: any; setError: any }) {
               height: '100%',
               width: '100%',
               borderRadius: '8px',
-              transform: 'scaleX(-1)',
               objectFit: 'cover',
-              zIndex: 3,
+              zIndex: 1,
             }}
             id='canvas'
             className='hide'
-            width='500'
-            height='250'
           ></canvas>
           <video
             style={{
@@ -115,7 +112,6 @@ function MediaPreview({ error, setError }: { error: any; setError: any }) {
               height: '100%',
               width: '100%',
               borderRadius: '8px',
-              transform: 'scaleX(-1)',
               objectFit: 'cover',
             }}
             id='video-preview'
@@ -123,8 +119,6 @@ function MediaPreview({ error, setError }: { error: any; setError: any }) {
             playsInline={true}
             autoPlay={true}
             muted={true}
-            width='500'
-            height='250'
           ></video>
         </div>
 
