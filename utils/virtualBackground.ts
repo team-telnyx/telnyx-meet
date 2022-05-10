@@ -4,6 +4,41 @@ import {
 } from '@mediapipe/selfie_segmentation';
 import { Camera } from '@mediapipe/camera_utils';
 
+const url =
+  'https://cdn.jsdelivr.net/npm/@mediapipe/selfie_segmentation/selfie_segmentation_solution_simd_wasm_bin.js';
+
+// Create the segmentation selfie instance
+//@ts-ignore
+let selfieSegmentation: SelfieSegmentation | undefined = undefined;
+if (typeof window !== 'undefined') {
+  selfieSegmentation = getSelfieSegmentation();
+}
+
+function scriptExists(url: string) {
+  if (typeof window !== 'undefined') {
+    return document.querySelectorAll(`script[src="${url}"]`).length > 0;
+  }
+  return false;
+}
+
+function getSelfieSegmentation() {
+  if (scriptExists(url)) {
+    return;
+  }
+
+  const selfieSegmentation = new SelfieSegmentation({
+    locateFile: (file) => {
+      return `https://cdn.jsdelivr.net/npm/@mediapipe/selfie_segmentation/${file}`;
+    },
+  });
+
+  selfieSegmentation.setOptions({
+    modelSelection: 1,
+  });
+
+  return selfieSegmentation;
+}
+
 function drawBackgroundImage(
   results: any,
   {
@@ -85,32 +120,6 @@ function handleSegmentationResults(
   }
 }
 
-function getSelfieSegmentation({
-  canvasElement,
-  canvasContext,
-  image,
-}: {
-  canvasElement: HTMLCanvasElement;
-  canvasContext: CanvasRenderingContext2D;
-  image: HTMLImageElement;
-}) {
-  const selfieSegmentation = new SelfieSegmentation({
-    locateFile: (file) => {
-      return `https://cdn.jsdelivr.net/npm/@mediapipe/selfie_segmentation/${file}`;
-    },
-  });
-
-  selfieSegmentation.setOptions({
-    modelSelection: 1,
-  });
-
-  selfieSegmentation.onResults((results) =>
-    handleSegmentationResults(results, { canvasElement, canvasContext, image })
-  );
-  selfieSegmentation.initialize();
-  return selfieSegmentation;
-}
-
 export function createVirtualBackgroundStream(
   stream: MediaStream,
   videoElementId: string
@@ -161,11 +170,17 @@ export function createVirtualBackgroundStream(
     const image = new Image(996, 664);
     image.src = '//localhost:3000/mansao.webp';
 
-    const selfieSegmentation = await getSelfieSegmentation({
-      canvasElement,
-      canvasContext,
-      image,
-    });
+    if (!selfieSegmentation) {
+      return resolve(stream);
+    }
+
+    selfieSegmentation.onResults((results) =>
+      handleSegmentationResults(results, {
+        canvasElement,
+        canvasContext,
+        image,
+      })
+    );
 
     const camera = new Camera(videoElement, {
       onFrame: async () => {
