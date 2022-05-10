@@ -123,18 +123,18 @@ function handleSegmentationResults(
 export function createVirtualBackgroundStream(
   stream: MediaStream,
   videoElementId: string
-): Promise<MediaStream> {
+): Promise<{ backgroundCamera: Camera | null; canvasStream: MediaStream }> {
   return new Promise(async (resolve, reject) => {
     let canvasStream: MediaStream = stream;
 
     if (!document) {
-      return resolve(stream);
+      return resolve({ backgroundCamera: null, canvasStream: canvasStream });
     }
 
     let canvasElement = document.getElementById('canvas') as HTMLCanvasElement;
 
     if (!canvasElement) {
-      return resolve(stream);
+      return resolve({ backgroundCamera: null, canvasStream: canvasStream });
     }
 
     let canvasContext = canvasElement.getContext(
@@ -145,7 +145,7 @@ export function createVirtualBackgroundStream(
       height = 360;
 
     if (!videoElementId) {
-      return resolve(stream);
+      return resolve({ backgroundCamera: null, canvasStream: canvasStream });
     }
 
     const videoElement = document.getElementById(
@@ -153,7 +153,7 @@ export function createVirtualBackgroundStream(
     ) as HTMLVideoElement;
 
     if (!videoElement) {
-      return resolve(stream);
+      return resolve({ backgroundCamera: null, canvasStream: canvasStream });
     }
 
     if (
@@ -171,7 +171,7 @@ export function createVirtualBackgroundStream(
     image.src = '//localhost:3000/mansao.webp';
 
     if (!selfieSegmentation) {
-      return resolve(stream);
+      return resolve({ backgroundCamera: null, canvasStream: canvasStream });
     }
 
     selfieSegmentation.onResults((results) =>
@@ -191,9 +191,8 @@ export function createVirtualBackgroundStream(
       width: width,
       height: height,
     });
-    camera.start();
 
     canvasStream = canvasElement.captureStream();
-    resolve(canvasStream);
+    resolve({ backgroundCamera: camera, canvasStream: canvasStream });
   });
 }

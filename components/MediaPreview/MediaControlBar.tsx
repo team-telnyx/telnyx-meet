@@ -85,10 +85,9 @@ function MediaControlBar({
         video: videoInputDeviceId ? { deviceId: videoInputDeviceId } : true,
       })
         .then(async (stream) => {
-          const canvasStream = await createVirtualBackgroundStream(
-            stream,
-            'video-preview'
-          );
+          const { backgroundCamera, canvasStream } =
+            await createVirtualBackgroundStream(stream, 'video-preview');
+          backgroundCamera?.start();
 
           setLocalTracks((value) => ({
             ...value,
