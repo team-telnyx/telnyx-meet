@@ -122,7 +122,9 @@ function handleSegmentationResults(
 
 export function createVirtualBackgroundStream(
   stream: MediaStream,
-  videoElementId: string
+  videoElementId: string,
+  frameRate: number = 30,
+  image: HTMLImageElement
 ): Promise<{ backgroundCamera: Camera | null; canvasStream: MediaStream }> {
   return new Promise(async (resolve, reject) => {
     let canvasStream: MediaStream = stream;
@@ -166,10 +168,6 @@ export function createVirtualBackgroundStream(
     canvasElement.width = width;
     canvasElement.height = height;
 
-    // We use this image as our virtual background
-    const image = new Image(996, 664);
-    image.src = '//localhost:3000/mansao.webp';
-
     if (!selfieSegmentation) {
       return resolve({ backgroundCamera: null, canvasStream: canvasStream });
     }
@@ -193,7 +191,7 @@ export function createVirtualBackgroundStream(
     });
     // camera.start();
 
-    canvasStream = canvasElement.captureStream();
+    canvasStream = canvasElement.captureStream(frameRate);
     debugger;
     resolve({ backgroundCamera: camera, canvasStream: canvasStream });
   });

@@ -4,6 +4,8 @@ import React, {
   useRef,
   useState,
   useCallback,
+  ChangeEvent,
+  RefObject,
 } from 'react';
 import { Box, Text, Spinner } from 'grommet';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -23,6 +25,7 @@ import { createVirtualBackgroundStream } from 'utils/virtualBackground';
 
 import { NetworkMetricsMonitor } from './NetworkMetricsMonitor';
 import { getUserMedia } from './MediaPreview/helper';
+import { Camera } from '@mediapipe/camera_utils';
 
 const VIDEO_BG_COLOR = '#111';
 
@@ -51,6 +54,7 @@ function Feed({
   const [stats, setStats] = useState<any>(null);
   const [allowedBrowser, setAllowedBrowser] = useState(false);
   const { videoInputDeviceId, setLocalTracks } = useContext(TelnyxMeetContext);
+  const camera = useRef<any>(null);
 
   const intervalStatsId = useRef<any>();
 
@@ -130,7 +134,24 @@ function Feed({
 
   const peerMetrics = networkMetrics ? networkMetrics[participant.id] : null;
 
-  const handleVirtualBg = async () => {
+  const handleVirtualBg = async (e: ChangeEvent<HTMLSelectElement>) => {
+    if (!e.target.value || e.target.value === 'none') {
+      getUserMedia({
+        video: true,
+        audio: true,
+      }).then((stream) => {
+        camera.current?.stop();
+        camera.current = null;
+
+        debugger;
+        setLocalTracks((value) => ({
+          ...value,
+          video: stream.getVideoTracks()[0],
+        }));
+      });
+      return;
+    }
+
     getUserMedia({
       video: {
         deviceId: videoInputDeviceId,
@@ -138,17 +159,19 @@ function Feed({
       audio: true,
     })
       .then(async (stream) => {
+        // We use this image as our virtual background
+        const image = new Image(996, 664);
+        image.src = `//localhost:3000/${e.target.value}`;
         const { backgroundCamera, canvasStream } =
-          await createVirtualBackgroundStream(stream, VIDEO_ELEMENT_ID);
+          await createVirtualBackgroundStream(
+            stream,
+            VIDEO_ELEMENT_ID,
+            20,
+            image
+          );
         backgroundCamera?.start();
-        console.log(
-          'canvasStream?.getVideoTracks()[0]',
-          canvasStream?.getVideoTracks()[0]
-        );
-        console.log('backgroundCamera?.start();', backgroundCamera);
-        //@ts-ignore
-        window.camera = backgroundCamera;
-        debugger;
+        camera.current = backgroundCamera;
+
         setLocalTracks((value) => ({
           ...value,
           video: canvasStream.getVideoTracks()[0],
@@ -157,6 +180,24 @@ function Feed({
       .catch((err) => {
         console.log(err, 'video');
       });
+  };
+
+  const renderSelectBackgroungImage = () => {
+    const options = ['retro.webp', 'mansao.webp', 'paradise.jpg'].map(
+      (item, index) => {
+        return (
+          <option key={index} value={item}>
+            {item}
+          </option>
+        );
+      }
+    );
+    return (
+      <select name={'images'} onChange={handleVirtualBg}>
+        <option value={'none'}>none</option>
+        {options}
+      </select>
+    );
   };
 
   return (
@@ -193,7 +234,7 @@ function Feed({
           }}
         >
           {renderStats()}
-          <button onClick={handleVirtualBg}>Apply Virtual BG</button>
+          {participant.origin === 'local' && renderSelectBackgroungImage()}
           {!showStatsOverlay && peerMetrics && (
             <NetworkMetricsMonitor
               connectionQuality={peerMetrics.connectionQuality}
@@ -242,6 +283,7 @@ function Feed({
           stream={stream}
           mirrorVideo={mirrorVideo}
           isPresentation={isPresentation}
+          virtualBackgroundEnabled={camera.current}
         />
         {/* )} */}
 
