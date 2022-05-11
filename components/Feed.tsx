@@ -143,7 +143,6 @@ function Feed({
         camera.current?.stop();
         camera.current = null;
 
-        debugger;
         setLocalTracks((value) => ({
           ...value,
           video: stream.getVideoTracks()[0],
