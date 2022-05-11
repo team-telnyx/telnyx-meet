@@ -1,14 +1,12 @@
-import React, { useEffect, useRef, useContext } from 'react';
+import React, { useState, useEffect, useRef, useContext } from 'react';
 import { Text } from 'grommet';
 import styled from 'styled-components';
 
 import { TelnyxMeetContext } from 'contexts/TelnyxMeetContext';
-import { useMediaController } from 'hooks/mediaController';
 
 import ErrorDialog from 'components/ErrorDialog';
 
 import { MediaControlBar } from './MediaControlBar';
-import { MediaDeviceErrors } from './helper';
 
 const breakpointSmall = 400;
 const breakpointMedium = 530;
@@ -41,15 +39,26 @@ const VideoPreview = styled.div`
 
 function MediaPreview() {
   const {
+    audioInputDeviceId,
+    videoInputDeviceId,
     isAudioTrackEnabled,
     isVideoTrackEnabled,
     setIsAudioTrackEnabled,
     setIsVideoTrackEnabled,
-    error,
-    setError,
+    optionalFeatures,
   } = useContext(TelnyxMeetContext);
 
-  const localTracks = useMediaController();
+  const [localTracks, setLocalTracks] = useState<{
+    audio: MediaStreamTrack | undefined;
+    video: MediaStreamTrack | undefined;
+  }>({
+    audio: undefined,
+    video: undefined,
+  });
+
+  const [error, setError] = useState<
+    { title: string; body: string } | undefined
+  >(undefined);
 
   const videoElRef = useRef<HTMLVideoElement>(null);
 
@@ -63,89 +72,78 @@ function MediaPreview() {
     }
   }, [localTracks?.video]);
 
-  useEffect(() => {
-    navigator.mediaDevices.enumerateDevices().then((devices) => {
-      const audioinput = devices.filter(
-        (device) => device.kind === 'audioinput'
-      )[0];
-      const videoinput = devices.filter(
-        (device) => device.kind === 'videoinput'
-      )[0];
-
-      if (!audioinput.label && !videoinput.label) {
-        setError(MediaDeviceErrors.allowMediaWarning);
-      }
-    });
-
-  }, [setError]);
-
   return (
-    <div
-      style={{
-        display: 'flex',
-        justifyContent: 'center',
-        backgroundColor: '#cecece',
-        height: '100%',
-        width: '100%',
-      }}
-    >
+    <React.Fragment>
       {error && (
-        <ErrorDialog
-          onClose={() => setError(undefined)}
-          error={error}
-        />
+        <ErrorDialog onClose={() => setError(undefined)} error={error} />
       )}
-      <VideoPreview id='preview-video'>
-        {isVideoTrackEnabled ? (
-          <video
-            id='video-preview'
-            ref={videoElRef}
-            playsInline={true}
-            autoPlay={true}
-            muted={true}
+
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'center',
+          backgroundColor: '#cecece',
+          height: '100%',
+          width: '100%',
+        }}
+      >
+        <VideoPreview id='preview-video'>
+          {isVideoTrackEnabled ? (
+            <video
+              id='video-preview'
+              ref={videoElRef}
+              playsInline={true}
+              autoPlay={true}
+              muted={true}
+              style={{
+                position: 'absolute',
+                left: 0,
+                top: 0,
+                height: '100%',
+                width: '100%',
+                borderRadius: '8px',
+                transform: 'scaleX(-1)',
+                objectFit: 'cover',
+              }}
+            ></video>
+          ) : (
+            <Text
+              style={{
+                position: 'absolute',
+                left: '50%',
+                top: '50%',
+                color: '#fff',
+                transform: 'translateX(-50%)',
+              }}
+            >
+              Camera is off
+            </Text>
+          )}
+
+          <div
             style={{
               position: 'absolute',
-              left: 0,
-              top: 0,
-              height: '100%',
-              width: '100%',
-              borderRadius: '8px',
-              transform: 'scaleX(-1)',
-              objectFit: 'cover',
-            }}
-          ></video>
-        ) : (
-          <Text
-            style={{
-              position: 'absolute',
+              bottom: 5,
               left: '50%',
-              top: '50%',
-              color: '#fff',
               transform: 'translateX(-50%)',
             }}
           >
-            Camera is off
-          </Text>
-        )}
-
-        <div
-          style={{
-            position: 'absolute',
-            bottom: 5,
-            left: '50%',
-            transform: 'translateX(-50%)',
-          }}
-        >
-          <MediaControlBar
-            isAudioTrackEnabled={isAudioTrackEnabled}
-            isVideoTrackEnabled={isVideoTrackEnabled}
-            setIsAudioTrackEnabled={setIsAudioTrackEnabled}
-            setIsVideoTrackEnabled={setIsVideoTrackEnabled}
-            error={error}
-          />
-        </div>
-      </VideoPreview>
-    </div>
+            <MediaControlBar
+              audioInputDeviceId={audioInputDeviceId}
+              videoInputDeviceId={videoInputDeviceId}
+              isAudioTrackEnabled={isAudioTrackEnabled}
+              isVideoTrackEnabled={isVideoTrackEnabled}
+              setIsAudioTrackEnabled={setIsAudioTrackEnabled}
+              setIsVideoTrackEnabled={setIsVideoTrackEnabled}
+              optionalFeatures={optionalFeatures}
+              localTracks={localTracks}
+              setLocalTracks={setLocalTracks}
+              setError={setError}
+            />
+          </div>
+        </VideoPreview>
+      </div>
+    </React.Fragment>
   );
 }
 

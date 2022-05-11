@@ -1,7 +1,5 @@
-import React, { useContext } from 'react';
+import React, { useState } from 'react';
 import { Box, Button, TextInput } from 'grommet';
-
-import { TelnyxMeetContext } from 'contexts/TelnyxMeetContext';
 
 import ErrorDialog from 'components/ErrorDialog';
 import { MediaDeviceErrors } from 'components/MediaPreview/helper';
@@ -29,10 +27,9 @@ const JoinRoom = ({
   clientToken,
   refreshToken,
 }: Props) => {
-  const {
-    error,
-    setError,
-  } = useContext(TelnyxMeetContext);
+  const [error, setError] = useState<
+    { title: string; body: string } | undefined
+  >(undefined);
 
   const checkAudioBrowserPermission = async () => {
     const result = await window?.navigator?.mediaDevices
@@ -85,61 +82,63 @@ const JoinRoom = ({
   };
 
   return (
-    <Box
-      pad='small'
-      gap='medium'
-      style={{
-        justifySelf: 'center',
-      }}
-    >
+    <React.Fragment>
       {error && (
-        <ErrorDialog
-          onClose={() => setError(undefined)}
-          error={error}
-        />
+        <ErrorDialog onClose={() => setError(undefined)} error={error} />
       )}
-      <Box
-        background={{ color: 'white', opacity: 'weak' }}
-        round='xsmall'
-        pad='small'
-      >
-        Enter the Room UUID and choose a name for yourself
-      </Box>
-      <TextInput
-        data-testid='input-room-uuid'
-        value={roomId}
-        onChange={(e) => {
-          if (typeof updateRoomId === 'function') {
-            updateRoomId(e.target.value);
-          }
-        }}
-        placeholder={'Room UUID'}
-      />
 
-      <TextInput
-        data-testid='input-username'
-        value={username}
-        onChange={(e) => {
-          updateUsername(e.target.value);
+      <Box
+        pad='small'
+        gap='medium'
+        style={{
+          justifySelf: 'center',
         }}
-        placeholder='Your name'
-      />
-      <Button
-        data-testid='btn-join-room'
-        primary
-        disabled={!roomId}
-        label='Join room'
-        onClick={async () => {
-          saveItem(USERNAME_KEY, username);
-          const hasAudioPermission = await checkAudioBrowserPermission();
-          if (hasAudioPermission) {
-            joinRoom();
-          } else {
-            setError(MediaDeviceErrors.audioBlocked);
-          }
-        }}
-      />
-    </Box>
+      >
+        <Box
+          background={{ color: 'white', opacity: 'weak' }}
+          round='xsmall'
+          pad='small'
+        >
+          Enter the Room UUID and choose a name for yourself
+        </Box>
+
+        <TextInput
+          data-testid='input-room-uuid'
+          value={roomId}
+          onChange={(e) => {
+            if (typeof updateRoomId === 'function') {
+              updateRoomId(e.target.value);
+            }
+          }}
+          placeholder={'Room UUID'}
+        />
+
+        <TextInput
+          data-testid='input-username'
+          value={username}
+          onChange={(e) => {
+            updateUsername(e.target.value);
+          }}
+          placeholder='Your name'
+        />
+
+        <Button
+          data-testid='btn-join-room'
+          primary
+          disabled={!roomId}
+          label='Join room'
+          onClick={async () => {
+            saveItem(USERNAME_KEY, username);
+            const hasAudioPermission = await checkAudioBrowserPermission();
+            if (hasAudioPermission) {
+              joinRoom();
+            } else {
+              setError(MediaDeviceErrors.audioBlocked);
+            }
+          }}
+        />
+      </Box>
+    </React.Fragment>
   );
 };
 

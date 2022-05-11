@@ -83,9 +83,6 @@ export default function Rooms({
     });
   };
   const [networkMetrics, setNetworkMetrics] = useState<NetworkMetrics>();
-  const [error, setError] = useState<
-    { title: string; body: string } | undefined
-  >(undefined);
 
   useEffect(() => {
     setUsername(getUserName());
@@ -130,8 +127,6 @@ export default function Rooms({
           networkMetrics,
           setNetworkMetrics,
           optionalFeatures,
-          error,
-          setError,
         }}
       >
         <Main align='center' justify='center' background='light-2'>

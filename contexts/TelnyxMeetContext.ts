@@ -16,14 +16,6 @@ const TelnyxMeetContext = React.createContext<{
   networkMetrics: NetworkMetrics | undefined;
   setNetworkMetrics: Dispatch<SetStateAction<NetworkMetrics | undefined>>;
   optionalFeatures: { [key: string]: boolean };
-  error:
-    | { type: string; message: { title: string; body: string } }
-    | undefined;
-  setError: Dispatch<
-    SetStateAction<
-      { type: string; message: { title: string; body: string } } | undefined
-    >
-  >;
 }>({
   audioInputDeviceId: undefined,
   audioOutputDeviceId: undefined,
@@ -47,12 +39,6 @@ const TelnyxMeetContext = React.createContext<{
     value: React.SetStateAction<NetworkMetrics | undefined>
   ) => {},
   optionalFeatures: {},
-  error: undefined,
-  setError: (
-    value: React.SetStateAction<
-      { type: string; message: { title: string; body: string } } | undefined
-    >
-  ) => {},
 });
 
 export { TelnyxMeetContext };

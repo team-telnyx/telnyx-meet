@@ -8,7 +8,7 @@ const ErrorDialog = ({
   error,
 }: {
   onClose: () => void;
-  error: { message: { title: string; body: string } };
+  error: { title: string; body: string };
 }) => {
   return (
     <Layer
@@ -20,9 +20,9 @@ const ErrorDialog = ({
       <Box pad='medium' gap='small' width='medium'>
         <Button alignSelf='end' icon={<FormClose />} onClick={onClose} />
         <Heading level={3} margin='none'>
-          {error.message.title}
+          {error.title}
         </Heading>
-        <Text>{error.message.body}</Text>
+        <Text>{error.body}</Text>
         <Box
           as='footer'
           gap='small'
