@@ -191,8 +191,10 @@ export function createVirtualBackgroundStream(
       width: width,
       height: height,
     });
+    // camera.start();
 
     canvasStream = canvasElement.captureStream();
+    debugger;
     resolve({ backgroundCamera: camera, canvasStream: canvasStream });
   });
 }

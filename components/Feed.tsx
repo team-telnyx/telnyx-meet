@@ -19,7 +19,10 @@ import { TelnyxRoom } from 'hooks/room';
 import VideoTrack from 'components/VideoTrack';
 import { WebRTCStats } from 'components/WebRTCStats';
 import { TelnyxMeetContext } from 'contexts/TelnyxMeetContext';
+import { createVirtualBackgroundStream } from 'utils/virtualBackground';
+
 import { NetworkMetricsMonitor } from './NetworkMetricsMonitor';
+import { getUserMedia } from './MediaPreview/helper';
 
 const VIDEO_BG_COLOR = '#111';
 
@@ -47,6 +50,7 @@ function Feed({
   const [showStatsOverlay, setShowStatsOverlay] = useState(false);
   const [stats, setStats] = useState<any>(null);
   const [allowedBrowser, setAllowedBrowser] = useState(false);
+  const { videoInputDeviceId, setLocalTracks } = useContext(TelnyxMeetContext);
 
   const intervalStatsId = useRef<any>();
 
@@ -120,15 +124,46 @@ function Feed({
     }
   }
 
+  const VIDEO_ELEMENT_ID = `video-feed-${context.username
+    ?.toLowerCase()
+    .replace(' ', '-')}`;
+
   const peerMetrics = networkMetrics ? networkMetrics[participant.id] : null;
+
+  const handleVirtualBg = async () => {
+    getUserMedia({
+      video: {
+        deviceId: videoInputDeviceId,
+      },
+      audio: true,
+    })
+      .then(async (stream) => {
+        const { backgroundCamera, canvasStream } =
+          await createVirtualBackgroundStream(stream, VIDEO_ELEMENT_ID);
+        backgroundCamera?.start();
+        console.log(
+          'canvasStream?.getVideoTracks()[0]',
+          canvasStream?.getVideoTracks()[0]
+        );
+        console.log('backgroundCamera?.start();', backgroundCamera);
+        //@ts-ignore
+        window.camera = backgroundCamera;
+        debugger;
+        setLocalTracks((value) => ({
+          ...value,
+          video: canvasStream.getVideoTracks()[0],
+        }));
+      })
+      .catch((err) => {
+        console.log(err, 'video');
+      });
+  };
 
   return (
     <div
       // id={stream?.isSpeaking ? 'speaking-box' : ''}
       data-id={dataId}
-      data-testid={`video-feed-${context.username
-        ?.toLowerCase()
-        .replace(' ', '-')}`}
+      data-testid={VIDEO_ELEMENT_ID}
       style={{
         backgroundColor: VIDEO_BG_COLOR,
         position: 'relative',
@@ -146,7 +181,7 @@ function Feed({
         style={{
           position: 'absolute',
           top: '0px',
-          zIndex: 1,
+          zIndex: 2,
           width: '100%',
           height: '100%',
         }}
@@ -158,6 +193,7 @@ function Feed({
           }}
         >
           {renderStats()}
+          <button onClick={handleVirtualBg}>Apply Virtual BG</button>
           {!showStatsOverlay && peerMetrics && (
             <NetworkMetricsMonitor
               connectionQuality={peerMetrics.connectionQuality}
@@ -196,16 +232,18 @@ function Feed({
             />
           </div>
         )}
-        {(stream?.videoTrack || stream?.audioTrack) && (
-          <VideoTrack
-            dataTestId={`video-feed-${stream.key}-${
-              stream?.isVideoEnabled ? 'enabled' : 'notEnabled'
-            }`}
-            stream={stream}
-            mirrorVideo={mirrorVideo}
-            isPresentation={isPresentation}
-          />
-        )}
+        {/* {(stream?.videoTrack || stream?.audioTrack) && ( */}
+        <VideoTrack
+          id={VIDEO_ELEMENT_ID}
+          dataTestId={`video-feed-${stream?.key}-${
+            stream?.isVideoEnabled ? 'enabled' : 'notEnabled'
+          }`}
+          //@ts-ignore
+          stream={stream}
+          mirrorVideo={mirrorVideo}
+          isPresentation={isPresentation}
+        />
+        {/* )} */}
 
         {/* Large center text: */}
         {!stream?.isVideoEnabled && (
@@ -234,7 +272,7 @@ function Feed({
         )}
 
         {/* Small bottom text: */}
-        <Box style={{ position: 'absolute', left: 0, bottom: 0 }}>
+        <Box style={{ position: 'absolute', left: 0, bottom: 0, zIndex: 2 }}>
           <Box
             direction='row'
             align='center'

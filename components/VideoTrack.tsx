@@ -3,11 +3,13 @@ import React, { useRef, useEffect } from 'react';
 import { useState } from 'react';
 
 export default function VideoTrack({
+  id,
   stream,
   mirrorVideo,
   dataTestId,
   isPresentation,
 }: {
+  id: string;
   stream: Stream;
   mirrorVideo: boolean;
   dataTestId: string;
@@ -19,7 +21,7 @@ export default function VideoTrack({
   useEffect(() => {
     const videoEl = videoElRef.current;
 
-    if (!videoEl || !stream.videoTrack) {
+    if (!videoEl || !stream?.videoTrack) {
       return;
     }
 
@@ -35,7 +37,7 @@ export default function VideoTrack({
         videoEl.srcObject = null;
       }
     };
-  }, [stream.videoTrack]);
+  }, [stream?.videoTrack]);
 
   return (
     <div
@@ -43,7 +45,22 @@ export default function VideoTrack({
         height: '100%',
       }}
     >
+      <canvas
+        style={{
+          transform: mirrorVideo ? 'scaleX(-1)' : 'unset',
+          visibility: 'visible',
+          height: '100%',
+          width: '100%',
+          objectFit: isPortrait || isPresentation ? 'contain' : 'cover',
+          position: 'absolute',
+          zIndex: 1,
+        }}
+        id='canvas'
+        width={250}
+        height={80}
+      ></canvas>
       <video
+        id={id}
         data-testid={dataTestId}
         ref={videoElRef}
         playsInline={true}
@@ -51,11 +68,13 @@ export default function VideoTrack({
         muted={true}
         style={{
           transform: mirrorVideo ? 'scaleX(-1)' : 'unset',
-          visibility: stream.isVideoEnabled ? 'visible' : 'hidden',
+          visibility: 'visible',
           height: '100%',
           width: '100%',
           objectFit: isPortrait || isPresentation ? 'contain' : 'cover',
         }}
+        width={250}
+        height={80}
       />
     </div>
   );
