@@ -1,4 +1,6 @@
 import {
+  GpuBuffer,
+  Results,
   ResultsListener,
   SelfieSegmentation,
 } from '@mediapipe/selfie_segmentation';
@@ -39,46 +41,67 @@ function getSelfieSegmentation() {
   return selfieSegmentation;
 }
 
+function clearCanvas(
+  ctx: CanvasRenderingContext2D,
+  width: number,
+  height: number
+) {
+  ctx.clearRect(0, 0, width, height);
+}
+
+function drawSegmentationMask(
+  ctx: CanvasRenderingContext2D,
+  segmentation: GpuBuffer,
+  width: number,
+  height: number
+) {
+  ctx.drawImage(segmentation, 0, 0, width, height);
+}
+
+function blurBackground(
+  ctx: CanvasRenderingContext2D,
+  width: number,
+  height: number,
+  image: HTMLImageElement | GpuBuffer,
+  blurAmount: number = 0
+) {
+  ctx.globalCompositeOperation = 'destination-over';
+  ctx.filter = `blur(${blurAmount}px)`;
+  ctx.drawImage(image, 0, 0, width, height);
+}
+
 function drawBackgroundImage(
-  results: any,
+  results: Results,
   {
     canvasElement,
     canvasContext,
-    image,
+    selectedBackgroundImage,
   }: {
     canvasElement: HTMLCanvasElement;
     canvasContext: CanvasRenderingContext2D;
-    image: HTMLImageElement;
+    selectedBackgroundImage: HTMLImageElement;
   }
 ) {
   if (!canvasContext) {
     return;
   }
-  // At this point, the image is fully loaded
-  // Prepare the new frame
-  canvasContext.save();
-  canvasContext.clearRect(0, 0, canvasElement.width, canvasElement.height);
-  canvasContext.drawImage(
+  clearCanvas(canvasContext, canvasElement.width, canvasElement.height);
+
+  canvasContext.globalCompositeOperation = 'copy';
+  canvasContext.filter = 'none';
+
+  // Appliyng selfie segmentation - drawing a red mark in human shape from video
+  drawSegmentationMask(
+    canvasContext,
     results.segmentationMask,
-    0,
-    0,
     canvasElement.width,
     canvasElement.height
   );
-  // Draw the image as the new background, and the segmented video on top of that
-  canvasContext.globalCompositeOperation = 'source-out';
-  canvasContext.drawImage(
-    image,
-    0,
-    0,
-    image.width,
-    image.height,
-    0,
-    0,
-    canvasElement.width,
-    canvasElement.height
-  );
-  canvasContext.globalCompositeOperation = 'destination-atop';
+
+  canvasContext.globalCompositeOperation = 'source-in';
+  canvasContext.filter = 'none';
+
+  //Drawing the human shape in video without background image
   canvasContext.drawImage(
     results.image,
     0,
@@ -86,40 +109,64 @@ function drawBackgroundImage(
     canvasElement.width,
     canvasElement.height
   );
-  // Done
+
+  const virtualBackgroundEnabled = false;
+  //Drawing the background image in video with human shape video overlaping
+  if (virtualBackgroundEnabled) {
+    blurBackground(
+      canvasContext,
+      canvasElement.width,
+      canvasElement.height,
+      selectedBackgroundImage,
+      0
+    );
+  }
+
+  const blurredEnabled = true;
+  //Drawing the background blured in video with human shape video overlaping
+  if (blurredEnabled) {
+    blurBackground(
+      canvasContext,
+      canvasElement.width,
+      canvasElement.height,
+      results.image,
+      12
+    );
+  }
+
   canvasContext.restore();
 }
 
 // This is the callback we invoke on the segmentation result
 function handleSegmentationResults(
-  results: any,
+  results: Results,
   {
     canvasElement,
     canvasContext,
-    image,
+    selectedBackgroundImage,
   }: {
     canvasElement: HTMLCanvasElement;
     canvasContext: CanvasRenderingContext2D;
-    image: HTMLImageElement;
+    selectedBackgroundImage: HTMLImageElement;
   }
 ) {
-  if (!image) {
+  if (!selectedBackgroundImage) {
     return;
   }
 
-  image.onload = function () {
+  selectedBackgroundImage.onload = function () {
     drawBackgroundImage(results, {
       canvasElement,
       canvasContext,
-      image,
+      selectedBackgroundImage,
     });
   };
 
-  if (image.complete) {
+  if (selectedBackgroundImage.complete) {
     drawBackgroundImage(results, {
       canvasElement,
       canvasContext,
-      image,
+      selectedBackgroundImage,
     });
   }
 }
@@ -181,19 +228,21 @@ export function createVirtualBackgroundStream({
       return resolve({ backgroundCamera: null, canvasStream: canvasStream });
     }
 
-    selfieSegmentation.onResults((results) =>
+    selfieSegmentation.onResults((results: Results) =>
       handleSegmentationResults(results, {
         canvasElement,
         canvasContext,
-        image,
+        selectedBackgroundImage: image,
       })
     );
 
     const camera = new Camera(videoElement, {
       onFrame: async () => {
-        await selfieSegmentation.send({
-          image: videoElement,
-        });
+        if (selfieSegmentation) {
+          await selfieSegmentation.send({
+            image: videoElement,
+          });
+        }
       },
       width: width,
       height: height,
