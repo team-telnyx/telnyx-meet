@@ -161,13 +161,16 @@ function Feed({
         // We use this image as our virtual background
         const image = new Image(996, 664);
         image.src = `//localhost:3000/${e.target.value}`;
+
         const { backgroundCamera, canvasStream } =
-          await createVirtualBackgroundStream(
+          await createVirtualBackgroundStream({
             stream,
-            VIDEO_ELEMENT_ID,
-            20,
-            image
-          );
+            videoElementId: VIDEO_ELEMENT_ID,
+            virtualBackgroundEnabled: e.target.value !== 'blur',
+            blurredEnabled: e.target.value === 'blur',
+            image,
+            frameRate: 20,
+          });
         backgroundCamera?.start();
         camera.current = backgroundCamera;
 
@@ -194,6 +197,7 @@ function Feed({
     return (
       <select name={'images'} onChange={handleVirtualBg}>
         <option value={'none'}>none</option>
+        <option value={'blur'}>blur</option>
         {options}
       </select>
     );

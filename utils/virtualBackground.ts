@@ -1,4 +1,6 @@
 import {
+  GpuBuffer,
+  Results,
   ResultsListener,
   SelfieSegmentation,
 } from '@mediapipe/selfie_segmentation';
@@ -11,7 +13,7 @@ const url =
 //@ts-ignore
 let selfieSegmentation: SelfieSegmentation | undefined = undefined;
 if (typeof window !== 'undefined') {
-  selfieSegmentation = getSelfieSegmentation();
+  selfieSegmentation = initSelfieSegmentation();
 }
 
 function scriptExists(url: string) {
@@ -21,7 +23,7 @@ function scriptExists(url: string) {
   return false;
 }
 
-function getSelfieSegmentation() {
+function initSelfieSegmentation() {
   if (scriptExists(url)) {
     return;
   }
@@ -39,46 +41,73 @@ function getSelfieSegmentation() {
   return selfieSegmentation;
 }
 
+function clearCanvas(
+  ctx: CanvasRenderingContext2D,
+  width: number,
+  height: number
+) {
+  ctx.clearRect(0, 0, width, height);
+}
+
+function drawSegmentationMask(
+  ctx: CanvasRenderingContext2D,
+  segmentation: GpuBuffer,
+  width: number,
+  height: number
+) {
+  ctx.drawImage(segmentation, 0, 0, width, height);
+}
+
+function blurBackground(
+  ctx: CanvasRenderingContext2D,
+  width: number,
+  height: number,
+  image: HTMLImageElement | GpuBuffer,
+  blurAmount: number = 0
+) {
+  ctx.globalCompositeOperation = 'destination-over';
+  ctx.filter = `blur(${blurAmount}px)`;
+  ctx.drawImage(image, 0, 0, width, height);
+}
+
 function drawBackgroundImage(
-  results: any,
+  results: Results,
   {
     canvasElement,
     canvasContext,
-    image,
+    selectedBackgroundImage,
+    blurredEnabled,
+    virtualBackgroundEnabled,
+    blurAmount,
   }: {
     canvasElement: HTMLCanvasElement;
     canvasContext: CanvasRenderingContext2D;
-    image: HTMLImageElement;
+    selectedBackgroundImage?: HTMLImageElement;
+    blurredEnabled?: boolean;
+    virtualBackgroundEnabled?: boolean;
+    blurAmount?: number;
   }
 ) {
   if (!canvasContext) {
     return;
   }
-  // At this point, the image is fully loaded
-  // Prepare the new frame
-  canvasContext.save();
-  canvasContext.clearRect(0, 0, canvasElement.width, canvasElement.height);
-  canvasContext.drawImage(
+  clearCanvas(canvasContext, canvasElement.width, canvasElement.height);
+
+  canvasContext.globalCompositeOperation = 'copy';
+  canvasContext.filter = 'none';
+
+  // Appliyng selfie segmentation - drawing a red mark in human shape from video
+  drawSegmentationMask(
+    canvasContext,
     results.segmentationMask,
-    0,
-    0,
     canvasElement.width,
     canvasElement.height
   );
-  // Draw the image as the new background, and the segmented video on top of that
-  canvasContext.globalCompositeOperation = 'source-out';
-  canvasContext.drawImage(
-    image,
-    0,
-    0,
-    image.width,
-    image.height,
-    0,
-    0,
-    canvasElement.width,
-    canvasElement.height
-  );
-  canvasContext.globalCompositeOperation = 'destination-atop';
+
+  canvasContext.globalCompositeOperation = 'source-in';
+  canvasContext.filter = 'none';
+
+  //Drawing the human shape in video without background image
   canvasContext.drawImage(
     results.image,
     0,
@@ -86,48 +115,112 @@ function drawBackgroundImage(
     canvasElement.width,
     canvasElement.height
   );
-  // Done
+
+  //Drawing the background image in video with human shape video overlaping
+  if (virtualBackgroundEnabled && selectedBackgroundImage) {
+    blurBackground(
+      canvasContext,
+      canvasElement.width,
+      canvasElement.height,
+      selectedBackgroundImage,
+      0
+    );
+  }
+
+  //Drawing the background blured in video with human shape video overlaping
+  if (blurredEnabled) {
+    blurBackground(
+      canvasContext,
+      canvasElement.width,
+      canvasElement.height,
+      results.image,
+      12
+    );
+  }
+
   canvasContext.restore();
 }
 
 // This is the callback we invoke on the segmentation result
 function handleSegmentationResults(
-  results: any,
+  results: Results,
   {
     canvasElement,
     canvasContext,
-    image,
+    selectedBackgroundImage,
+    blurredEnabled,
+    virtualBackgroundEnabled,
+    blurAmount,
   }: {
     canvasElement: HTMLCanvasElement;
     canvasContext: CanvasRenderingContext2D;
-    image: HTMLImageElement;
+    selectedBackgroundImage?: HTMLImageElement;
+    blurredEnabled?: boolean;
+    virtualBackgroundEnabled?: boolean;
+    blurAmount?: number;
   }
 ) {
-  image.onload = function () {
-    drawBackgroundImage(results, {
-      canvasElement,
-      canvasContext,
-      image,
-    });
-  };
+  if (selectedBackgroundImage) {
+    selectedBackgroundImage.onload = function () {
+      drawBackgroundImage(results, {
+        canvasElement,
+        canvasContext,
+        selectedBackgroundImage,
+        blurredEnabled,
+        virtualBackgroundEnabled,
+        blurAmount,
+      });
+    };
 
-  if (image.complete) {
+    if (selectedBackgroundImage.complete) {
+      drawBackgroundImage(results, {
+        canvasElement,
+        canvasContext,
+        selectedBackgroundImage,
+        blurredEnabled,
+        virtualBackgroundEnabled,
+        blurAmount,
+      });
+    }
+  } else {
     drawBackgroundImage(results, {
       canvasElement,
       canvasContext,
-      image,
     });
   }
 }
 
-export function createVirtualBackgroundStream(
-  stream: MediaStream,
-  videoElementId: string,
-  frameRate: number = 30,
-  image: HTMLImageElement
-): Promise<{ backgroundCamera: Camera | null; canvasStream: MediaStream }> {
+export function createVirtualBackgroundStream({
+  stream,
+  videoElementId,
+  blurredEnabled,
+  blurAmount = 10,
+  virtualBackgroundEnabled,
+  image,
+  frameRate = 30,
+}: {
+  stream: MediaStream;
+  videoElementId: string;
+  blurredEnabled?: boolean;
+  blurAmount?: number;
+  virtualBackgroundEnabled?: boolean;
+  image?: HTMLImageElement;
+  frameRate?: number;
+}): Promise<{ backgroundCamera: Camera | null; canvasStream: MediaStream }> {
   return new Promise(async (resolve, reject) => {
     let canvasStream: MediaStream = stream;
+
+    if (!blurredEnabled && !virtualBackgroundEnabled) {
+      throw new Error(
+        'You should enable blur OR virtual background image effect to works'
+      );
+    }
+
+    if (virtualBackgroundEnabled && !image) {
+      throw new Error(
+        'You should provide a image element to apply in virtual background image effect'
+      );
+    }
 
     if (!document) {
       return resolve({ backgroundCamera: null, canvasStream: canvasStream });
@@ -172,19 +265,24 @@ export function createVirtualBackgroundStream(
       return resolve({ backgroundCamera: null, canvasStream: canvasStream });
     }
 
-    selfieSegmentation.onResults((results) =>
+    selfieSegmentation.onResults((results: Results) =>
       handleSegmentationResults(results, {
         canvasElement,
         canvasContext,
-        image,
+        selectedBackgroundImage: image,
+        blurredEnabled,
+        virtualBackgroundEnabled,
+        blurAmount,
       })
     );
 
     const camera = new Camera(videoElement, {
       onFrame: async () => {
-        await selfieSegmentation.send({
-          image: videoElement,
-        });
+        if (selfieSegmentation) {
+          await selfieSegmentation.send({
+            image: videoElement,
+          });
+        }
       },
       width: width,
       height: height,
