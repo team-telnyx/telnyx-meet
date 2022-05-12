@@ -95,6 +95,8 @@ function MediaControlBar({
               videoElementId: 'video-preview',
               image,
               frameRate: 20,
+              blurredEnabled: false,
+              virtualBackgroundEnabled: true,
             });
           backgroundCamera?.start();
 

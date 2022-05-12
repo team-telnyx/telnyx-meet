@@ -13,7 +13,7 @@ const url =
 //@ts-ignore
 let selfieSegmentation: SelfieSegmentation | undefined = undefined;
 if (typeof window !== 'undefined') {
-  selfieSegmentation = getSelfieSegmentation();
+  selfieSegmentation = initSelfieSegmentation();
 }
 
 function scriptExists(url: string) {
@@ -23,7 +23,7 @@ function scriptExists(url: string) {
   return false;
 }
 
-function getSelfieSegmentation() {
+function initSelfieSegmentation() {
   if (scriptExists(url)) {
     return;
   }
@@ -76,10 +76,16 @@ function drawBackgroundImage(
     canvasElement,
     canvasContext,
     selectedBackgroundImage,
+    blurredEnabled,
+    virtualBackgroundEnabled,
+    blurAmount,
   }: {
     canvasElement: HTMLCanvasElement;
     canvasContext: CanvasRenderingContext2D;
-    selectedBackgroundImage: HTMLImageElement;
+    selectedBackgroundImage?: HTMLImageElement;
+    blurredEnabled?: boolean;
+    virtualBackgroundEnabled?: boolean;
+    blurAmount?: number;
   }
 ) {
   if (!canvasContext) {
@@ -110,9 +116,8 @@ function drawBackgroundImage(
     canvasElement.height
   );
 
-  const virtualBackgroundEnabled = false;
   //Drawing the background image in video with human shape video overlaping
-  if (virtualBackgroundEnabled) {
+  if (virtualBackgroundEnabled && selectedBackgroundImage) {
     blurBackground(
       canvasContext,
       canvasElement.width,
@@ -122,7 +127,6 @@ function drawBackgroundImage(
     );
   }
 
-  const blurredEnabled = true;
   //Drawing the background blured in video with human shape video overlaping
   if (blurredEnabled) {
     blurBackground(
@@ -144,29 +148,44 @@ function handleSegmentationResults(
     canvasElement,
     canvasContext,
     selectedBackgroundImage,
+    blurredEnabled,
+    virtualBackgroundEnabled,
+    blurAmount,
   }: {
     canvasElement: HTMLCanvasElement;
     canvasContext: CanvasRenderingContext2D;
-    selectedBackgroundImage: HTMLImageElement;
+    selectedBackgroundImage?: HTMLImageElement;
+    blurredEnabled?: boolean;
+    virtualBackgroundEnabled?: boolean;
+    blurAmount?: number;
   }
 ) {
-  if (!selectedBackgroundImage) {
-    return;
-  }
+  if (selectedBackgroundImage) {
+    selectedBackgroundImage.onload = function () {
+      drawBackgroundImage(results, {
+        canvasElement,
+        canvasContext,
+        selectedBackgroundImage,
+        blurredEnabled,
+        virtualBackgroundEnabled,
+        blurAmount,
+      });
+    };
 
-  selectedBackgroundImage.onload = function () {
+    if (selectedBackgroundImage.complete) {
+      drawBackgroundImage(results, {
+        canvasElement,
+        canvasContext,
+        selectedBackgroundImage,
+        blurredEnabled,
+        virtualBackgroundEnabled,
+        blurAmount,
+      });
+    }
+  } else {
     drawBackgroundImage(results, {
       canvasElement,
       canvasContext,
-      selectedBackgroundImage,
-    });
-  };
-
-  if (selectedBackgroundImage.complete) {
-    drawBackgroundImage(results, {
-      canvasElement,
-      canvasContext,
-      selectedBackgroundImage,
     });
   }
 }
@@ -174,16 +193,30 @@ function handleSegmentationResults(
 export function createVirtualBackgroundStream({
   stream,
   videoElementId,
+  blurredEnabled,
+  blurAmount = 10,
+  virtualBackgroundEnabled,
   image,
   frameRate = 30,
 }: {
   stream: MediaStream;
   videoElementId: string;
-  image: HTMLImageElement;
+  blurredEnabled?: boolean;
+  blurAmount?: number;
+  virtualBackgroundEnabled?: boolean;
+  image?: HTMLImageElement;
   frameRate?: number;
 }): Promise<{ backgroundCamera: Camera | null; canvasStream: MediaStream }> {
   return new Promise(async (resolve, reject) => {
     let canvasStream: MediaStream = stream;
+
+    if (!blurredEnabled && !virtualBackgroundEnabled) {
+      throw new Error(
+        'You should select blur effect or virtual background image effect to works'
+      );
+    }
+
+    // TODO: create use cases when is blur and create use cases when is image background
 
     if (!document) {
       return resolve({ backgroundCamera: null, canvasStream: canvasStream });
@@ -233,6 +266,9 @@ export function createVirtualBackgroundStream({
         canvasElement,
         canvasContext,
         selectedBackgroundImage: image,
+        blurredEnabled,
+        virtualBackgroundEnabled,
+        blurAmount,
       })
     );
 
