@@ -166,6 +166,8 @@ function Feed({
           await createVirtualBackgroundStream({
             stream,
             videoElementId: VIDEO_ELEMENT_ID,
+            virtualBackgroundEnabled: e.target.value !== 'blur',
+            blurredEnabled: e.target.value === 'blur',
             image,
             frameRate: 20,
           });
@@ -195,6 +197,7 @@ function Feed({
     return (
       <select name={'images'} onChange={handleVirtualBg}>
         <option value={'none'}>none</option>
+        <option value={'blur'}>blur</option>
         {options}
       </select>
     );
