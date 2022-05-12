@@ -85,8 +85,17 @@ function MediaControlBar({
         video: videoInputDeviceId ? { deviceId: videoInputDeviceId } : true,
       })
         .then(async (stream) => {
+          // We use this image as our virtual background
+          const image = new Image(996, 664);
+          image.src = `//localhost:3000/mansao.webp`;
+
           const { backgroundCamera, canvasStream } =
-            await createVirtualBackgroundStream(stream, 'video-preview');
+            await createVirtualBackgroundStream({
+              stream,
+              videoElementId: 'video-preview',
+              image,
+              frameRate: 20,
+            });
           backgroundCamera?.start();
 
           setLocalTracks((value) => ({

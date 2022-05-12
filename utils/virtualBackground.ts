@@ -103,6 +103,10 @@ function handleSegmentationResults(
     image: HTMLImageElement;
   }
 ) {
+  if (!image) {
+    return;
+  }
+
   image.onload = function () {
     drawBackgroundImage(results, {
       canvasElement,
@@ -120,12 +124,17 @@ function handleSegmentationResults(
   }
 }
 
-export function createVirtualBackgroundStream(
-  stream: MediaStream,
-  videoElementId: string,
-  frameRate: number = 30,
-  image: HTMLImageElement
-): Promise<{ backgroundCamera: Camera | null; canvasStream: MediaStream }> {
+export function createVirtualBackgroundStream({
+  stream,
+  videoElementId,
+  image,
+  frameRate = 30,
+}: {
+  stream: MediaStream;
+  videoElementId: string;
+  image: HTMLImageElement;
+  frameRate?: number;
+}): Promise<{ backgroundCamera: Camera | null; canvasStream: MediaStream }> {
   return new Promise(async (resolve, reject) => {
     let canvasStream: MediaStream = stream;
 
