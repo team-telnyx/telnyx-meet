@@ -87,77 +87,75 @@ function MediaPreview() {
   }, [localTracks?.video]);
 
   return (
-    <>
+    <div
+      style={{
+        display: 'flex',
+        justifyContent: 'center',
+        backgroundColor: '#cecece',
+        height: '100%',
+        width: '100%',
+      }}
+    >
       {error && (
         <ErrorDialog onClose={() => setError(undefined)} error={error} />
       )}
 
-      <div
-        style={{
-          display: 'flex',
-          justifyContent: 'center',
-          backgroundColor: '#cecece',
-          height: '100%',
-          width: '100%',
-        }}
-      >
-        <VideoPreview id='preview-video'>
-          {isVideoTrackEnabled ? (
-            <video
-              id='video-preview'
-              ref={videoElRef}
-              playsInline={true}
-              autoPlay={true}
-              muted={true}
-              style={{
-                position: 'absolute',
-                left: 0,
-                top: 0,
-                height: '100%',
-                width: '100%',
-                borderRadius: '8px',
-                transform: 'scaleX(-1)',
-                objectFit: 'cover',
-              }}
-            ></video>
-          ) : (
-            <Text
-              style={{
-                position: 'absolute',
-                left: '50%',
-                top: '50%',
-                color: '#fff',
-                transform: 'translateX(-50%)',
-              }}
-            >
-              Camera is off
-            </Text>
-          )}
-
-          <div
+      <VideoPreview id='preview-video'>
+        {isVideoTrackEnabled ? (
+          <video
+            id='video-preview'
+            ref={videoElRef}
+            playsInline={true}
+            autoPlay={true}
+            muted={true}
             style={{
               position: 'absolute',
-              bottom: 5,
+              left: 0,
+              top: 0,
+              height: '100%',
+              width: '100%',
+              borderRadius: '8px',
+              transform: 'scaleX(-1)',
+              objectFit: 'cover',
+            }}
+          ></video>
+        ) : (
+          <Text
+            style={{
+              position: 'absolute',
               left: '50%',
+              top: '50%',
+              color: '#fff',
               transform: 'translateX(-50%)',
             }}
           >
-            <MediaControlBar
-              audioInputDeviceId={audioInputDeviceId}
-              videoInputDeviceId={videoInputDeviceId}
-              isAudioTrackEnabled={isAudioTrackEnabled}
-              isVideoTrackEnabled={isVideoTrackEnabled}
-              setIsAudioTrackEnabled={setIsAudioTrackEnabled}
-              setIsVideoTrackEnabled={setIsVideoTrackEnabled}
-              optionalFeatures={optionalFeatures}
-              localTracks={localTracks}
-              setLocalTracks={setLocalTracks}
-              setError={setError}
-            />
-          </div>
-        </VideoPreview>
-      </div>
-    </>
+            Camera is off
+          </Text>
+        )}
+
+        <div
+          style={{
+            position: 'absolute',
+            bottom: 5,
+            left: '50%',
+            transform: 'translateX(-50%)',
+          }}
+        >
+          <MediaControlBar
+            audioInputDeviceId={audioInputDeviceId}
+            videoInputDeviceId={videoInputDeviceId}
+            isAudioTrackEnabled={isAudioTrackEnabled}
+            isVideoTrackEnabled={isVideoTrackEnabled}
+            setIsAudioTrackEnabled={setIsAudioTrackEnabled}
+            setIsVideoTrackEnabled={setIsVideoTrackEnabled}
+            optionalFeatures={optionalFeatures}
+            localTracks={localTracks}
+            setLocalTracks={setLocalTracks}
+            setError={setError}
+          />
+        </div>
+      </VideoPreview>
+    </div>
   );
 }
 
