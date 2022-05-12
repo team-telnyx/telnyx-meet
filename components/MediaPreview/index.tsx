@@ -76,14 +76,21 @@ function MediaPreview({ error, setError }: { error: any; setError: any }) {
       {error && (
         <ErrorDialog onClose={onClose} title={error.title} body={error.body} />
       )}
+
       <VideoPreview id='preview-video'>
-        {localTracks?.video?.enabled && (
-          <video
-            id='video-preview'
-            ref={videoElRef}
-            playsInline={true}
-            autoPlay={true}
-            muted={true}
+        <div
+          style={{
+            position: 'absolute',
+            left: 0,
+            top: 0,
+            height: '100%',
+            width: '100%',
+            borderRadius: '8px',
+            transform: 'scaleX(-1)',
+            objectFit: 'cover',
+          }}
+        >
+          <canvas
             style={{
               position: 'absolute',
               left: 0,
@@ -91,11 +98,30 @@ function MediaPreview({ error, setError }: { error: any; setError: any }) {
               height: '100%',
               width: '100%',
               borderRadius: '8px',
-              transform: 'scaleX(-1)',
+              objectFit: 'cover',
+              zIndex: 1,
+            }}
+            id='canvas'
+            className='hide'
+          ></canvas>
+          <video
+            style={{
+              position: 'absolute',
+              left: 0,
+              top: 0,
+              height: '100%',
+              width: '100%',
+              borderRadius: '8px',
               objectFit: 'cover',
             }}
+            id='video-preview'
+            ref={videoElRef}
+            playsInline={true}
+            autoPlay={true}
+            muted={true}
           ></video>
-        )}
+        </div>
+
         {!localTracks?.video?.enabled && (
           <Text
             style={{
@@ -109,7 +135,6 @@ function MediaPreview({ error, setError }: { error: any; setError: any }) {
             Camera is off
           </Text>
         )}
-
         <div
           style={{
             position: 'absolute',

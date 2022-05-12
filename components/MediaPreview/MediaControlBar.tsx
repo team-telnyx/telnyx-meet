@@ -16,6 +16,7 @@ import {
 } from 'utils/storage';
 
 import { getUserMedia, MediaDeviceErrors } from './helper';
+import { createVirtualBackgroundStream } from 'utils/virtualBackground';
 
 const breakpointLarge = 1450;
 
@@ -83,10 +84,25 @@ function MediaControlBar({
         audio: false,
         video: videoInputDeviceId ? { deviceId: videoInputDeviceId } : true,
       })
-        .then((stream) => {
+        .then(async (stream) => {
+          // We use this image as our virtual background
+          const image = new Image(996, 664);
+          image.src = `//localhost:3000/mansao.webp`;
+
+          const { backgroundCamera, canvasStream } =
+            await createVirtualBackgroundStream({
+              stream,
+              videoElementId: 'video-preview',
+              image,
+              frameRate: 20,
+              blurredEnabled: false,
+              virtualBackgroundEnabled: true,
+            });
+          backgroundCamera?.start();
+
           setLocalTracks((value) => ({
             ...value,
-            video: stream?.getVideoTracks()[0],
+            video: canvasStream?.getVideoTracks()[0],
           }));
 
           saveItem(USER_PREFERENCE_VIDEO_ENABLED, 'yes');
