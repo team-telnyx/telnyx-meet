@@ -212,11 +212,15 @@ export function createVirtualBackgroundStream({
 
     if (!blurredEnabled && !virtualBackgroundEnabled) {
       throw new Error(
-        'You should select blur effect or virtual background image effect to works'
+        'You should enable blur OR virtual background image effect to works'
       );
     }
 
-    // TODO: create use cases when is blur and create use cases when is image background
+    if (virtualBackgroundEnabled && !image) {
+      throw new Error(
+        'You should provide a image element to apply in virtual background image effect'
+      );
+    }
 
     if (!document) {
       return resolve({ backgroundCamera: null, canvasStream: canvasStream });
