@@ -1,11 +1,7 @@
 export const MediaDeviceErrors = {
-  audioBlocked: {
-    title: 'Microphone is blocked',
-    body: 'Telnyx Meet requires access to your microphone.',
-  },
-  videoBlocked: {
-    title: 'Camera is blocked',
-    body: 'Telnyx Meet requires access to your camera.',
+  mediaBlocked: {
+    title: 'Camera and microphone are blocked',
+    body: 'Telnyx Meet requires access to your camera and microphone.',
   },
   allowMediaWarning: {
     title: 'Allow Telnyx Meet to use your camera and microphone',

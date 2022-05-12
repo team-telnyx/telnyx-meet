@@ -191,7 +191,17 @@ export default function RoomControls({
   const handleTrackUpdate = (
     kind: 'audio' | 'video',
     track: MediaStreamTrack | undefined
-  ) => setLocalTracks((tracks) => ({ ...tracks, [kind]: track }));
+  ) => {
+    if (kind === 'audio') {
+      setIsAudioTrackEnabled(track !== undefined ? true : false);
+    }
+
+    if (kind === 'video') {
+      setIsVideoTrackEnabled(track !== undefined ? true : false);
+    }
+
+    setLocalTracks((tracks) => ({ ...tracks, [kind]: track }));
+  };
 
   const handleDeviceError = (kind: 'audio' | 'video' | 'screenshare') => {
     if (kind === 'audio') {
@@ -216,15 +226,12 @@ export default function RoomControls({
     }
   };
 
-  const handleAudioClick = (isAudioEnabled: boolean) => {
-    setIsAudioTrackEnabled(isAudioEnabled);
-
+  const handleAudioClick = () => {
     if (localTracks.audio) {
+      localTracks.audio.stop();
       if (selfStream.audioTrack) {
         selfStream.audioTrack.stop();
       }
-
-      localTracks.audio.stop();
       handleTrackUpdate('audio', undefined);
     } else {
       getUserMedia({
@@ -238,15 +245,12 @@ export default function RoomControls({
     }
   };
 
-  const handleVideoClick = (isVideoEnabled: boolean) => {
-    setIsVideoTrackEnabled(isVideoEnabled);
-
+  const handleVideoClick = () => {
     if (localTracks.video) {
+      localTracks.video.stop();
       if (selfStream.videoTrack) {
         selfStream.videoTrack.stop();
       }
-
-      localTracks.video.stop();
       handleTrackUpdate('video', undefined);
     } else {
       getUserMedia({
@@ -265,14 +269,13 @@ export default function RoomControls({
     kind: 'audio_input' | 'video_input' | 'audio_output',
     deviceId: string
   ) => {
-    console.log('[video-meet] onDeviceChange: ', kind, ' id: ', deviceId);
+    console.debug('[video-meet] Device changed: ', kind, ' id: ', deviceId);
 
     if (kind === 'audio_input') {
       setAudioInputDeviceId(deviceId);
 
       if (localTracks.audio) {
         localTracks.audio.stop();
-
         getUserMedia({
           kind: 'audio',
           deviceId: deviceId,
@@ -289,7 +292,6 @@ export default function RoomControls({
 
       if (localTracks.video) {
         localTracks.video.stop();
-
         getUserMedia({
           kind: 'video',
           deviceId: deviceId,
@@ -315,12 +317,13 @@ export default function RoomControls({
       });
   };
 
-  const removeMediaTracks = useCallback(() => {
-    // localTracks?.audio?.stop();
-    // localTracks?.video?.stop();
+  const handleLeaveRoom = () => {
+    localTracks?.audio?.stop();
+    localTracks?.video?.stop();
     presentationTracks?.audio?.stop();
     presentationTracks?.video?.stop();
-  }, [presentationTracks]);
+    disconnect();
+  };
 
   useEffect(() => {
     // get devices if permissions are already granted
@@ -332,9 +335,8 @@ export default function RoomControls({
         'devicechange',
         getAndSetDevices
       );
-      removeMediaTracks();
     };
-  }, [removeMediaTracks]);
+  }, []);
 
   useEffect(() => {
     if (!selfStream) {
@@ -437,7 +439,7 @@ export default function RoomControls({
           <Button
             data-testid='btn-toggle-audio'
             size='large'
-            onClick={() => handleAudioClick(!isAudioTrackEnabled)}
+            onClick={handleAudioClick}
             disabled={!selfStream?.isConfigured}
           >
             <Box align='center' gap='xsmall'>
@@ -469,7 +471,7 @@ export default function RoomControls({
           <Button
             data-testid='btn-toggle-video'
             size='large'
-            onClick={() => handleVideoClick(!isVideoTrackEnabled)}
+            onClick={handleVideoClick}
             disabled={!selfStream?.isConfigured}
             data-e2e='toggle video'
           >
@@ -501,13 +503,11 @@ export default function RoomControls({
             disabled={disableScreenshare}
             onClick={() => {
               if (presentationTracks.audio || presentationTracks.video) {
+                presentationTracks.audio?.stop();
+                presentationTracks.video?.stop();
                 if (presentationStream) {
                   removeStream('presentation');
                 }
-
-                presentationTracks.audio?.stop();
-                presentationTracks.video?.stop();
-
                 setPresentationTracks({ audio: undefined, video: undefined });
               } else {
                 navigator?.mediaDevices
@@ -663,7 +663,7 @@ export default function RoomControls({
           <Button
             data-testid='btn-leave-room'
             label='Leave'
-            onClick={() => disconnect()}
+            onClick={handleLeaveRoom}
             color='status-error'
           />
         </Box>
@@ -672,7 +672,7 @@ export default function RoomControls({
       <LeaveButton
         data-testid='btn-leave-room'
         label='Leave'
-        onClick={() => disconnect()}
+        onClick={handleLeaveRoom}
         color='status-error'
       />
     </Box>

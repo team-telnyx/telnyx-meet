@@ -63,6 +63,14 @@ function MediaPreview() {
   const videoElRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
+    return () => {
+      if (localTracks.audio) {
+        localTracks?.audio?.stop();
+      }
+    };
+  }, [localTracks?.audio]);
+
+  useEffect(() => {
     if (!videoElRef.current) {
       return;
     }
@@ -70,10 +78,16 @@ function MediaPreview() {
     if (localTracks?.video) {
       videoElRef.current.srcObject = new MediaStream([localTracks.video]);
     }
+
+    return () => {
+      if (localTracks.video) {
+        localTracks?.video?.stop();
+      }
+    };
   }, [localTracks?.video]);
 
   return (
-    <React.Fragment>
+    <>
       {error && (
         <ErrorDialog onClose={() => setError(undefined)} error={error} />
       )}
@@ -143,7 +157,7 @@ function MediaPreview() {
           </div>
         </VideoPreview>
       </div>
-    </React.Fragment>
+    </>
   );
 }
 

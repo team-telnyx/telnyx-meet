@@ -60,32 +60,35 @@ function MediaControlBar({
     SetStateAction<{ title: string; body: string } | undefined>
   >;
 }) {
-  const handleTrackUpdate = useCallback(
-    (kind: 'audio' | 'video', track: MediaStreamTrack | undefined) =>
-      setLocalTracks((tracks) => ({ ...tracks, [kind]: track })),
-    [setLocalTracks]
-  );
+  const handleTrackUpdate = (
+    kind: 'audio' | 'video',
+    track: MediaStreamTrack | undefined
+  ) => {
+    if (kind === 'audio') {
+      setIsAudioTrackEnabled(track !== undefined ? true : false);
+    }
 
-  const handleDeviceError = useCallback(
-    (kind: 'audio' | 'video') => {
-      if (kind === 'audio') {
-        saveItem(USER_PREFERENCE_AUDIO_ENABLED, 'no');
-        setIsAudioTrackEnabled(false);
-        setError(MediaDeviceErrors.audioBlocked);
-      }
+    if (kind === 'video') {
+      setIsVideoTrackEnabled(track !== undefined ? true : false);
+    }
 
-      if (kind === 'video') {
-        saveItem(USER_PREFERENCE_VIDEO_ENABLED, 'no');
-        setIsVideoTrackEnabled(false);
-        setError(MediaDeviceErrors.videoBlocked);
-      }
-    },
-    [setIsAudioTrackEnabled, setIsVideoTrackEnabled, setError]
-  );
+    setLocalTracks((tracks) => ({ ...tracks, [kind]: track }));
+  };
+
+  const handleDeviceError = (kind: 'audio' | 'video') => {
+    if (kind === 'audio') {
+      saveItem(USER_PREFERENCE_AUDIO_ENABLED, 'no');
+    }
+
+    if (kind === 'video') {
+      saveItem(USER_PREFERENCE_VIDEO_ENABLED, 'no');
+    }
+
+    setError(MediaDeviceErrors.mediaBlocked);
+  };
 
   const handleAudioClick = (isAudioEnabled: boolean) => {
     saveItem(USER_PREFERENCE_AUDIO_ENABLED, isAudioEnabled ? 'yes' : 'no');
-    setIsAudioTrackEnabled(isAudioEnabled);
 
     if (localTracks.audio) {
       localTracks.audio.stop();
@@ -104,7 +107,6 @@ function MediaControlBar({
 
   const handleVideoClick = (isVideoEnabled: boolean) => {
     saveItem(USER_PREFERENCE_VIDEO_ENABLED, isVideoEnabled ? 'yes' : 'no');
-    setIsVideoTrackEnabled(isVideoEnabled);
 
     if (localTracks.video) {
       localTracks.video.stop();

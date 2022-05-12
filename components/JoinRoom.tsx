@@ -82,7 +82,7 @@ const JoinRoom = ({
   };
 
   return (
-    <React.Fragment>
+    <>
       {error && (
         <ErrorDialog onClose={() => setError(undefined)} error={error} />
       )}
@@ -125,7 +125,7 @@ const JoinRoom = ({
         <Button
           data-testid='btn-join-room'
           primary
-          disabled={!roomId}
+          disabled={!roomId || !username}
           label='Join room'
           onClick={async () => {
             saveItem(USERNAME_KEY, username);
@@ -133,12 +133,12 @@ const JoinRoom = ({
             if (hasAudioPermission) {
               joinRoom();
             } else {
-              setError(MediaDeviceErrors.audioBlocked);
+              setError(MediaDeviceErrors.mediaBlocked);
             }
           }}
         />
       </Box>
-    </React.Fragment>
+    </>
   );
 };
 
