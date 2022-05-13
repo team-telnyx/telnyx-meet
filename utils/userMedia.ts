@@ -14,8 +14,8 @@ const getMediaConstraints = (
   }
 
   if (kind === 'video' && options && options.isSimulcastEnabled) {
-    mediaConstraints.width = 1280;
-    mediaConstraints.height = 720;
+    mediaConstraints.width = 960;
+    mediaConstraints.height = 540;
   }
 
   return Object.keys(mediaConstraints).length !== 0 ? mediaConstraints : true;
