@@ -21,11 +21,14 @@ import { TelnyxRoom } from 'hooks/room';
 import VideoTrack from 'components/VideoTrack';
 import { WebRTCStats } from 'components/WebRTCStats';
 import { TelnyxMeetContext } from 'contexts/TelnyxMeetContext';
-import { createVirtualBackgroundStream } from 'utils/virtualBackground';
 
 import { NetworkMetricsMonitor } from './NetworkMetricsMonitor';
 import { getUserMedia } from './MediaPreview/helper';
-import { Camera } from '@mediapipe/camera_utils';
+
+import {
+  createGaussianBlurBackgroundStream,
+  createVirtualBackgroundStream,
+} from '@telnyx/video-processors';
 
 const VIDEO_BG_COLOR = '#111';
 
@@ -158,26 +161,41 @@ function Feed({
       audio: true,
     })
       .then(async (stream) => {
-        // We use this image as our virtual background
-        const image = new Image(996, 664);
-        image.src = `//localhost:3000/${e.target.value}`;
+        if (e.target.value !== 'blur') {
+          // We use this image as our virtual background
+          const image = new Image(996, 664);
+          image.src = `//localhost:3000/${e.target.value}`;
 
-        const { backgroundCamera, canvasStream } =
-          await createVirtualBackgroundStream({
-            stream,
-            videoElementId: VIDEO_ELEMENT_ID,
-            virtualBackgroundEnabled: e.target.value !== 'blur',
-            blurredEnabled: e.target.value === 'blur',
-            image,
-            frameRate: 20,
-          });
-        backgroundCamera?.start();
-        camera.current = backgroundCamera;
+          const { videoCameraProcessor, canvasStream } =
+            await createVirtualBackgroundStream({
+              stream,
+              videoElementId: VIDEO_ELEMENT_ID,
+              image,
+              frameRate: 20,
+            });
+          videoCameraProcessor?.start();
+          camera.current = videoCameraProcessor;
 
-        setLocalTracks((value) => ({
-          ...value,
-          video: canvasStream.getVideoTracks()[0],
-        }));
+          setLocalTracks((value) => ({
+            ...value,
+            video: canvasStream.getVideoTracks()[0],
+          }));
+        } else {
+          const { videoCameraProcessor, canvasStream } =
+            await createGaussianBlurBackgroundStream({
+              stream,
+              videoElementId: VIDEO_ELEMENT_ID,
+              frameRate: 20,
+            });
+
+          videoCameraProcessor?.start();
+          camera.current = videoCameraProcessor;
+
+          setLocalTracks((value) => ({
+            ...value,
+            video: canvasStream.getVideoTracks()[0],
+          }));
+        }
       })
       .catch((err) => {
         console.log(err, 'video');

@@ -16,7 +16,7 @@ import {
 } from 'utils/storage';
 
 import { getUserMedia, MediaDeviceErrors } from './helper';
-import { createVirtualBackgroundStream } from 'utils/virtualBackground';
+import { createVirtualBackgroundStream } from '@telnyx/video-processors';
 
 const breakpointLarge = 1450;
 
@@ -89,16 +89,14 @@ function MediaControlBar({
           const image = new Image(996, 664);
           image.src = `//localhost:3000/mansao.webp`;
 
-          const { backgroundCamera, canvasStream } =
+          const { videoCameraProcessor, canvasStream } =
             await createVirtualBackgroundStream({
               stream,
               videoElementId: 'video-preview',
               image,
               frameRate: 20,
-              blurredEnabled: false,
-              virtualBackgroundEnabled: true,
             });
-          backgroundCamera?.start();
+          videoCameraProcessor?.start();
 
           setLocalTracks((value) => ({
             ...value,
