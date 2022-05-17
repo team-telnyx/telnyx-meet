@@ -1,4 +1,4 @@
-import React, { Dispatch, SetStateAction } from 'react';
+import React, { useEffect, useCallback, Dispatch, SetStateAction } from 'react';
 import {
   faMicrophone,
   faMicrophoneSlash,
@@ -9,13 +9,15 @@ import { Box, Button, Text } from 'grommet';
 import { FontAwesomeIcon as BaseFontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import styled from 'styled-components';
 
+import { MediaDeviceErrors } from './helper';
+
+import { getUserMedia } from 'utils/userMedia';
 import {
   saveItem,
+  getItem,
   USER_PREFERENCE_AUDIO_ENABLED,
   USER_PREFERENCE_VIDEO_ENABLED,
 } from 'utils/storage';
-
-import { getUserMedia, MediaDeviceErrors } from './helper';
 
 const breakpointLarge = 1450;
 
@@ -28,10 +30,22 @@ const FontAwesomeIcon = styled(BaseFontAwesomeIcon)`
 function MediaControlBar({
   audioInputDeviceId,
   videoInputDeviceId,
-  setError,
+  isAudioTrackEnabled,
+  isVideoTrackEnabled,
+  setIsAudioTrackEnabled,
+  setIsVideoTrackEnabled,
+  optionalFeatures,
   localTracks,
   setLocalTracks,
+  setError,
 }: {
+  audioInputDeviceId: string | undefined;
+  videoInputDeviceId: string | undefined;
+  isAudioTrackEnabled: boolean;
+  isVideoTrackEnabled: boolean;
+  setIsAudioTrackEnabled: Dispatch<SetStateAction<boolean>>;
+  setIsVideoTrackEnabled: Dispatch<SetStateAction<boolean>>;
+  optionalFeatures: { [key: string]: boolean };
   localTracks: {
     audio: MediaStreamTrack | undefined;
     video: MediaStreamTrack | undefined;
@@ -42,103 +56,160 @@ function MediaControlBar({
       video: MediaStreamTrack | undefined;
     }>
   >;
-  audioInputDeviceId: string | undefined;
-  videoInputDeviceId: string | undefined;
   setError: Dispatch<
     SetStateAction<{ title: string; body: string } | undefined>
   >;
 }) {
-  const handleAudioClick = () => {
-    if (localTracks?.audio) {
-      localTracks.audio.stop();
-      setLocalTracks((value) => ({ ...value, audio: undefined }));
+  const handleTrackUpdate = (
+    kind: 'audio' | 'video',
+    track: MediaStreamTrack | undefined
+  ) => {
+    if (kind === 'audio') {
+      setIsAudioTrackEnabled(track !== undefined ? true : false);
+    }
+
+    if (kind === 'video') {
+      setIsVideoTrackEnabled(track !== undefined ? true : false);
+    }
+
+    setLocalTracks((tracks) => ({ ...tracks, [kind]: track }));
+  };
+
+  const handleDeviceError = (kind: 'audio' | 'video') => {
+    if (kind === 'audio') {
       saveItem(USER_PREFERENCE_AUDIO_ENABLED, 'no');
-    } else {
-      getUserMedia({
-        audio: audioInputDeviceId ? { deviceId: audioInputDeviceId } : true,
-        video: false,
-      })
-        .then((stream) => {
-          setLocalTracks((value) => ({
-            ...value,
-            audio: stream?.getAudioTracks()[0],
-          }));
-          saveItem(USER_PREFERENCE_AUDIO_ENABLED, 'yes');
-        })
-        // TODO: avoid disable line
-        // eslint-disable-next-line no-unused-vars
-        .catch((err) => {
-          setError(MediaDeviceErrors.mediaBlocked);
-        });
     }
-  };
 
-  const handleVideoClick = () => {
-    if (localTracks?.video) {
-      localTracks.video.stop();
-      setLocalTracks((value) => ({ ...value, video: undefined }));
+    if (kind === 'video') {
       saveItem(USER_PREFERENCE_VIDEO_ENABLED, 'no');
+    }
+
+    setError(MediaDeviceErrors.mediaBlocked);
+  };
+
+  const handleAudioClick = (isAudioEnabled: boolean) => {
+    saveItem(USER_PREFERENCE_AUDIO_ENABLED, isAudioEnabled ? 'yes' : 'no');
+
+    if (localTracks.audio) {
+      localTracks.audio.stop();
+      handleTrackUpdate('audio', undefined);
     } else {
       getUserMedia({
-        audio: false,
-        video: videoInputDeviceId ? { deviceId: videoInputDeviceId } : true,
-      })
-        .then((stream) => {
-          setLocalTracks((value) => ({
-            ...value,
-            video: stream?.getVideoTracks()[0],
-          }));
-
-          saveItem(USER_PREFERENCE_VIDEO_ENABLED, 'yes');
-        })
-        // TODO: avoid disable line
-        // eslint-disable-next-line no-unused-vars
-        .catch((err) => {
-          setError(MediaDeviceErrors.mediaBlocked);
-        });
+        kind: 'audio',
+        deviceId: audioInputDeviceId,
+        callbacks: {
+          onTrackUpdate: handleTrackUpdate,
+          onDeviceError: handleDeviceError,
+        },
+      });
     }
   };
+
+  const handleVideoClick = (isVideoEnabled: boolean) => {
+    saveItem(USER_PREFERENCE_VIDEO_ENABLED, isVideoEnabled ? 'yes' : 'no');
+
+    if (localTracks.video) {
+      localTracks.video.stop();
+      handleTrackUpdate('video', undefined);
+    } else {
+      getUserMedia({
+        kind: 'video',
+        deviceId: videoInputDeviceId,
+        options: optionalFeatures,
+        callbacks: {
+          onTrackUpdate: handleTrackUpdate,
+          onDeviceError: handleDeviceError,
+        },
+      });
+    }
+  };
+
+  useEffect(() => {
+    navigator.mediaDevices.enumerateDevices().then((devices) => {
+      const audioinput = devices.filter(
+        (device) => device.kind === 'audioinput'
+      )[0];
+      const videoinput = devices.filter(
+        (device) => device.kind === 'videoinput'
+      )[0];
+
+      if (!audioinput.label && !videoinput.label) {
+        setError(MediaDeviceErrors.allowMediaWarning);
+      }
+    });
+  }, [setError]);
+
+  useEffect(() => {
+    const isAudioEnabled = getItem(USER_PREFERENCE_AUDIO_ENABLED) || null;
+    const isVideoEnabled = getItem(USER_PREFERENCE_VIDEO_ENABLED) || null;
+
+    if (isAudioEnabled === 'yes' || isAudioTrackEnabled) {
+      setIsAudioTrackEnabled(true);
+      getUserMedia({
+        kind: 'audio',
+        deviceId: audioInputDeviceId,
+        callbacks: {
+          onTrackUpdate: handleTrackUpdate,
+          onDeviceError: handleDeviceError,
+        },
+      });
+    }
+
+    if (isVideoEnabled === 'yes' || isVideoTrackEnabled) {
+      setIsVideoTrackEnabled(true);
+      getUserMedia({
+        kind: 'video',
+        deviceId: videoInputDeviceId,
+        options: optionalFeatures,
+        callbacks: {
+          onTrackUpdate: handleTrackUpdate,
+          onDeviceError: handleDeviceError,
+        },
+      });
+    }
+    // TODO: avoid disable line
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <React.Fragment>
-      <Button onClick={handleAudioClick} style={{ marginRight: 20 }}>
+      <Button
+        onClick={() => handleAudioClick(!isAudioTrackEnabled)}
+        style={{ marginRight: 20 }}
+      >
         <Box align='center' gap='xsmall'>
           <Box>
             <Text
               size='40.3px' // kinda hacky, make fa icon 48px
-              color={!localTracks?.audio?.enabled ? 'status-error' : 'accent-1'}
+              color={isAudioTrackEnabled ? 'accent-1' : 'status-error'}
             >
               <FontAwesomeIcon
-                icon={
-                  !localTracks?.audio?.enabled
-                    ? faMicrophoneSlash
-                    : faMicrophone
-                }
+                icon={isAudioTrackEnabled ? faMicrophone : faMicrophoneSlash}
                 fixedWidth
               />
             </Text>
           </Box>
           <Text size='xsmall' color='light-6'>
-            {!localTracks?.audio?.enabled ? 'Unmute mic' : 'Mute mic'}
+            {isAudioTrackEnabled ? 'Mute mic' : 'Unmute mic'}
           </Text>
         </Box>
       </Button>
 
-      <Button onClick={handleVideoClick}>
+      <Button onClick={() => handleVideoClick(!isVideoTrackEnabled)}>
         <Box align='center' gap='xsmall'>
           <Box>
             <Text
               size='40.3px' // kinda hacky, make fa icon 48px
-              color={!localTracks?.video?.enabled ? 'status-error' : 'accent-1'}
+              color={isVideoTrackEnabled ? 'accent-1' : 'status-error'}
             >
               <FontAwesomeIcon
-                icon={!localTracks?.video?.enabled ? faVideoSlash : faVideo}
+                icon={isVideoTrackEnabled ? faVideo : faVideoSlash}
                 fixedWidth
               />
             </Text>
           </Box>
           <Text size='xsmall' color='light-6'>
-            {!localTracks?.video?.enabled ? 'Start video' : 'Stop video'}
+            {isVideoTrackEnabled ? 'Stop video' : 'Start video'}
           </Text>
         </Box>
       </Button>

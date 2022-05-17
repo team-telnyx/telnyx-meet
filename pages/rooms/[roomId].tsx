@@ -1,4 +1,3 @@
-import { Fragment } from 'react';
 import { useRouter } from 'next/router';
 
 import Rooms from './';
@@ -21,14 +20,16 @@ const RoomId = () => {
   };
 
   return (
-    <Fragment>
-      <Rooms
-        id={queryParameters.roomId}
-        clientToken={queryParameters.client_token}
-        refreshToken={queryParameters.refresh_token}
-        optionalFeatures={optionalFeatures}
-      />
-    </Fragment>
+    <>
+      {router.isReady && (
+        <Rooms
+          id={queryParameters.roomId}
+          clientToken={queryParameters.client_token}
+          refreshToken={queryParameters.refresh_token}
+          optionalFeatures={optionalFeatures}
+        />
+      )}
+    </>
   );
 };
 
