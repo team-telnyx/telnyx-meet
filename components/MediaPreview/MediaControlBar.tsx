@@ -1,4 +1,4 @@
-import React, { Dispatch, SetStateAction } from 'react';
+import React, { ChangeEvent, Dispatch, SetStateAction, useRef } from 'react';
 import {
   faMicrophone,
   faMicrophoneSlash,
@@ -16,7 +16,11 @@ import {
 } from 'utils/storage';
 
 import { getUserMedia, MediaDeviceErrors } from './helper';
-import { createVirtualBackgroundStream } from '@telnyx/video-processors';
+import {
+  createVirtualBackgroundStream,
+  Camera,
+  createGaussianBlurBackgroundStream,
+} from '@telnyx/video-processors';
 
 const breakpointLarge = 1450;
 
@@ -49,6 +53,8 @@ function MediaControlBar({
     SetStateAction<{ title: string; body: string } | undefined>
   >;
 }) {
+  const camera = useRef<any>(null);
+
   const handleAudioClick = () => {
     if (localTracks?.audio) {
       localTracks.audio.stop();
@@ -84,23 +90,10 @@ function MediaControlBar({
         audio: false,
         video: videoInputDeviceId ? { deviceId: videoInputDeviceId } : true,
       })
-        .then(async (stream) => {
-          // We use this image as our virtual background
-          const image = new Image(996, 664);
-          image.src = `//localhost:3000/mansao.webp`;
-
-          const { videoCameraProcessor, canvasStream } =
-            await createVirtualBackgroundStream({
-              stream,
-              videoElementId: 'video-preview',
-              image,
-              frameRate: 20,
-            });
-          videoCameraProcessor?.start();
-
+        .then((stream) => {
           setLocalTracks((value) => ({
             ...value,
-            video: canvasStream?.getVideoTracks()[0],
+            video: stream?.getVideoTracks()[0],
           }));
 
           saveItem(USER_PREFERENCE_VIDEO_ENABLED, 'yes');
@@ -111,6 +104,93 @@ function MediaControlBar({
           setError(MediaDeviceErrors.mediaBlocked);
         });
     }
+  };
+
+  const handleVirtualBg = async (e: ChangeEvent<HTMLSelectElement>) => {
+    if (!e.target.value || e.target.value === 'none') {
+      getUserMedia({
+        video: true,
+        audio: true,
+      }).then((stream) => {
+        camera.current?.stop();
+        camera.current = null;
+
+        setLocalTracks((value) => ({
+          ...value,
+          video: stream.getVideoTracks()[0],
+        }));
+      });
+      return;
+    }
+
+    getUserMedia({
+      video: {
+        deviceId: videoInputDeviceId,
+      },
+      audio: true,
+    })
+      .then(async (stream) => {
+        if (e.target.value !== 'blur') {
+          // We use this image as our virtual background
+          const image = new Image(996, 664);
+          image.src = `//localhost:3000/${e.target.value}`;
+
+          const { videoCameraProcessor, canvasStream } =
+            await createVirtualBackgroundStream({
+              stream,
+              videoElementId: 'video-preview',
+              canvasElementId: 'canvas',
+              image,
+              frameRate: 20,
+            });
+          const cameraProcessor: Camera = videoCameraProcessor;
+          cameraProcessor.start();
+          camera.current = cameraProcessor;
+
+          setLocalTracks((value) => ({
+            ...value,
+            video: canvasStream.getVideoTracks()[0],
+          }));
+        } else {
+          const { videoCameraProcessor, canvasStream } =
+            await createGaussianBlurBackgroundStream({
+              stream,
+              videoElementId: 'video-preview',
+              frameRate: 20,
+              canvasElementId: 'canvas',
+            });
+          const cameraProcessor: Camera = videoCameraProcessor;
+          cameraProcessor.start();
+          camera.current = cameraProcessor;
+
+          setLocalTracks((value) => ({
+            ...value,
+            video: canvasStream.getVideoTracks()[0],
+          }));
+        }
+      })
+      .catch((err) => {
+        console.log(err, 'video');
+      });
+  };
+
+  const renderSelectBackgroungImage = () => {
+    const options = ['retro.webp', 'mansao.webp', 'paradise.jpg'].map(
+      (item, index) => {
+        return (
+          <option key={index} value={item}>
+            {item}
+          </option>
+        );
+      }
+    );
+    return (
+      <select name={'images'} onChange={handleVirtualBg}>
+        <option value={'none'}>none</option>
+        <option value={'blur'}>blur</option>
+        {options}
+      </select>
+    );
   };
 
   return (
@@ -156,6 +236,7 @@ function MediaControlBar({
           </Text>
         </Box>
       </Button>
+      {renderSelectBackgroungImage()}
     </React.Fragment>
   );
 }

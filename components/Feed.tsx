@@ -28,6 +28,7 @@ import { getUserMedia } from './MediaPreview/helper';
 import {
   createGaussianBlurBackgroundStream,
   createVirtualBackgroundStream,
+  Camera,
 } from '@telnyx/video-processors';
 
 const VIDEO_BG_COLOR = '#111';
@@ -170,11 +171,13 @@ function Feed({
             await createVirtualBackgroundStream({
               stream,
               videoElementId: VIDEO_ELEMENT_ID,
+              canvasElementId: 'canvas',
               image,
               frameRate: 20,
             });
-          videoCameraProcessor?.start();
-          camera.current = videoCameraProcessor;
+          const cameraProcessor: Camera = videoCameraProcessor;
+          cameraProcessor.start();
+          camera.current = cameraProcessor;
 
           setLocalTracks((value) => ({
             ...value,
@@ -186,10 +189,11 @@ function Feed({
               stream,
               videoElementId: VIDEO_ELEMENT_ID,
               frameRate: 20,
+              canvasElementId: 'canvas',
             });
-
-          videoCameraProcessor?.start();
-          camera.current = videoCameraProcessor;
+          const cameraProcessor: Camera = videoCameraProcessor;
+          cameraProcessor.start();
+          camera.current = cameraProcessor;
 
           setLocalTracks((value) => ({
             ...value,

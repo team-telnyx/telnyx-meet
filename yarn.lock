@@ -1082,12 +1082,12 @@
 
 "@mediapipe/camera_utils@^0.3.1640029074":
   version "0.3.1640029074"
-  resolved "https://registry.yarnpkg.com/@mediapipe/camera_utils/-/camera_utils-0.3.1640029074.tgz#f8b50a2c0bf6a5f4d8cff0524ed71887c4639280"
+  resolved "http://localhost:4873/@mediapipe%2fcamera_utils/-/camera_utils-0.3.1640029074.tgz#f8b50a2c0bf6a5f4d8cff0524ed71887c4639280"
   integrity sha512-jRV/Mp2lgqNYT68TeVRu/Xq+ptZO9F9vCjxzQsA3VM2r7oXg0TrnfO9De2KKOUTpt0p28dKHs625J8GdWjha8A==
 
 "@mediapipe/selfie_segmentation@^0.1.1632777926":
   version "0.1.1632777926"
-  resolved "https://registry.yarnpkg.com/@mediapipe/selfie_segmentation/-/selfie_segmentation-0.1.1632777926.tgz#67d37a53b0de89efc4a0e3b63332a4da3a6ad9c8"
+  resolved "http://localhost:4873/@mediapipe%2fselfie_segmentation/-/selfie_segmentation-0.1.1632777926.tgz#67d37a53b0de89efc4a0e3b63332a4da3a6ad9c8"
   integrity sha512-OSGhYaZsdOXKyY0JCueOflq3ICLNMrBekI2V8vShum8wuoH3xjfEM6NnIujwJ5SlTdZEXi7Up2koOILDgQbWyg==
 
 "@next/env@12.1.0":
@@ -1230,10 +1230,10 @@
     magic-string "^0.25.0"
     string.prototype.matchall "^4.0.6"
 
-"@telnyx/video-processors@^1.0.0":
-  version "1.0.12"
-  resolved "http://localhost:4873/@telnyx%2fvideo-processors/-/video-processors-1.0.12.tgz#241dbdcc6759b2ce58628fdd4051dc5a2a039745"
-  integrity sha512-XITX+Av2Y3DvX0lfmSk7NPvG6jZ25RX7LwMN+2FfwPAAL3N3B4/C4hpcI9vghngxFQYy8w2W0zKFbMskzwo4zA==
+"@telnyx/video-processors@^1.0.25":
+  version "1.0.25"
+  resolved "http://localhost:4873/@telnyx%2fvideo-processors/-/video-processors-1.0.25.tgz#9d06160c370209c82092a5a56637979bfd42c03d"
+  integrity sha512-w6zyB8X/E8xYIyQ18Y7Va0hL6STS6SWCiHACIlCY8x13P88pEfpvEiT5ctCiGwWdkpgIXcjEmpnfsbTiLg6xsA==
   dependencies:
     "@mediapipe/camera_utils" "^0.3.1640029074"
     "@mediapipe/selfie_segmentation" "^0.1.1632777926"
