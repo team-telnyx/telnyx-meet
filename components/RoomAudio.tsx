@@ -3,36 +3,37 @@ import React, { useContext, useMemo } from 'react';
 import { TelnyxRoom } from 'hooks/room';
 import { TelnyxMeetContext } from 'contexts/TelnyxMeetContext';
 import AudioTrack from 'components/AudioTrack';
+import { Participant } from '@telnyx/video';
 
 export default function RoomAudio({
   participants,
   streams,
-  useAudioMixer,
+  useMixedAudioForOutput,
   mixedAudioTrack,
 }: {
   participants: TelnyxRoom['state']['participants'];
   streams: TelnyxRoom['state']['streams'];
-  useAudioMixer: boolean;
+  useMixedAudioForOutput: boolean;
   mixedAudioTrack?: MediaStreamTrack;
 }) {
   const { audioOutputDeviceId } = useContext(TelnyxMeetContext);
 
   const audioTracks = useMemo(() => {
-    if (useAudioMixer) {
+    if (useMixedAudioForOutput) {
       return [];
     }
 
     const audioTracks: Array<{ id: string; track: MediaStreamTrack }> = [];
 
-    participants.forEach((participant) => {
+    participants.forEach((participant: Participant) => {
       if (participant.origin === 'local') {
         return;
       }
 
-      const selfStreamId = participant.streams.get('self');
+      const selfStreamId = participant.streams['self'];
       if (selfStreamId) {
         const stream = streams.get(selfStreamId);
-        if (!stream || !stream.transceiver.isConfigured) {
+        if (!stream) {
           return;
         }
 
@@ -46,10 +47,10 @@ export default function RoomAudio({
     });
 
     return audioTracks;
-  }, [streams, participants, useAudioMixer]);
+  }, [streams, participants, useMixedAudioForOutput]);
 
   const roomAudio = useMemo(() => {
-    if (useAudioMixer) {
+    if (useMixedAudioForOutput) {
       if (mixedAudioTrack) {
         return (
           <AudioTrack
@@ -73,7 +74,12 @@ export default function RoomAudio({
         />
       );
     });
-  }, [audioTracks, useAudioMixer, mixedAudioTrack, audioOutputDeviceId]);
+  }, [
+    audioTracks,
+    useMixedAudioForOutput,
+    mixedAudioTrack,
+    audioOutputDeviceId,
+  ]);
 
   return <>{roomAudio}</>;
 }
