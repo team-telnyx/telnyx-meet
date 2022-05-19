@@ -142,11 +142,12 @@ function Feed({
         audio: true,
       }).then(async (stream) => {
         camera.current?.stop();
-        camera.current = null;
 
         if (videoProcessor.current && videoProcessor.current?.segmentation) {
           await videoProcessor.current?.stop();
         }
+
+        camera.current = null;
 
         setLocalTracks((value) => ({
           ...value,
@@ -175,6 +176,10 @@ function Feed({
             videoProcessor.current = new VideoProcessor();
           }
 
+          if (camera.current) {
+            camera.current?.stop();
+          }
+
           const { videoCameraProcessor, canvasStream } =
             await videoProcessor.current.createVirtualBackgroundStream({
               stream,
@@ -183,9 +188,9 @@ function Feed({
               image,
               frameRate: 20,
             });
-          const cameraProcessor = videoCameraProcessor;
-          cameraProcessor.start();
-          camera.current = cameraProcessor;
+
+          videoCameraProcessor.start();
+          camera.current = videoCameraProcessor;
 
           setLocalTracks((value) => ({
             ...value,
@@ -199,6 +204,10 @@ function Feed({
             videoProcessor.current = new VideoProcessor();
           }
 
+          if (camera.current) {
+            camera.current?.stop();
+          }
+
           const { videoCameraProcessor, canvasStream } =
             await videoProcessor.current.createGaussianBlurBackgroundStream({
               stream,
@@ -206,9 +215,9 @@ function Feed({
               frameRate: 20,
               canvasElementId: 'canvas',
             });
-          const cameraProcessor = videoCameraProcessor;
-          cameraProcessor.start();
-          camera.current = cameraProcessor;
+
+          videoCameraProcessor.start();
+          camera.current = videoCameraProcessor;
 
           setLocalTracks((value) => ({
             ...value,

@@ -51,7 +51,6 @@ function MediaControlBar({
   >;
   camera: any;
 }) {
-  // const camera = useRef<any>(null);
   const videoProcessor = useRef<any>(null);
 
   const handleAudioClick = () => {
@@ -111,12 +110,11 @@ function MediaControlBar({
         video: true,
         audio: true,
       }).then(async (stream) => {
-        camera.current?.stop();
-        camera.current = null;
-
+        await camera.current?.stop();
         if (videoProcessor.current && videoProcessor.current?.segmentation) {
           await videoProcessor.current?.stop();
         }
+        camera.current = null;
 
         setLocalTracks((value) => ({
           ...value,
@@ -143,6 +141,11 @@ function MediaControlBar({
           ) {
             videoProcessor.current = new VideoProcessor();
           }
+
+          if (camera.current) {
+            camera.current?.stop();
+          }
+
           const { videoCameraProcessor, canvasStream } =
             await videoProcessor.current.createVirtualBackgroundStream({
               stream,
@@ -151,9 +154,9 @@ function MediaControlBar({
               image,
               frameRate: 20,
             });
-          const cameraProcessor = videoCameraProcessor;
-          cameraProcessor.start();
-          camera.current = cameraProcessor;
+
+          videoCameraProcessor.start();
+          camera.current = videoCameraProcessor;
 
           setLocalTracks((value) => ({
             ...value,
@@ -166,6 +169,11 @@ function MediaControlBar({
           ) {
             videoProcessor.current = new VideoProcessor();
           }
+
+          if (camera.current) {
+            camera.current?.stop();
+          }
+
           const { videoCameraProcessor, canvasStream } =
             await videoProcessor.current.createGaussianBlurBackgroundStream({
               stream,
@@ -173,9 +181,9 @@ function MediaControlBar({
               frameRate: 20,
               canvasElementId: 'canvas',
             });
-          const cameraProcessor = videoCameraProcessor;
-          cameraProcessor.start();
-          camera.current = cameraProcessor;
+
+          videoCameraProcessor.start();
+          camera.current = videoCameraProcessor;
 
           setLocalTracks((value) => ({
             ...value,
