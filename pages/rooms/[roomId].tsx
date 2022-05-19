@@ -11,12 +11,15 @@ const RoomId = () => {
     network_metrics: string;
     simulcast: string;
     dial_out: string;
+    use_mixed_audio: string;
   };
 
   const optionalFeatures = {
     isNetworkMetricsEnabled: queryParameters.network_metrics === 'true',
     isSimulcastEnabled: queryParameters.simulcast === 'true',
     isDialOutEnabled: queryParameters.dial_out === 'true',
+    useMixedAudioForOutput:
+      queryParameters.use_mixed_audio === 'false' ? false : true, // by default this is true
   };
 
   return (

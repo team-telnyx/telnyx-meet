@@ -207,7 +207,7 @@ function Room({
             getLocalParticipant={room.getLocalParticipant}
           />
           <RoomAudio
-            useAudioMixer={true}
+            useMixedAudioForOutput={optionalFeatures.useMixedAudioForOutput}
             participants={state.participants}
             streams={state.streams}
             mixedAudioTrack={state.mixedAudioTrack}
