@@ -1230,6 +1230,13 @@
     magic-string "^0.25.0"
     string.prototype.matchall "^4.0.6"
 
+"@telnyx/video-processors@./telnyx-video-processors-1.0.29.tgz":
+  version "1.0.29"
+  resolved "./telnyx-video-processors-1.0.29.tgz#da3140891b34860454e3e933a3026f52560fff9b"
+  dependencies:
+    "@mediapipe/camera_utils" "^0.3.1640029074"
+    "@mediapipe/selfie_segmentation" "^0.1.1632777926"
+
 "@telnyx/video-processors@^1.0.29":
   version "1.0.29"
   resolved "http://localhost:4873/@telnyx%2fvideo-processors/-/video-processors-1.0.29.tgz#da3140891b34860454e3e933a3026f52560fff9b"
