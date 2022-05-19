@@ -141,7 +141,7 @@ function Feed({
         video: true,
         audio: true,
       }).then(async (stream) => {
-        camera.current?.stop();
+        await camera.current?.stop();
 
         if (videoProcessor.current && videoProcessor.current?.segmentation) {
           await videoProcessor.current?.stop();
@@ -177,7 +177,7 @@ function Feed({
           }
 
           if (camera.current) {
-            camera.current?.stop();
+            await camera.current?.stop();
           }
 
           const { videoCameraProcessor, canvasStream } =
@@ -205,7 +205,7 @@ function Feed({
           }
 
           if (camera.current) {
-            camera.current?.stop();
+            await camera.current?.stop();
           }
 
           const { videoCameraProcessor, canvasStream } =

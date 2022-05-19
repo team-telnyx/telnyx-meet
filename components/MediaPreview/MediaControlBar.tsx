@@ -143,7 +143,7 @@ function MediaControlBar({
           }
 
           if (camera.current) {
-            camera.current?.stop();
+            await camera.current?.stop();
           }
 
           const { videoCameraProcessor, canvasStream } =
@@ -171,7 +171,7 @@ function MediaControlBar({
           }
 
           if (camera.current) {
-            camera.current?.stop();
+            await camera.current?.stop();
           }
 
           const { videoCameraProcessor, canvasStream } =
