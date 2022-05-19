@@ -1230,10 +1230,10 @@
     magic-string "^0.25.0"
     string.prototype.matchall "^4.0.6"
 
-"@telnyx/video-processors@^1.0.25":
-  version "1.0.25"
-  resolved "http://localhost:4873/@telnyx%2fvideo-processors/-/video-processors-1.0.25.tgz#9d06160c370209c82092a5a56637979bfd42c03d"
-  integrity sha512-w6zyB8X/E8xYIyQ18Y7Va0hL6STS6SWCiHACIlCY8x13P88pEfpvEiT5ctCiGwWdkpgIXcjEmpnfsbTiLg6xsA==
+"@telnyx/video-processors@^1.0.27":
+  version "1.0.27"
+  resolved "http://localhost:4873/@telnyx%2fvideo-processors/-/video-processors-1.0.27.tgz#5692bb4b69470fbc26d8e8391e9fc7ceb68afeaf"
+  integrity sha512-kpGXOCKqtFyyITpvTybAHrrccATA9VU9Q5GVS6kAnqYAftSuf5idYmLQ8UY55cIVOd6RLi7ifWm4kgN4+QbZIQ==
   dependencies:
     "@mediapipe/camera_utils" "^0.3.1640029074"
     "@mediapipe/selfie_segmentation" "^0.1.1632777926"

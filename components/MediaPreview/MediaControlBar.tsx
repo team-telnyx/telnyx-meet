@@ -16,11 +16,7 @@ import {
 } from 'utils/storage';
 
 import { getUserMedia, MediaDeviceErrors } from './helper';
-import {
-  createVirtualBackgroundStream,
-  Camera,
-  createGaussianBlurBackgroundStream,
-} from '@telnyx/video-processors';
+import { VideoProcessor } from '@telnyx/video-processors';
 
 const breakpointLarge = 1450;
 
@@ -36,6 +32,7 @@ function MediaControlBar({
   setError,
   localTracks,
   setLocalTracks,
+  camera,
 }: {
   localTracks: {
     audio: MediaStreamTrack | undefined;
@@ -52,8 +49,10 @@ function MediaControlBar({
   setError: Dispatch<
     SetStateAction<{ title: string; body: string } | undefined>
   >;
+  camera: any;
 }) {
-  const camera = useRef<any>(null);
+  // const camera = useRef<any>(null);
+  const videoProcessor = useRef<any>(null);
 
   const handleAudioClick = () => {
     if (localTracks?.audio) {
@@ -111,9 +110,13 @@ function MediaControlBar({
       getUserMedia({
         video: true,
         audio: true,
-      }).then((stream) => {
+      }).then(async (stream) => {
         camera.current?.stop();
         camera.current = null;
+
+        if (videoProcessor.current && videoProcessor.current?.segmentation) {
+          await videoProcessor.current?.stop();
+        }
 
         setLocalTracks((value) => ({
           ...value,
@@ -134,16 +137,21 @@ function MediaControlBar({
           // We use this image as our virtual background
           const image = new Image(996, 664);
           image.src = `//localhost:3000/${e.target.value}`;
-
+          if (
+            !videoProcessor.current ||
+            !videoProcessor.current?.segmentation
+          ) {
+            videoProcessor.current = new VideoProcessor();
+          }
           const { videoCameraProcessor, canvasStream } =
-            await createVirtualBackgroundStream({
+            await videoProcessor.current.createVirtualBackgroundStream({
               stream,
               videoElementId: 'video-preview',
               canvasElementId: 'canvas',
               image,
               frameRate: 20,
             });
-          const cameraProcessor: Camera = videoCameraProcessor;
+          const cameraProcessor = videoCameraProcessor;
           cameraProcessor.start();
           camera.current = cameraProcessor;
 
@@ -152,14 +160,20 @@ function MediaControlBar({
             video: canvasStream.getVideoTracks()[0],
           }));
         } else {
+          if (
+            !videoProcessor.current ||
+            !videoProcessor.current?.segmentation
+          ) {
+            videoProcessor.current = new VideoProcessor();
+          }
           const { videoCameraProcessor, canvasStream } =
-            await createGaussianBlurBackgroundStream({
+            await videoProcessor.current.createGaussianBlurBackgroundStream({
               stream,
               videoElementId: 'video-preview',
               frameRate: 20,
               canvasElementId: 'canvas',
             });
-          const cameraProcessor: Camera = videoCameraProcessor;
+          const cameraProcessor = videoCameraProcessor;
           cameraProcessor.start();
           camera.current = cameraProcessor;
 

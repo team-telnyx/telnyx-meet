@@ -25,11 +25,7 @@ import { TelnyxMeetContext } from 'contexts/TelnyxMeetContext';
 import { NetworkMetricsMonitor } from './NetworkMetricsMonitor';
 import { getUserMedia } from './MediaPreview/helper';
 
-import {
-  createGaussianBlurBackgroundStream,
-  createVirtualBackgroundStream,
-  Camera,
-} from '@telnyx/video-processors';
+import { VideoProcessor } from '@telnyx/video-processors';
 
 const VIDEO_BG_COLOR = '#111';
 
@@ -61,6 +57,7 @@ function Feed({
   const camera = useRef<any>(null);
 
   const intervalStatsId = useRef<any>();
+  const videoProcessor = useRef<any>(null);
 
   const isPresentation = stream?.key === 'presentation';
   const context = participant.context
@@ -143,9 +140,13 @@ function Feed({
       getUserMedia({
         video: true,
         audio: true,
-      }).then((stream) => {
+      }).then(async (stream) => {
         camera.current?.stop();
         camera.current = null;
+
+        if (videoProcessor.current && videoProcessor.current?.segmentation) {
+          await videoProcessor.current?.stop();
+        }
 
         setLocalTracks((value) => ({
           ...value,
@@ -167,15 +168,22 @@ function Feed({
           const image = new Image(996, 664);
           image.src = `//localhost:3000/${e.target.value}`;
 
+          if (
+            !videoProcessor.current ||
+            !videoProcessor.current?.segmentation
+          ) {
+            videoProcessor.current = new VideoProcessor();
+          }
+
           const { videoCameraProcessor, canvasStream } =
-            await createVirtualBackgroundStream({
+            await videoProcessor.current.createVirtualBackgroundStream({
               stream,
               videoElementId: VIDEO_ELEMENT_ID,
               canvasElementId: 'canvas',
               image,
               frameRate: 20,
             });
-          const cameraProcessor: Camera = videoCameraProcessor;
+          const cameraProcessor = videoCameraProcessor;
           cameraProcessor.start();
           camera.current = cameraProcessor;
 
@@ -184,14 +192,21 @@ function Feed({
             video: canvasStream.getVideoTracks()[0],
           }));
         } else {
+          if (
+            !videoProcessor.current ||
+            !videoProcessor.current?.segmentation
+          ) {
+            videoProcessor.current = new VideoProcessor();
+          }
+
           const { videoCameraProcessor, canvasStream } =
-            await createGaussianBlurBackgroundStream({
+            await videoProcessor.current.createGaussianBlurBackgroundStream({
               stream,
               videoElementId: VIDEO_ELEMENT_ID,
               frameRate: 20,
               canvasElementId: 'canvas',
             });
-          const cameraProcessor: Camera = videoCameraProcessor;
+          const cameraProcessor = videoCameraProcessor;
           cameraProcessor.start();
           camera.current = cameraProcessor;
 
