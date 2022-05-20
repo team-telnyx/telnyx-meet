@@ -1237,14 +1237,6 @@
     "@mediapipe/camera_utils" "^0.3.1640029074"
     "@mediapipe/selfie_segmentation" "^0.1.1632777926"
 
-"@telnyx/video-processors@^1.0.29":
-  version "1.0.29"
-  resolved "http://localhost:4873/@telnyx%2fvideo-processors/-/video-processors-1.0.29.tgz#da3140891b34860454e3e933a3026f52560fff9b"
-  integrity sha512-Jq5xybCgV542Ub9pakjijVmEmED5EcglATcKZoQdo2CrNp41EHfvohV5ghLPSAuXFqi3iUNwEIN/09Sk2pe9iQ==
-  dependencies:
-    "@mediapipe/camera_utils" "^0.3.1640029074"
-    "@mediapipe/selfie_segmentation" "^0.1.1632777926"
-
 "@telnyx/video@^0.2.0-alpha.18":
   version "0.2.0-alpha.18"
   resolved "https://registry.yarnpkg.com/@telnyx/video/-/video-0.2.0-alpha.18.tgz#bd07bf92544d2155c2f6721a8f40dbd8e33dab0e"
