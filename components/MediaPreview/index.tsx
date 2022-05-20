@@ -46,6 +46,7 @@ function MediaPreview({ error, setError }: { error: any; setError: any }) {
   } = useContext(TelnyxMeetContext);
 
   const videoElRef = useRef<HTMLVideoElement>(null);
+  const camera = useRef<any>(null);
 
   useEffect(() => {
     if (!videoElRef.current) {
@@ -99,7 +100,7 @@ function MediaPreview({ error, setError }: { error: any; setError: any }) {
               width: '100%',
               borderRadius: '8px',
               objectFit: 'cover',
-              zIndex: 1,
+              zIndex: camera.current ? 1 : 0,
             }}
             id='canvas'
             className='hide'
@@ -113,6 +114,7 @@ function MediaPreview({ error, setError }: { error: any; setError: any }) {
               width: '100%',
               borderRadius: '8px',
               objectFit: 'cover',
+              zIndex: !camera.current ? 1 : 0,
             }}
             id='video-preview'
             ref={videoElRef}
@@ -149,6 +151,7 @@ function MediaPreview({ error, setError }: { error: any; setError: any }) {
             audioInputDeviceId={audioInputDeviceId}
             videoInputDeviceId={videoInputDeviceId}
             setError={setError}
+            camera={camera}
           />
         </div>
       </VideoPreview>
