@@ -1,4 +1,5 @@
 import { uniqueNamesGenerator, colors, animals } from 'unique-names-generator';
+import { notify } from 'lib/bugsnag';
 
 export const generateId = (): number => Math.ceil(Math.random() * 1000000);
 
@@ -8,3 +9,16 @@ export const generateUsername = (): string =>
     style: 'capital',
     separator: ' ',
   });
+
+export const transformFetchErrorToBugsnag = (
+  requestId: string,
+  data: any,
+  status: number
+) => {
+  try {
+    const error = (data && data.message) || 'Failed';
+    notify(`request-id: ${requestId} - ${status}: ${error}`);
+  } catch (error) {
+    notify(`request-id: ${requestId} - ${error}`);
+  }
+};

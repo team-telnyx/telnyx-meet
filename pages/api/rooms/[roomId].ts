@@ -1,6 +1,8 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
+import { v4 as generatedId } from 'uuid';
 
 import { notify } from 'lib/bugsnag';
+import { transformFetchErrorToBugsnag } from 'utils/helpers';
 
 type Data = {
   data: {};
@@ -11,6 +13,7 @@ export default async function handler(
   res: NextApiResponse<Data>
 ) {
   const { roomId } = req.query;
+  const requestId = generatedId();
 
   if (req.method === 'GET' && roomId) {
     try {
@@ -19,15 +22,19 @@ export default async function handler(
         {
           headers: {
             Authorization: `Bearer ${process.env.TELNYX_API_KEY}`,
+            request_id: requestId,
           },
         }
       );
 
+      const { data } = await response.json();
+
       if (response.ok) {
-        const { data } = await response.json();
         res.status(200).json(data);
       } else {
         notify(`${response.status}: Failed to get room`);
+        transformFetchErrorToBugsnag(requestId, data, response.status);
+
         if (response.status >= 500) {
           res.status(response.status).end();
         } else {
@@ -36,12 +43,12 @@ export default async function handler(
         }
       }
     } catch (error) {
-      notify(error);
+      notify(`request_id: ${requestId} - ${error}`);
 
       res.status(500).end();
     }
   } else {
-    notify('405: Failed to get rooms');
+    notify(`request_id: ${requestId} - 405: Failed to get rooms`);
 
     res.setHeader('Allow', 'GET');
     res.status(405).end();
