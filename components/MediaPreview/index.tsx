@@ -103,7 +103,7 @@ function MediaPreview() {
 
       <VideoPreview id='preview-video'>
         {isVideoTrackEnabled ? (
-          <video
+          <div
             style={{
               position: 'absolute',
               left: 0,
@@ -111,15 +111,42 @@ function MediaPreview() {
               height: '100%',
               width: '100%',
               borderRadius: '8px',
+              transform: 'scaleX(-1)',
               objectFit: 'cover',
-              zIndex: !camera.current ? 1 : 0,
             }}
-            id='video-preview'
-            ref={videoElRef}
-            playsInline={true}
-            autoPlay={true}
-            muted={true}
-          ></video>
+          >
+            <canvas
+              style={{
+                position: 'absolute',
+                left: 0,
+                top: 0,
+                height: '100%',
+                width: '100%',
+                borderRadius: '8px',
+                objectFit: 'cover',
+                zIndex: camera.current ? 1 : 0,
+              }}
+              id='canvas'
+              className='hide'
+            ></canvas>
+            <video
+              style={{
+                position: 'absolute',
+                left: 0,
+                top: 0,
+                height: '100%',
+                width: '100%',
+                borderRadius: '8px',
+                objectFit: 'cover',
+                zIndex: !camera.current ? 1 : 0,
+              }}
+              id='video-preview'
+              ref={videoElRef}
+              playsInline={true}
+              autoPlay={true}
+              muted={true}
+            ></video>
+          </div>
         ) : (
           <Text
             style={{

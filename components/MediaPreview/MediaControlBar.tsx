@@ -1,4 +1,10 @@
-import React, { useEffect, useCallback, Dispatch, SetStateAction } from 'react';
+import React, {
+  useEffect,
+  Dispatch,
+  SetStateAction,
+  useRef,
+  ChangeEvent,
+} from 'react';
 import {
   faMicrophone,
   faMicrophoneSlash,
@@ -8,8 +14,7 @@ import {
 import { Box, Button, Text } from 'grommet';
 import { FontAwesomeIcon as BaseFontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import styled from 'styled-components';
-
-import { MediaDeviceErrors } from './helper';
+import { VideoProcessor } from '@telnyx/video-processors';
 
 import { getUserMedia } from 'utils/userMedia';
 import {
@@ -18,6 +23,8 @@ import {
   USER_PREFERENCE_AUDIO_ENABLED,
   USER_PREFERENCE_VIDEO_ENABLED,
 } from 'utils/storage';
+
+import { MediaDeviceErrors } from './helper';
 
 const breakpointLarge = 1450;
 
@@ -38,6 +45,7 @@ function MediaControlBar({
   localTracks,
   setLocalTracks,
   setError,
+  camera,
 }: {
   audioInputDeviceId: string | undefined;
   videoInputDeviceId: string | undefined;
@@ -61,6 +69,8 @@ function MediaControlBar({
   >;
   camera: any;
 }) {
+  const videoProcessor = useRef<any>(null);
+
   const handleTrackUpdate = (
     kind: 'audio' | 'video',
     track: MediaStreamTrack | undefined
@@ -172,6 +182,129 @@ function MediaControlBar({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  const handleVirtualBg = async (e: ChangeEvent<HTMLSelectElement>) => {
+    if (!e.target.value || e.target.value === 'none') {
+      getUserMedia({
+        kind: 'video',
+        deviceId: videoInputDeviceId,
+        options: optionalFeatures,
+        callbacks: {
+          onTrackUpdate: async (
+            kind: 'audio' | 'video',
+            track: MediaStreamTrack | undefined
+          ) => {
+            await camera.current?.stop();
+            if (
+              videoProcessor.current &&
+              videoProcessor.current?.segmentation
+            ) {
+              await videoProcessor.current?.stop();
+              videoProcessor.current = null;
+            }
+            camera.current = null;
+
+            if (track && kind === 'video') {
+              setLocalTracks((tracks) => ({ ...tracks, [kind]: track }));
+            }
+          },
+          onDeviceError: handleDeviceError,
+        },
+      });
+    }
+
+    getUserMedia({
+      kind: 'video',
+      deviceId: videoInputDeviceId,
+      options: optionalFeatures,
+      callbacks: {
+        onTrackUpdate: async (
+          kind: 'audio' | 'video',
+          track: MediaStreamTrack | undefined
+        ) => {
+          if (e.target.value !== 'blur') {
+            // We use this image as our virtual background
+            const image = new Image(996, 664);
+            image.src = `//localhost:3000/${e.target.value}`;
+            if (
+              !videoProcessor.current ||
+              !videoProcessor.current?.segmentation
+            ) {
+              videoProcessor.current = new VideoProcessor();
+            }
+
+            if (camera.current) {
+              await camera.current?.stop();
+            }
+
+            const { videoCameraProcessor, canvasStream } =
+              await videoProcessor.current.createVirtualBackgroundStream({
+                track,
+                videoElementId: 'video-preview',
+                canvasElementId: 'canvas',
+                image,
+                frameRate: 20,
+              });
+
+            videoCameraProcessor.start();
+            camera.current = videoCameraProcessor;
+
+            setLocalTracks((value) => ({
+              ...value,
+              video: canvasStream.getVideoTracks()[0],
+            }));
+          } else {
+            if (
+              !videoProcessor.current ||
+              !videoProcessor.current?.segmentation
+            ) {
+              videoProcessor.current = new VideoProcessor();
+            }
+
+            if (camera.current) {
+              await camera.current?.stop();
+            }
+
+            const { videoCameraProcessor, canvasStream } =
+              await videoProcessor.current.createGaussianBlurBackgroundStream({
+                track,
+                videoElementId: 'video-preview',
+                frameRate: 20,
+                canvasElementId: 'canvas',
+              });
+
+            videoCameraProcessor.start();
+            camera.current = videoCameraProcessor;
+
+            setLocalTracks((value) => ({
+              ...value,
+              video: canvasStream.getVideoTracks()[0],
+            }));
+          }
+        },
+        onDeviceError: handleDeviceError,
+      },
+    });
+  };
+
+  const renderSelectBackgroungImage = () => {
+    const options = ['retro.webp', 'mansao.webp', 'paradise.jpg'].map(
+      (item, index) => {
+        return (
+          <option key={index} value={item}>
+            {item}
+          </option>
+        );
+      }
+    );
+    return (
+      <select name={'images'} onChange={handleVirtualBg}>
+        <option value={'none'}>none</option>
+        <option value={'blur'}>blur</option>
+        {options}
+      </select>
+    );
+  };
+
   return (
     <React.Fragment>
       <Button
@@ -214,7 +347,7 @@ function MediaControlBar({
           </Text>
         </Box>
       </Button>
-      {/* {renderSelectBackgroungImage()} */}
+      {renderSelectBackgroungImage()}
     </React.Fragment>
   );
 }
