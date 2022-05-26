@@ -1,12 +1,4 @@
-import React, {
-  useContext,
-  useEffect,
-  useRef,
-  useState,
-  useCallback,
-  ChangeEvent,
-  RefObject,
-} from 'react';
+import React, { useContext, useEffect, useRef, useState } from 'react';
 import { Box, Text, Spinner } from 'grommet';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
@@ -23,9 +15,6 @@ import { WebRTCStats } from 'components/WebRTCStats';
 import { TelnyxMeetContext } from 'contexts/TelnyxMeetContext';
 
 import { NetworkMetricsMonitor } from './NetworkMetricsMonitor';
-import { getUserMedia } from './MediaPreview/helper';
-
-import { VideoProcessor } from '@telnyx/video-processors';
 
 const VIDEO_BG_COLOR = '#111';
 
@@ -53,11 +42,8 @@ function Feed({
   const [showStatsOverlay, setShowStatsOverlay] = useState(false);
   const [stats, setStats] = useState<any>(null);
   const [allowedBrowser, setAllowedBrowser] = useState(false);
-  const { videoInputDeviceId, setLocalTracks } = useContext(TelnyxMeetContext);
-  const camera = useRef<any>(null);
 
   const intervalStatsId = useRef<any>();
-  const videoProcessor = useRef<any>(null);
 
   const isPresentation = stream?.key === 'presentation';
   const context = participant.context
@@ -135,120 +121,6 @@ function Feed({
 
   const peerMetrics = networkMetrics ? networkMetrics[participant.id] : null;
 
-  const handleVirtualBg = async (e: ChangeEvent<HTMLSelectElement>) => {
-    if (!e.target.value || e.target.value === 'none') {
-      getUserMedia({
-        video: true,
-        audio: true,
-      }).then(async (stream) => {
-        await camera.current?.stop();
-
-        if (videoProcessor.current && videoProcessor.current?.segmentation) {
-          await videoProcessor.current?.stop();
-        }
-
-        camera.current = null;
-
-        setLocalTracks((value) => ({
-          ...value,
-          video: stream.getVideoTracks()[0],
-        }));
-      });
-      return;
-    }
-
-    getUserMedia({
-      video: {
-        deviceId: videoInputDeviceId,
-      },
-      audio: true,
-    })
-      .then(async (stream) => {
-        if (e.target.value !== 'blur') {
-          // We use this image as our virtual background
-          const image = new Image(996, 664);
-          image.src = `//localhost:3000/${e.target.value}`;
-
-          if (
-            !videoProcessor.current ||
-            !videoProcessor.current?.segmentation
-          ) {
-            videoProcessor.current = new VideoProcessor();
-          }
-
-          if (camera.current) {
-            await camera.current?.stop();
-          }
-
-          const { videoCameraProcessor, canvasStream } =
-            await videoProcessor.current.createVirtualBackgroundStream({
-              stream,
-              videoElementId: VIDEO_ELEMENT_ID,
-              canvasElementId: 'canvas',
-              image,
-              frameRate: 20,
-            });
-
-          videoCameraProcessor.start();
-          camera.current = videoCameraProcessor;
-
-          setLocalTracks((value) => ({
-            ...value,
-            video: canvasStream.getVideoTracks()[0],
-          }));
-        } else {
-          if (
-            !videoProcessor.current ||
-            !videoProcessor.current?.segmentation
-          ) {
-            videoProcessor.current = new VideoProcessor();
-          }
-
-          if (camera.current) {
-            await camera.current?.stop();
-          }
-
-          const { videoCameraProcessor, canvasStream } =
-            await videoProcessor.current.createGaussianBlurBackgroundStream({
-              stream,
-              videoElementId: VIDEO_ELEMENT_ID,
-              frameRate: 20,
-              canvasElementId: 'canvas',
-            });
-
-          videoCameraProcessor.start();
-          camera.current = videoCameraProcessor;
-
-          setLocalTracks((value) => ({
-            ...value,
-            video: canvasStream.getVideoTracks()[0],
-          }));
-        }
-      })
-      .catch((err) => {
-        console.log(err, 'video');
-      });
-  };
-
-  const renderSelectBackgroungImage = () => {
-    const options = ['retro.webp', 'mansao.webp', 'paradise.jpg'].map(
-      (item, index) => {
-        return (
-          <option key={index} value={item}>
-            {item}
-          </option>
-        );
-      }
-    );
-    return (
-      <select name={'images'} onChange={handleVirtualBg}>
-        <option value={'none'}>none</option>
-        <option value={'blur'}>blur</option>
-        {options}
-      </select>
-    );
-  };
-
   return (
     <div
       // id={stream?.isSpeaking ? 'speaking-box' : ''}
@@ -283,7 +155,6 @@ function Feed({
           }}
         >
           {renderStats()}
-          {participant.origin === 'local' && renderSelectBackgroungImage()}
           {!showStatsOverlay && peerMetrics && (
             <NetworkMetricsMonitor
               connectionQuality={peerMetrics.connectionQuality}
@@ -332,7 +203,6 @@ function Feed({
           stream={stream}
           mirrorVideo={mirrorVideo}
           isPresentation={isPresentation}
-          virtualBackgroundEnabled={camera.current}
         />
         {/* )} */}
 

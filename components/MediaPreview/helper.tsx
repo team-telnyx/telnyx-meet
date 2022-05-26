@@ -1,11 +1,3 @@
-export const getUserMedia = async (
-  // TODO: avoid disable line
-  // eslint-disable-next-line no-undef
-  constraints: MediaStreamConstraints
-): Promise<MediaStream> => {
-  return await window?.navigator?.mediaDevices?.getUserMedia(constraints);
-};
-
 export const MediaDeviceErrors = {
   mediaBlocked: {
     title: 'Camera and microphone are blocked',

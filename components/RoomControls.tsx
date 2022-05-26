@@ -1,4 +1,4 @@
-import { useContext, useEffect, useState } from 'react';
+import { useState, useEffect, useContext, useRef, ChangeEvent } from 'react';
 import { getDevices, Participant, Room, Stream } from '@telnyx/video';
 import { Box, Button, Menu, Text } from 'grommet';
 import {
@@ -16,11 +16,16 @@ import {
   faCheck,
 } from '@fortawesome/free-solid-svg-icons';
 import styled from 'styled-components';
+import { VideoProcessor } from '@telnyx/video-processors';
 
-import { TelnyxRoom } from 'hooks/room';
 import { TelnyxMeetContext } from 'contexts/TelnyxMeetContext';
+import { TelnyxRoom } from 'hooks/room';
+
 import ErrorDialog from 'components/ErrorDialog';
+
 import { Chat } from './Chat';
+
+import { getUserMedia } from 'utils/userMedia';
 
 const breakpointMedium = 1023;
 
@@ -57,30 +62,19 @@ const isSinkIdSupported = (): boolean => {
   return typeof audio?.setSinkId === 'function';
 };
 
-const getUserMedia = async (
-  // TODO: avoid disable line
-  // eslint-disable-next-line no-undef
-  constraints: MediaStreamConstraints
-): Promise<MediaStream> => {
-  // @ts-ignore
-  return navigator?.mediaDevices?.getUserMedia(constraints);
-};
-
-const getDisplayMedia = async (): Promise<MediaStream> => {
-  // @ts-ignore
-  return navigator?.mediaDevices?.getDisplayMedia({ audio: true, video: true });
-};
-
 function DeviceSelect({
   kind,
   devices = [],
   selectedDeviceId,
-  onSelectDevice,
+  handleDeviceChange,
 }: {
   kind: 'audio_input' | 'video_input' | 'audio_output';
   devices: Array<{ id: string; label: string }>;
   selectedDeviceId?: string;
-  onSelectDevice: Function;
+  handleDeviceChange: (
+    kind: 'audio_input' | 'video_input' | 'audio_output',
+    deviceId: string
+  ) => void;
 }) {
   const currentDeviceId = selectedDeviceId;
 
@@ -116,7 +110,7 @@ function DeviceSelect({
         gap: 'small', // gap between icon and text
         reverse: true, // icon on right
         // TODO give some sort UI feedback that device was successfully changed
-        onClick: () => onSelectDevice({ kind: kind, deviceId: device.id }),
+        onClick: () => handleDeviceChange(kind, device.id),
       }))}
       disabled={devices.length < 2}
       icon={false}
@@ -162,16 +156,24 @@ export default function RoomControls({
     setAudioInputDeviceId,
     setAudioOutputDeviceId,
     setVideoInputDeviceId,
-    localTracks,
-    setLocalTracks,
+    isAudioTrackEnabled,
+    isVideoTrackEnabled,
+    setIsAudioTrackEnabled,
+    setIsVideoTrackEnabled,
     optionalFeatures,
   } = useContext(TelnyxMeetContext);
 
-  const [devices, setDevices] = useState<any>({});
-  const [error, setError] = useState<
-    { title: string; body: string } | undefined
-  >(undefined);
+  const camera = useRef<any>(null);
+  const videoProcessor = useRef<any>(null);
 
+  const [devices, setDevices] = useState<any>({});
+  const [localTracks, setLocalTracks] = useState<{
+    audio: MediaStreamTrack | undefined;
+    video: MediaStreamTrack | undefined;
+  }>({
+    audio: undefined,
+    video: undefined,
+  });
   const [presentationTracks, setPresentationTracks] = useState<{
     audio: MediaStreamTrack | undefined;
     video: MediaStreamTrack | undefined;
@@ -179,13 +181,265 @@ export default function RoomControls({
     audio: undefined,
     video: undefined,
   });
+  const [error, setError] = useState<
+    { title: string; body: string } | undefined
+  >(undefined);
 
   const [showChatBox, setShowChatBox] = useState(false);
 
   const selfStream = streams.self;
   const presentationStream = streams.presentation;
-
   const participantCount = participantsByActivity.size;
+  const localParticipant = getLocalParticipant();
+
+  const context = localParticipant.context
+    ? JSON.parse(localParticipant.context)
+    : undefined;
+
+  const VIDEO_ELEMENT_ID = `video-feed-${context.username
+    ?.toLowerCase()
+    .replace(' ', '-')}`;
+
+  const handleVirtualBg = async (e: ChangeEvent<HTMLSelectElement>) => {
+    getUserMedia({
+      kind: 'video',
+      deviceId: videoInputDeviceId,
+      callbacks: {
+        onTrackUpdate: async (
+          kind: 'audio' | 'video',
+          track: MediaStreamTrack | undefined
+        ) => {
+          if (!e.target.value || e.target.value === 'none') {
+            await camera.current?.stop();
+            if (
+              videoProcessor.current &&
+              videoProcessor.current?.segmentation
+            ) {
+              await videoProcessor.current?.stop();
+              videoProcessor.current = null;
+            }
+            camera.current = null;
+
+            if (track && kind === 'video') {
+              setVideoInputDeviceId(track.id);
+              setLocalTracks((tracks) => ({ ...tracks, [kind]: track }));
+            }
+          } else if (e.target.value !== 'blur') {
+            // We use this image as our virtual background
+            const image = new Image(996, 664);
+            image.src = `//localhost:3000/${e.target.value}`;
+            if (
+              !videoProcessor.current ||
+              !videoProcessor.current?.segmentation
+            ) {
+              videoProcessor.current = new VideoProcessor();
+            }
+
+            if (camera.current) {
+              await camera.current?.stop();
+            }
+
+            const { videoCameraProcessor, canvasStream } =
+              await videoProcessor.current.createVirtualBackgroundStream({
+                track,
+                videoElementId: VIDEO_ELEMENT_ID,
+                canvasElementId: 'canvas',
+                image,
+                frameRate: 20,
+              });
+
+            videoCameraProcessor.start();
+            camera.current = videoCameraProcessor;
+
+            if (track && kind === 'video') {
+              setVideoInputDeviceId(track.id);
+              setLocalTracks((tracks) => ({
+                ...tracks,
+                video: canvasStream.getVideoTracks()[0],
+              }));
+            }
+          } else {
+            if (
+              !videoProcessor.current ||
+              !videoProcessor.current?.segmentation
+            ) {
+              videoProcessor.current = new VideoProcessor();
+            }
+
+            if (camera.current) {
+              await camera.current?.stop();
+            }
+
+            const { videoCameraProcessor, canvasStream } =
+              await videoProcessor.current.createGaussianBlurBackgroundStream({
+                track,
+                videoElementId: VIDEO_ELEMENT_ID,
+                frameRate: 20,
+                canvasElementId: 'canvas',
+              });
+
+            videoCameraProcessor.start();
+            camera.current = videoCameraProcessor;
+
+            if (track && kind === 'video') {
+              setVideoInputDeviceId(track.id);
+              setLocalTracks((tracks) => ({
+                ...tracks,
+                video: canvasStream.getVideoTracks()[0],
+              }));
+            }
+          }
+        },
+        onDeviceError: handleDeviceError,
+      },
+    });
+  };
+
+  const renderSelectBackgroungImage = () => {
+    const options = ['retro.webp', 'mansao.webp', 'paradise.jpg'].map(
+      (item, index) => {
+        return (
+          <option key={index} value={item}>
+            {item}
+          </option>
+        );
+      }
+    );
+    return (
+      <select
+        style={{
+          alignSelf: 'center',
+        }}
+        name={'images'}
+        onChange={handleVirtualBg}
+      >
+        <option value={'none'}>none</option>
+        <option value={'blur'}>blur</option>
+        {options}
+      </select>
+    );
+  };
+
+  const handleTrackUpdate = (
+    kind: 'audio' | 'video',
+    track: MediaStreamTrack | undefined
+  ) => {
+    if (kind === 'audio') {
+      setIsAudioTrackEnabled(track !== undefined ? true : false);
+    }
+
+    if (kind === 'video') {
+      setIsVideoTrackEnabled(track !== undefined ? true : false);
+    }
+
+    setLocalTracks((tracks) => ({ ...tracks, [kind]: track }));
+  };
+
+  const handleDeviceError = (kind: 'audio' | 'video' | 'screenshare') => {
+    if (kind === 'audio') {
+      setError({
+        title: 'Microphone unavailable',
+        body: 'Please check browser media permission settings.',
+      });
+    }
+
+    if (kind === 'video') {
+      setError({
+        title: 'Camera unavailable',
+        body: 'Please check browser media permission settings.',
+      });
+    }
+
+    if (kind === 'screenshare') {
+      setError({
+        title: 'Screen share unavailable',
+        body: 'Failed to share your screen.',
+      });
+    }
+  };
+
+  const handleAudioClick = () => {
+    if (localTracks.audio) {
+      localTracks.audio.stop();
+      if (selfStream.audioTrack) {
+        selfStream.audioTrack.stop();
+      }
+      handleTrackUpdate('audio', undefined);
+    } else {
+      getUserMedia({
+        kind: 'audio',
+        deviceId: audioInputDeviceId,
+        callbacks: {
+          onTrackUpdate: handleTrackUpdate,
+          onDeviceError: handleDeviceError,
+        },
+      });
+    }
+  };
+
+  const handleVideoClick = () => {
+    if (localTracks.video) {
+      localTracks.video.stop();
+      if (selfStream.videoTrack) {
+        selfStream.videoTrack.stop();
+      }
+      handleTrackUpdate('video', undefined);
+    } else {
+      getUserMedia({
+        kind: 'video',
+        deviceId: videoInputDeviceId,
+        options: optionalFeatures,
+        callbacks: {
+          onTrackUpdate: handleTrackUpdate,
+          onDeviceError: handleDeviceError,
+        },
+      });
+    }
+  };
+
+  const handleDeviceChange = (
+    kind: 'audio_input' | 'video_input' | 'audio_output',
+    deviceId: string
+  ) => {
+    console.debug('[video-meet] Device changed: ', kind, ' id: ', deviceId);
+
+    if (kind === 'audio_input') {
+      setAudioInputDeviceId(deviceId);
+
+      if (localTracks.audio) {
+        localTracks.audio.stop();
+        getUserMedia({
+          kind: 'audio',
+          deviceId: deviceId,
+          callbacks: {
+            onTrackUpdate: handleTrackUpdate,
+            onDeviceError: handleDeviceError,
+          },
+        });
+      }
+    }
+
+    if (kind === 'video_input') {
+      setVideoInputDeviceId(deviceId);
+
+      if (localTracks.video) {
+        localTracks.video.stop();
+        getUserMedia({
+          kind: 'video',
+          deviceId: deviceId,
+          options: optionalFeatures,
+          callbacks: {
+            onTrackUpdate: handleTrackUpdate,
+            onDeviceError: handleDeviceError,
+          },
+        });
+      }
+    }
+
+    if (kind === 'audio_output') {
+      setAudioOutputDeviceId(deviceId);
+    }
+  };
 
   const getAndSetDevices = () => {
     getDevices()
@@ -195,8 +449,12 @@ export default function RoomControls({
       });
   };
 
-  const onClose = () => {
-    setError(undefined);
+  const handleLeaveRoom = () => {
+    localTracks?.audio?.stop();
+    localTracks?.video?.stop();
+    presentationTracks?.audio?.stop();
+    presentationTracks?.video?.stop();
+    disconnect();
   };
 
   useEffect(() => {
@@ -209,10 +467,7 @@ export default function RoomControls({
         'devicechange',
         getAndSetDevices
       );
-      removeMediaTracks();
     };
-    // TODO: avoid disable line
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -246,131 +501,46 @@ export default function RoomControls({
           audio: presentationTracks.audio,
           video: {
             track: presentationTracks.video,
-            options: {
-              enableSimulcast: optionalFeatures.isSimulcastEnabled,
-            },
+            options: { enableSimulcast: optionalFeatures.isSimulcastEnabled },
           },
         });
-      } else {
-        updateStream('presentation', presentationTracks);
       }
 
       presentationTracks.video.onended = () => {
         removeStream('presentation');
+        setPresentationTracks({ audio: undefined, video: undefined });
       };
-    } else {
-      if (presentationStream) {
-        removeStream('presentation');
-      }
     }
     // TODO: avoid disable line
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [presentationTracks]);
-
-  const handleMediaError = (err: Error, kind: 'audio' | 'video' | 'screen') => {
-    if (kind === 'audio') {
-      if (err instanceof DOMException && err.name === 'NotAllowedError') {
-        setError({
-          title: 'Microphone unavailable',
-          body: 'Please check browser media permission settings.',
-        });
-      }
-    }
-
-    if (kind === 'video') {
-      if (err instanceof DOMException && err.name === 'NotAllowedError') {
-        setError({
-          title: 'Camera unavailable',
-          body: 'Please check browser media permission settings.',
-        });
-      }
-    }
-
-    if (kind === 'screen') {
-      if (err instanceof DOMException && err.name === 'NotAllowedError') {
-        setError({
-          title: 'Screen share unavailable',
-          body: 'Failed to share your screen.',
-        });
-      }
-    }
-  };
-
-  const onDeviceChange = ({
-    kind,
-    deviceId,
-  }: {
-    kind: 'audio_input' | 'video_input' | 'audio_output';
-    deviceId: string;
-  }) => {
-    console.log('[video-meet] onDeviceChange: ', kind, ' id: ', deviceId);
-
-    if (kind === 'audio_input') {
-      setAudioInputDeviceId(deviceId);
-      if (localTracks.audio) {
-        localTracks.audio.stop();
-
-        getUserMedia({
-          video: false,
-          audio: {
-            deviceId,
-          },
-        })
-          .then((stream) => {
-            setLocalTracks((value) => ({
-              ...value,
-              audio: stream.getAudioTracks()[0],
-            }));
-          })
-          .catch((err) => {
-            handleMediaError(err, 'audio');
-          });
-      }
-    }
-
-    if (kind === 'video_input') {
-      setVideoInputDeviceId(deviceId);
-      if (localTracks.video) {
-        localTracks.video.stop();
-        getUserMedia({
-          audio: false,
-          video: {
-            deviceId,
-          },
-        })
-          .then((stream) => {
-            setLocalTracks((value) => ({
-              ...value,
-              video: stream.getVideoTracks()[0],
-            }));
-          })
-          .catch((err) => {
-            handleMediaError(err, 'video');
-          });
-      }
-    }
-
-    if (kind === 'audio_output') {
-      setAudioOutputDeviceId(deviceId);
-    }
-  };
+  }, [presentationStream, presentationTracks]);
 
   useEffect(() => {
-    setAudioOutputDeviceId(audioOutputDeviceId);
-  }, [audioOutputDeviceId, setAudioOutputDeviceId]);
+    if (isAudioTrackEnabled) {
+      getUserMedia({
+        kind: 'audio',
+        deviceId: audioInputDeviceId,
+        callbacks: {
+          onTrackUpdate: handleTrackUpdate,
+          onDeviceError: handleDeviceError,
+        },
+      });
+    }
 
-  const removeMediaTracks = () => {
-    localTracks?.audio?.stop();
-    localTracks?.video?.stop();
-    presentationTracks?.audio?.stop();
-    presentationTracks?.video?.stop();
-  };
-
-  const handleLeaveRoom = () => {
-    disconnect();
-  };
-
-  const localParticipant = getLocalParticipant();
+    if (isVideoTrackEnabled) {
+      getUserMedia({
+        kind: 'video',
+        deviceId: videoInputDeviceId,
+        options: optionalFeatures,
+        callbacks: {
+          onTrackUpdate: handleTrackUpdate,
+          onDeviceError: handleDeviceError,
+        },
+      });
+    }
+    // TODO: avoid disable line
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <Box
@@ -384,7 +554,7 @@ export default function RoomControls({
       }}
     >
       {error && (
-        <ErrorDialog onClose={onClose} title={error.title} body={error.body} />
+        <ErrorDialog onClose={() => setError(undefined)} error={error} />
       )}
 
       {showChatBox && (
@@ -401,31 +571,7 @@ export default function RoomControls({
           <Button
             data-testid='btn-toggle-audio'
             size='large'
-            onClick={() => {
-              if (localTracks.audio) {
-                localTracks.audio.stop();
-                if (selfStream?.audioTrack) {
-                  selfStream?.audioTrack.stop();
-                }
-                setLocalTracks((value) => ({ ...value, audio: undefined }));
-              } else {
-                getUserMedia({
-                  audio: audioInputDeviceId
-                    ? { deviceId: audioInputDeviceId }
-                    : true,
-                  video: false,
-                })
-                  .then((stream) => {
-                    setLocalTracks((value) => ({
-                      ...value,
-                      audio: stream?.getAudioTracks()[0],
-                    }));
-                  })
-                  .catch((err) => {
-                    handleMediaError(err, 'audio');
-                  });
-              }
-            }}
+            onClick={handleAudioClick}
             disabled={!selfStream?.isConfigured}
           >
             <Box align='center' gap='xsmall'>
@@ -433,21 +579,21 @@ export default function RoomControls({
                 <Text
                   size='40.3px' // kinda hacky, make fa icon 48px
                   color={
-                    !selfStream?.isAudioEnabled ? 'status-error' : 'accent-1'
+                    selfStream?.isAudioEnabled ? 'accent-1' : 'status-error'
                   }
                 >
                   <FontAwesomeIconStyled
                     icon={
-                      !selfStream?.isAudioEnabled
-                        ? faMicrophoneSlash
-                        : faMicrophone
+                      selfStream?.isAudioEnabled
+                        ? faMicrophone
+                        : faMicrophoneSlash
                     }
                     fixedWidth
                   />
                 </Text>
               </Box>
               <Text size='xsmall' color='light-6'>
-                {!selfStream?.isAudioEnabled ? 'Unmute mic' : 'Mute mic'}
+                {selfStream?.isAudioEnabled ? 'Mute mic' : 'Unmute mic'}
               </Text>
             </Box>
           </Button>
@@ -457,35 +603,7 @@ export default function RoomControls({
           <Button
             data-testid='btn-toggle-video'
             size='large'
-            onClick={() => {
-              if (localTracks.video) {
-                localTracks.video.stop();
-                if (selfStream?.videoTrack) {
-                  selfStream?.videoTrack.stop();
-                }
-                setLocalTracks((value) => ({ ...value, video: undefined }));
-              } else {
-                const videoConstraints = optionalFeatures.isSimulcastEnabled
-                  ? { width: 1280, height: 720 }
-                  : true;
-
-                getUserMedia({
-                  audio: false,
-                  video: videoInputDeviceId
-                    ? { deviceId: videoInputDeviceId }
-                    : videoConstraints,
-                })
-                  .then((stream) => {
-                    setLocalTracks((value) => ({
-                      ...value,
-                      video: stream?.getVideoTracks()[0],
-                    }));
-                  })
-                  .catch((err) => {
-                    handleMediaError(err, 'video');
-                  });
-              }
-            }}
+            onClick={handleVideoClick}
             disabled={!selfStream?.isConfigured}
             data-e2e='toggle video'
           >
@@ -494,21 +612,22 @@ export default function RoomControls({
                 <Text
                   size='40.3px' // kinda hacky, make fa icon 48px
                   color={
-                    !selfStream?.isVideoEnabled ? 'status-error' : 'accent-1'
+                    selfStream?.isVideoEnabled ? 'accent-1' : 'status-error'
                   }
                 >
                   <FontAwesomeIconStyled
-                    icon={!selfStream?.isVideoEnabled ? faVideoSlash : faVideo}
+                    icon={selfStream?.isVideoEnabled ? faVideo : faVideoSlash}
                     fixedWidth
                   />
                 </Text>
               </Box>
               <Text size='xsmall' color='light-6'>
-                {!selfStream?.isVideoEnabled ? 'Start video' : 'Stop video'}
+                {selfStream?.isVideoEnabled ? 'Stop video' : 'Start video'}
               </Text>
             </Box>
           </Button>
         </Box>
+        {renderSelectBackgroungImage()}
 
         <ControllerBox width='80px'>
           <Button
@@ -519,18 +638,26 @@ export default function RoomControls({
               if (presentationTracks.audio || presentationTracks.video) {
                 presentationTracks.audio?.stop();
                 presentationTracks.video?.stop();
-
+                if (presentationStream) {
+                  removeStream('presentation');
+                }
                 setPresentationTracks({ audio: undefined, video: undefined });
               } else {
-                getDisplayMedia()
+                navigator?.mediaDevices
+                  ?.getDisplayMedia({ audio: true, video: true })
                   .then((stream) => {
                     setPresentationTracks({
                       audio: stream?.getAudioTracks()[0],
                       video: stream?.getVideoTracks()[0],
                     });
                   })
-                  .catch((err) => {
-                    handleMediaError(err, 'screen');
+                  .catch((error) => {
+                    if (
+                      error instanceof DOMException &&
+                      error.name === 'NotAllowedError'
+                    ) {
+                      handleDeviceError('screenshare');
+                    }
                   });
               }
             }}
@@ -647,14 +774,14 @@ export default function RoomControls({
           kind='audio_input'
           devices={devices?.audioinput}
           selectedDeviceId={audioInputDeviceId}
-          onSelectDevice={onDeviceChange}
+          handleDeviceChange={handleDeviceChange}
         />
 
         <DeviceSelect
           kind='video_input'
           devices={devices?.videoinput}
           selectedDeviceId={videoInputDeviceId}
-          onSelectDevice={onDeviceChange}
+          handleDeviceChange={handleDeviceChange}
         />
 
         {isSinkIdSupported() && (
@@ -662,7 +789,7 @@ export default function RoomControls({
             kind='audio_output'
             devices={devices?.audiooutput}
             selectedDeviceId={audioOutputDeviceId}
-            onSelectDevice={onDeviceChange}
+            handleDeviceChange={handleDeviceChange}
           />
         )}
         <Box>

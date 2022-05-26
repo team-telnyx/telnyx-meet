@@ -1,4 +1,3 @@
-import { Fragment } from 'react';
 import { useRouter } from 'next/router';
 
 import Rooms from './';
@@ -12,23 +11,28 @@ const RoomId = () => {
     network_metrics: string;
     simulcast: string;
     dial_out: string;
+    use_mixed_audio: string;
   };
 
   const optionalFeatures = {
     isNetworkMetricsEnabled: queryParameters.network_metrics === 'true',
     isSimulcastEnabled: queryParameters.simulcast === 'true',
     isDialOutEnabled: queryParameters.dial_out === 'true',
+    useMixedAudioForOutput:
+      queryParameters.use_mixed_audio === 'false' ? false : true, // by default this is true
   };
 
   return (
-    <Fragment>
-      <Rooms
-        id={queryParameters.roomId}
-        clientToken={queryParameters.client_token}
-        refreshToken={queryParameters.refresh_token}
-        optionalFeatures={optionalFeatures}
-      />
-    </Fragment>
+    <>
+      {router.isReady && (
+        <Rooms
+          id={queryParameters.roomId}
+          clientToken={queryParameters.client_token}
+          refreshToken={queryParameters.refresh_token}
+          optionalFeatures={optionalFeatures}
+        />
+      )}
+    </>
   );
 };
 

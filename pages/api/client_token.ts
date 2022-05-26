@@ -1,6 +1,8 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
+import { v4 as generatedId } from 'uuid';
 
 import { notify } from 'lib/bugsnag';
+import { transformFetchErrorToBugsnag } from 'utils/helpers';
 
 type Data = {};
 
@@ -8,6 +10,8 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse<Data>
 ) {
+  const requestId = generatedId();
+
   if (req.method === 'POST') {
     if (req.body && req.body.room_id) {
       try {
@@ -22,15 +26,19 @@ export default async function handler(
             headers: {
               'Content-Type': 'application/json',
               Authorization: `Bearer ${process.env.TELNYX_API_KEY}`,
+              request_id: requestId,
             },
           }
         );
 
+        const { data } = await response.json();
+
         if (response.ok) {
-          const { data } = await response.json();
           res.status(200).json(data);
         } else {
           notify(`${response.status}: Failed to generate client token`);
+          transformFetchErrorToBugsnag(requestId, data, response.status);
+
           if (response.status >= 500) {
             res.status(response.status).end();
           } else {
@@ -39,13 +47,13 @@ export default async function handler(
           }
         }
       } catch (error) {
-        notify(error);
+        notify(`request_id: ${requestId} - ${error}`);
 
         res.status(500).end();
       }
     }
   } else {
-    notify('405: Failed to generate client token');
+    notify(`request_id: ${requestId} - 405: Failed to generate client token`);
 
     res.setHeader('Allow', 'POST');
     res.status(405).end();
