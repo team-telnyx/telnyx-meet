@@ -1,4 +1,4 @@
-import { useState, useEffect, useContext, useCallback } from 'react';
+import { useState, useEffect, useContext, useRef, ChangeEvent } from 'react';
 import { getDevices, Participant, Room, Stream } from '@telnyx/video';
 import { Box, Button, Menu, Text } from 'grommet';
 import {
@@ -16,6 +16,7 @@ import {
   faCheck,
 } from '@fortawesome/free-solid-svg-icons';
 import styled from 'styled-components';
+import { VideoProcessor } from '@telnyx/video-processors';
 
 import { TelnyxMeetContext } from 'contexts/TelnyxMeetContext';
 import { TelnyxRoom } from 'hooks/room';
@@ -162,6 +163,9 @@ export default function RoomControls({
     optionalFeatures,
   } = useContext(TelnyxMeetContext);
 
+  const camera = useRef<any>(null);
+  const videoProcessor = useRef<any>(null);
+
   const [devices, setDevices] = useState<any>({});
   const [localTracks, setLocalTracks] = useState<{
     audio: MediaStreamTrack | undefined;
@@ -187,6 +191,134 @@ export default function RoomControls({
   const presentationStream = streams.presentation;
   const participantCount = participantsByActivity.size;
   const localParticipant = getLocalParticipant();
+
+  const context = localParticipant.context
+    ? JSON.parse(localParticipant.context)
+    : undefined;
+
+  const VIDEO_ELEMENT_ID = `video-feed-${context.username
+    ?.toLowerCase()
+    .replace(' ', '-')}`;
+
+  const handleVirtualBg = async (e: ChangeEvent<HTMLSelectElement>) => {
+    getUserMedia({
+      kind: 'video',
+      deviceId: videoInputDeviceId,
+      callbacks: {
+        onTrackUpdate: async (
+          kind: 'audio' | 'video',
+          track: MediaStreamTrack | undefined
+        ) => {
+          if (!e.target.value || e.target.value === 'none') {
+            await camera.current?.stop();
+            if (
+              videoProcessor.current &&
+              videoProcessor.current?.segmentation
+            ) {
+              await videoProcessor.current?.stop();
+              videoProcessor.current = null;
+            }
+            camera.current = null;
+
+            if (track && kind === 'video') {
+              setVideoInputDeviceId(track.id);
+              setLocalTracks((tracks) => ({ ...tracks, [kind]: track }));
+            }
+          } else if (e.target.value !== 'blur') {
+            // We use this image as our virtual background
+            const image = new Image(996, 664);
+            image.src = `//localhost:3000/${e.target.value}`;
+            if (
+              !videoProcessor.current ||
+              !videoProcessor.current?.segmentation
+            ) {
+              videoProcessor.current = new VideoProcessor();
+            }
+
+            if (camera.current) {
+              await camera.current?.stop();
+            }
+
+            const { videoCameraProcessor, canvasStream } =
+              await videoProcessor.current.createVirtualBackgroundStream({
+                track,
+                videoElementId: VIDEO_ELEMENT_ID,
+                canvasElementId: 'canvas',
+                image,
+                frameRate: 20,
+              });
+
+            videoCameraProcessor.start();
+            camera.current = videoCameraProcessor;
+
+            if (track && kind === 'video') {
+              setVideoInputDeviceId(track.id);
+              setLocalTracks((tracks) => ({
+                ...tracks,
+                video: canvasStream.getVideoTracks()[0],
+              }));
+            }
+          } else {
+            if (
+              !videoProcessor.current ||
+              !videoProcessor.current?.segmentation
+            ) {
+              videoProcessor.current = new VideoProcessor();
+            }
+
+            if (camera.current) {
+              await camera.current?.stop();
+            }
+
+            const { videoCameraProcessor, canvasStream } =
+              await videoProcessor.current.createGaussianBlurBackgroundStream({
+                track,
+                videoElementId: VIDEO_ELEMENT_ID,
+                frameRate: 20,
+                canvasElementId: 'canvas',
+              });
+
+            videoCameraProcessor.start();
+            camera.current = videoCameraProcessor;
+
+            if (track && kind === 'video') {
+              setVideoInputDeviceId(track.id);
+              setLocalTracks((tracks) => ({
+                ...tracks,
+                video: canvasStream.getVideoTracks()[0],
+              }));
+            }
+          }
+        },
+        onDeviceError: handleDeviceError,
+      },
+    });
+  };
+
+  const renderSelectBackgroungImage = () => {
+    const options = ['retro.webp', 'mansao.webp', 'paradise.jpg'].map(
+      (item, index) => {
+        return (
+          <option key={index} value={item}>
+            {item}
+          </option>
+        );
+      }
+    );
+    return (
+      <select
+        style={{
+          alignSelf: 'center',
+        }}
+        name={'images'}
+        onChange={handleVirtualBg}
+      >
+        <option value={'none'}>none</option>
+        <option value={'blur'}>blur</option>
+        {options}
+      </select>
+    );
+  };
 
   const handleTrackUpdate = (
     kind: 'audio' | 'video',
@@ -495,6 +627,7 @@ export default function RoomControls({
             </Box>
           </Button>
         </Box>
+        {renderSelectBackgroungImage()}
 
         <ControllerBox width='80px'>
           <Button
