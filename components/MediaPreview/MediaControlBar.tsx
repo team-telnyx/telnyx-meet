@@ -214,7 +214,7 @@ function MediaControlBar({
           </Text>
         </Box>
       </Button>
-      {renderSelectBackgroungImage()}
+      {/* {renderSelectBackgroungImage()} */}
     </React.Fragment>
   );
 }
