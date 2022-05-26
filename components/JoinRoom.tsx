@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import { Box, Button, TextInput } from 'grommet';
 
-import { saveItem, USERNAME_KEY } from 'utils/storage';
 import ErrorDialog from 'components/ErrorDialog';
 import { MediaDeviceErrors } from 'components/MediaPreview/helper';
+
+import { saveItem, USERNAME_KEY } from 'utils/storage';
 
 interface Props {
   roomId: string;
@@ -80,63 +81,64 @@ const JoinRoom = ({
     }
   };
 
-  const onClose = () => {
-    setError(undefined);
-  };
-
   return (
-    <Box
-      pad='small'
-      gap='medium'
-      style={{
-        justifySelf: 'center',
-      }}
-    >
+    <>
       {error && (
-        <ErrorDialog onClose={onClose} title={error.title} body={error.body} />
+        <ErrorDialog onClose={() => setError(undefined)} error={error} />
       )}
-      <Box
-        background={{ color: 'white', opacity: 'weak' }}
-        round='xsmall'
-        pad='small'
-      >
-        Enter the Room UUID and choose a name for yourself
-      </Box>
-      <TextInput
-        data-testid='input-room-uuid'
-        value={roomId}
-        onChange={(e) => {
-          if (typeof updateRoomId === 'function') {
-            updateRoomId(e.target.value);
-          }
-        }}
-        placeholder={'Room UUID'}
-      />
 
-      <TextInput
-        data-testid='input-username'
-        value={username}
-        onChange={(e) => {
-          updateUsername(e.target.value);
+      <Box
+        pad='small'
+        gap='medium'
+        style={{
+          justifySelf: 'center',
         }}
-        placeholder='Your name'
-      />
-      <Button
-        data-testid='btn-join-room'
-        primary
-        disabled={!roomId}
-        label='Join room'
-        onClick={async () => {
-          saveItem(USERNAME_KEY, username);
-          const hasAudioPermission = await checkAudioBrowserPermission();
-          if (hasAudioPermission) {
-            joinRoom();
-          } else {
-            setError(MediaDeviceErrors.mediaBlocked);
-          }
-        }}
-      />
-    </Box>
+      >
+        <Box
+          background={{ color: 'white', opacity: 'weak' }}
+          round='xsmall'
+          pad='small'
+        >
+          Enter the Room UUID and choose a name for yourself
+        </Box>
+
+        <TextInput
+          data-testid='input-room-uuid'
+          value={roomId}
+          onChange={(e) => {
+            if (typeof updateRoomId === 'function') {
+              updateRoomId(e.target.value);
+            }
+          }}
+          placeholder={'Room UUID'}
+        />
+
+        <TextInput
+          data-testid='input-username'
+          value={username}
+          onChange={(e) => {
+            updateUsername(e.target.value);
+          }}
+          placeholder='Your name'
+        />
+
+        <Button
+          data-testid='btn-join-room'
+          primary
+          disabled={!roomId || !username}
+          label='Join room'
+          onClick={async () => {
+            saveItem(USERNAME_KEY, username);
+            const hasAudioPermission = await checkAudioBrowserPermission();
+            if (hasAudioPermission) {
+              joinRoom();
+            } else {
+              setError(MediaDeviceErrors.mediaBlocked);
+            }
+          }}
+        />
+      </Box>
+    </>
   );
 };
 
