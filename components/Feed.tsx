@@ -213,7 +213,13 @@ function Feed({
         {!stream?.isVideoEnabled && (
           <>
             <Box
-              style={{ position: 'absolute', top: 0, left: 0, zIndex: 2 }}
+              style={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                zIndex: 2,
+                backgroundColor: !hasVirtualBackground ? VIDEO_BG_COLOR : '',
+              }}
               align='center'
               justify='center'
               fill
@@ -236,7 +242,15 @@ function Feed({
         )}
 
         {/* Small bottom text: */}
-        <Box style={{ position: 'absolute', left: 0, bottom: 0, zIndex: 2 }}>
+        <Box
+          style={{
+            position: 'absolute',
+            left: 0,
+            bottom: 0,
+            zIndex: 2,
+            backgroundColor: !hasVirtualBackground ? VIDEO_BG_COLOR : '',
+          }}
+        >
           <Box
             direction='row'
             align='center'

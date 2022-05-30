@@ -4,7 +4,6 @@ import {
   useContext,
   useRef,
   ChangeEvent,
-  RefObject,
   MutableRefObject,
 } from 'react';
 import { getDevices, Participant, Room, Stream } from '@telnyx/video';
@@ -399,6 +398,12 @@ export default function RoomControls({
       if (selfStream.videoTrack) {
         selfStream.videoTrack.stop();
       }
+
+      if (camera && camera.current) {
+        camera.current?.stop();
+        camera.current = null;
+      }
+
       handleTrackUpdate('video', undefined);
     } else {
       getUserMedia({
