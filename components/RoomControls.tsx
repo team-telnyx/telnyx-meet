@@ -24,7 +24,7 @@ import {
   faCheck,
 } from '@fortawesome/free-solid-svg-icons';
 import styled from 'styled-components';
-import { VideoProcessor } from '@telnyx/video-processors';
+import { VideoProcessor, Camera } from '@telnyx/video-processors';
 
 import { TelnyxMeetContext } from 'contexts/TelnyxMeetContext';
 import { TelnyxRoom } from 'hooks/room';
@@ -249,7 +249,10 @@ export default function RoomControls({
               await camera.current?.stop();
             }
 
-            const { videoCameraProcessor, canvasStream } =
+            const {
+              videoCameraProcessor,
+              canvasStream,
+            }: { videoCameraProcessor: Camera; canvasStream: MediaStream } =
               await videoProcessor.current.createVirtualBackgroundStream({
                 track,
                 videoElementId: VIDEO_ELEMENT_ID,
@@ -280,7 +283,10 @@ export default function RoomControls({
               await camera.current?.stop();
             }
 
-            const { videoCameraProcessor, canvasStream } =
+            const {
+              videoCameraProcessor,
+              canvasStream,
+            }: { videoCameraProcessor: Camera; canvasStream: MediaStream } =
               await videoProcessor.current.createGaussianBlurBackgroundStream({
                 track,
                 videoElementId: VIDEO_ELEMENT_ID,

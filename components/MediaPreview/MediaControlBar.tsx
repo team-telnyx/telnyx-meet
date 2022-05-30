@@ -14,7 +14,7 @@ import {
 import { Box, Button, Text } from 'grommet';
 import { FontAwesomeIcon as BaseFontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import styled from 'styled-components';
-import { VideoProcessor } from '@telnyx/video-processors';
+import { VideoProcessor, Camera } from '@telnyx/video-processors';
 
 import { getUserMedia } from 'utils/userMedia';
 import {
@@ -236,7 +236,10 @@ function MediaControlBar({
               await camera.current?.stop();
             }
 
-            const { videoCameraProcessor, canvasStream } =
+            const {
+              videoCameraProcessor,
+              canvasStream,
+            }: { videoCameraProcessor: Camera; canvasStream: MediaStream } =
               await videoProcessor.current.createVirtualBackgroundStream({
                 track,
                 videoElementId: 'video-preview',
@@ -264,7 +267,10 @@ function MediaControlBar({
               await camera.current?.stop();
             }
 
-            const { videoCameraProcessor, canvasStream } =
+            const {
+              videoCameraProcessor,
+              canvasStream,
+            }: { videoCameraProcessor: Camera; canvasStream: MediaStream } =
               await videoProcessor.current.createGaussianBlurBackgroundStream({
                 track,
                 videoElementId: 'video-preview',
