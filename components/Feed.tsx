@@ -193,24 +193,24 @@ function Feed({
             />
           </div>
         )}
-        {/* {(stream?.videoTrack || stream?.audioTrack) && ( */}
-        <VideoTrack
-          id={VIDEO_ELEMENT_ID}
-          dataTestId={`video-feed-${stream?.key}-${
-            stream?.isVideoEnabled ? 'enabled' : 'notEnabled'
-          }`}
-          //@ts-ignore
-          stream={stream}
-          mirrorVideo={mirrorVideo}
-          isPresentation={isPresentation}
-        />
-        {/* )} */}
+        {(stream?.videoTrack || stream?.audioTrack) && (
+          <VideoTrack
+            id={VIDEO_ELEMENT_ID}
+            dataTestId={`video-feed-${stream?.key}-${
+              stream?.isVideoEnabled ? 'enabled' : 'notEnabled'
+            }`}
+            //@ts-ignore
+            stream={stream}
+            mirrorVideo={mirrorVideo}
+            isPresentation={isPresentation}
+          />
+        )}
 
         {/* Large center text: */}
         {!stream?.isVideoEnabled && (
           <>
             <Box
-              style={{ position: 'absolute', top: 0, left: 0 }}
+              style={{ position: 'absolute', top: 0, left: 0, zIndex: 2 }}
               align='center'
               justify='center'
               fill

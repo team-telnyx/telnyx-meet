@@ -220,6 +220,7 @@ export default function RoomControls({
             }
             camera.current = null;
 
+            debugger;
             if (track && kind === 'video') {
               setVideoInputDeviceId(track.id);
               setLocalTracks((tracks) => ({ ...tracks, [kind]: track }));
@@ -312,6 +313,7 @@ export default function RoomControls({
         }}
         name={'images'}
         onChange={handleVirtualBg}
+        disabled={!selfStream?.videoTrack}
       >
         <option value={'none'}>none</option>
         <option value={'blur'}>blur</option>
