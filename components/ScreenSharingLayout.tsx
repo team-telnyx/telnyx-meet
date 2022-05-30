@@ -92,8 +92,6 @@ function ScreenSharingLayout({
         return null;
       }
 
-      debugger;
-
       return (
         <Feed
           dataId='video-feed-sidebar'
