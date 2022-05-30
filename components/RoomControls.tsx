@@ -1,4 +1,12 @@
-import { useState, useEffect, useContext, useRef, ChangeEvent } from 'react';
+import {
+  useState,
+  useEffect,
+  useContext,
+  useRef,
+  ChangeEvent,
+  RefObject,
+  MutableRefObject,
+} from 'react';
 import { getDevices, Participant, Room, Stream } from '@telnyx/video';
 import { Box, Button, Menu, Text } from 'grommet';
 import {
@@ -133,6 +141,7 @@ export default function RoomControls({
   sendMessage,
   messages,
   getLocalParticipant,
+  camera,
 }: {
   isParticipantsListVisible: boolean;
   isInviteParticipantVisible: boolean;
@@ -148,6 +157,7 @@ export default function RoomControls({
   sendMessage: Room['sendMessage'];
   messages: TelnyxRoom['messages'];
   getLocalParticipant: () => Participant;
+  camera: MutableRefObject<any>;
 }) {
   const {
     audioInputDeviceId,
@@ -163,7 +173,6 @@ export default function RoomControls({
     optionalFeatures,
   } = useContext(TelnyxMeetContext);
 
-  const camera = useRef<any>(null);
   const videoProcessor = useRef<any>(null);
 
   const [devices, setDevices] = useState<any>({});

@@ -27,6 +27,7 @@ function Feed({
   mirrorVideo = false,
   getStatsForParticipantStream,
   dataId,
+  hasVirtualBackground,
 }: {
   participant: Participant;
   stream?: Stream;
@@ -34,6 +35,7 @@ function Feed({
   getStatsForParticipantStream: TelnyxRoom['getWebRTCStatsForStream'];
   mirrorVideo: boolean;
   dataId?: string;
+  hasVirtualBackground: boolean;
 }) {
   const { networkMetrics } = useContext(TelnyxMeetContext);
   const isTelephonyEngineParticipant =
@@ -203,6 +205,7 @@ function Feed({
             stream={stream}
             mirrorVideo={mirrorVideo}
             isPresentation={isPresentation}
+            hasVirtualBackground={hasVirtualBackground}
           />
         )}
 

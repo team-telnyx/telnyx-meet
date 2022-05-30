@@ -8,12 +8,14 @@ export default function VideoTrack({
   mirrorVideo,
   dataTestId,
   isPresentation,
+  hasVirtualBackground = false,
 }: {
   id: string;
   stream: Stream;
   mirrorVideo: boolean;
   dataTestId: string;
   isPresentation: boolean;
+  hasVirtualBackground: boolean;
 }) {
   const [isPortrait, setIsPortrait] = useState(false);
   const videoElRef = useRef<HTMLVideoElement>(null);
@@ -53,7 +55,7 @@ export default function VideoTrack({
           width: '100%',
           objectFit: isPortrait || isPresentation ? 'contain' : 'cover',
           position: 'absolute',
-          zIndex: 1,
+          zIndex: hasVirtualBackground ? 1 : 0,
         }}
         id='canvas'
         width={250}
@@ -73,6 +75,7 @@ export default function VideoTrack({
           width: '100%',
           objectFit: isPortrait || isPresentation ? 'contain' : 'cover',
           position: 'absolute',
+          zIndex: !hasVirtualBackground ? 1 : 0,
         }}
         width={250}
         height={80}

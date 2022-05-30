@@ -1,4 +1,10 @@
-import React, { ReactElement, useEffect, useState, ReactChild } from 'react';
+import React, {
+  ReactElement,
+  useEffect,
+  useState,
+  ReactChild,
+  MutableRefObject,
+} from 'react';
 import { Participant } from '@telnyx/video';
 import styled from 'styled-components';
 
@@ -40,6 +46,7 @@ function ScreenSharingLayout({
   getParticipantStream,
   getStatsForParticipantStream,
   dataTestId,
+  hasVirtualBackground,
 }: {
   participants: TelnyxRoom['state']['participants'];
   streams: TelnyxRoom['state']['streams']; // if this is removed, the feeds will not rerender when the streams update
@@ -49,6 +56,7 @@ function ScreenSharingLayout({
   getParticipantStream: TelnyxRoom['getParticipantStream'];
   getStatsForParticipantStream: TelnyxRoom['getWebRTCStatsForStream'];
   dataTestId: string;
+  hasVirtualBackground: boolean;
 }) {
   const USERS_PER_PAGE = 3;
   const NAVIGATION_BUTTONS_HEIGHT = 48;
@@ -84,6 +92,8 @@ function ScreenSharingLayout({
         return null;
       }
 
+      debugger;
+
       return (
         <Feed
           dataId='video-feed-sidebar'
@@ -93,6 +103,7 @@ function ScreenSharingLayout({
           isSpeaking={dominantSpeakerId === participant.id}
           mirrorVideo={participant.origin === 'local'}
           getStatsForParticipantStream={getStatsForParticipantStream}
+          hasVirtualBackground={hasVirtualBackground}
         />
       );
     })
@@ -130,6 +141,7 @@ function ScreenSharingLayout({
           isSpeaking={false}
           getStatsForParticipantStream={getStatsForParticipantStream}
           mirrorVideo={false}
+          hasVirtualBackground={hasVirtualBackground}
         />
       </div>
     </div>

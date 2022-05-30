@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { MutableRefObject } from 'react';
 import { Participant } from '@telnyx/video';
 
 import { TelnyxRoom } from 'hooks/room';
@@ -14,6 +14,7 @@ function Feeds({
   getParticipantStream,
   getStatsForParticipantStream,
   dataTestId,
+  camera,
 }: {
   participants: TelnyxRoom['state']['participants'];
   streams: TelnyxRoom['state']['streams'];
@@ -23,6 +24,7 @@ function Feeds({
   getParticipantStream: TelnyxRoom['getParticipantStream'];
   getStatsForParticipantStream: TelnyxRoom['getWebRTCStatsForStream'];
   dataTestId: string;
+  camera: MutableRefObject<any>;
 }) {
   if (presenter) {
     return (
@@ -35,6 +37,7 @@ function Feeds({
         dominantSpeakerId={dominantSpeakerId}
         getParticipantStream={getParticipantStream}
         getStatsForParticipantStream={getStatsForParticipantStream}
+        hasVirtualBackground={camera?.current ? true : false}
       />
     );
   }
@@ -48,6 +51,7 @@ function Feeds({
       dominantSpeakerId={dominantSpeakerId}
       getParticipantStream={getParticipantStream}
       getStatsForParticipantStream={getStatsForParticipantStream}
+      hasVirtualBackground={camera?.current ? true : false}
     />
   );
 }

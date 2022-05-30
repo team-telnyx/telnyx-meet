@@ -1,4 +1,4 @@
-import React, { useState, useContext } from 'react';
+import React, { useState, useContext, useRef } from 'react';
 import { Box, Text, Button } from 'grommet';
 import { State, Participant } from '@telnyx/video';
 
@@ -37,6 +37,8 @@ function Room({
   const [invitedParticipants, setInvitedParticipants] = useState<
     Map<string, boolean>
   >(new Map());
+
+  const camera = useRef<any>();
 
   const onParticipantJoined = (
     participantId: Participant['id'],
@@ -158,6 +160,7 @@ function Room({
                 streams={room.state.streams}
                 getParticipantStream={room.getParticipantStream}
                 getStatsForParticipantStream={room.getWebRTCStatsForStream}
+                camera={camera}
               />
             </React.Fragment>
           )}
@@ -205,6 +208,7 @@ function Room({
             sendMessage={room.sendMessage}
             messages={room.messages}
             getLocalParticipant={room.getLocalParticipant}
+            camera={camera}
           />
           <RoomAudio
             useMixedAudioForOutput={optionalFeatures.useMixedAudioForOutput}

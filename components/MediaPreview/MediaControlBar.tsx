@@ -297,7 +297,11 @@ function MediaControlBar({
       }
     );
     return (
-      <select name={'images'} onChange={handleVirtualBg}>
+      <select
+        disabled={!isVideoTrackEnabled}
+        name={'images'}
+        onChange={handleVirtualBg}
+      >
         <option value={'none'}>none</option>
         <option value={'blur'}>blur</option>
         {options}
