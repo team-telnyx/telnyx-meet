@@ -22,6 +22,7 @@ import {
   getItem,
   USER_PREFERENCE_AUDIO_ENABLED,
   USER_PREFERENCE_VIDEO_ENABLED,
+  USER_PREFERENCE_BACKGROUND_TYPE,
 } from 'utils/storage';
 
 import { MediaDeviceErrors } from './helper';
@@ -183,6 +184,7 @@ function MediaControlBar({
   }, []);
 
   const handleVirtualBg = async (e: ChangeEvent<HTMLSelectElement>) => {
+    saveItem(USER_PREFERENCE_BACKGROUND_TYPE, e.target.value);
     if (!e.target.value || e.target.value === 'none') {
       getUserMedia({
         kind: 'video',
