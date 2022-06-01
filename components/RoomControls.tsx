@@ -32,7 +32,11 @@ import ErrorDialog from 'components/ErrorDialog';
 import { Chat } from './Chat';
 
 import { getUserMedia } from 'utils/userMedia';
-import { getItem, USER_PREFERENCE_BACKGROUND_TYPE } from 'utils/storage';
+import {
+  getItem,
+  saveItem,
+  USER_PREFERENCE_BACKGROUND_TYPE,
+} from 'utils/storage';
 import { addVirtualBackgroundStream } from 'utils/virtualBackground';
 
 const breakpointMedium = 1023;
@@ -215,6 +219,7 @@ export default function RoomControls({
     .replace(' ', '-')}`;
 
   const handleVirtualBg = async (e: ChangeEvent<HTMLSelectElement>) => {
+    saveItem(USER_PREFERENCE_BACKGROUND_TYPE, e.target.value);
     setVirtualBackgroundType(e.target.value);
     getUserMedia({
       kind: 'video',
