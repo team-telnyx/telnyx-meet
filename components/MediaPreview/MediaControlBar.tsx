@@ -14,7 +14,6 @@ import {
 import { Box, Button, Text } from 'grommet';
 import { FontAwesomeIcon as BaseFontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import styled from 'styled-components';
-import { VideoProcessor, Camera } from '@telnyx/video-processors';
 
 import { getUserMedia } from 'utils/userMedia';
 import {
@@ -26,7 +25,7 @@ import {
 } from 'utils/storage';
 
 import { MediaDeviceErrors } from './helper';
-import { addVirtualBackgroungStream } from 'utils/virtualBackground';
+import { addVirtualBackgroundStream } from 'utils/virtualBackground';
 
 const breakpointLarge = 1450;
 
@@ -197,7 +196,7 @@ function MediaControlBar({
           track: MediaStreamTrack | undefined
         ) => {
           if (kind === 'video' && track) {
-            const videoTrack = await addVirtualBackgroungStream({
+            const videoTrack = await addVirtualBackgroundStream({
               videoProcessor: videoProcessor,
               camera: camera,
               videoElementId: 'video-preview',

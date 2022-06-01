@@ -11,7 +11,7 @@ export interface VirtualBackground {
   backgroundValue: string;
 }
 
-export const addVirtualBackgroungStream = async ({
+export const addVirtualBackgroundStream = async ({
   videoProcessor,
   camera,
   videoElementId,
