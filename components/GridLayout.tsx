@@ -104,7 +104,9 @@ function GridLayout({
           isSpeaking={dominantSpeakerId === participant.id}
           mirrorVideo={participant.origin === 'local'}
           getStatsForParticipantStream={getStatsForParticipantStream}
-          hasVirtualBackground={hasVirtualBackground}
+          hasVirtualBackground={
+            hasVirtualBackground && participant.origin === 'local'
+          }
         />
       );
     })

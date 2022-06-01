@@ -74,7 +74,7 @@ function MediaControlBar({
   const videoProcessor = useRef<any>(null);
 
   const [virtualBackgroundType, setVirtualBackgroundType] = useState<
-    string | null
+    string | undefined
   >();
 
   const handleTrackUpdate = (
