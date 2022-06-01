@@ -34,6 +34,7 @@ import ErrorDialog from 'components/ErrorDialog';
 import { Chat } from './Chat';
 
 import { getUserMedia } from 'utils/userMedia';
+import { getItem, USER_PREFERENCE_BACKGROUND_TYPE } from 'utils/storage';
 
 const breakpointMedium = 1023;
 
@@ -171,6 +172,7 @@ export default function RoomControls({
     setIsAudioTrackEnabled,
     setIsVideoTrackEnabled,
     optionalFeatures,
+    isVideoPlaying,
   } = useContext(TelnyxMeetContext);
 
   const videoProcessor = useRef<any>(null);
@@ -570,6 +572,32 @@ export default function RoomControls({
     // TODO: avoid disable line
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useEffect(() => {
+    if (isVideoPlaying) {
+      const videoElement = document.getElementById(VIDEO_ELEMENT_ID);
+      if (videoElement) {
+        getUserMedia({
+          kind: 'video',
+          deviceId: undefined,
+          options: optionalFeatures,
+          callbacks: {
+            onTrackUpdate: (
+              kind: 'audio' | 'video',
+              track: MediaStreamTrack | undefined
+            ) => {
+              const backgroundValue = getItem(USER_PREFERENCE_BACKGROUND_TYPE);
+              if (backgroundValue) {
+                addVirtualBackgroungStream('video', track, backgroundValue);
+              }
+            },
+            onDeviceError: handleDeviceError,
+          },
+        });
+      }
+    }
+    //@ts-ignore
+  }, [isVideoPlaying]);
 
   return (
     <Box

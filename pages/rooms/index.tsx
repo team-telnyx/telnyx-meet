@@ -84,6 +84,8 @@ export default function Rooms({
   };
   const [networkMetrics, setNetworkMetrics] = useState<NetworkMetrics>();
 
+  const [isVideoPlaying, setVideoPlaying] = useState<boolean>(false);
+
   useEffect(() => {
     setUsername(getUserName());
   }, []);
@@ -127,6 +129,8 @@ export default function Rooms({
           networkMetrics,
           setNetworkMetrics,
           optionalFeatures,
+          isVideoPlaying,
+          setVideoPlaying,
         }}
       >
         <Main align='center' justify='center' background='light-2'>

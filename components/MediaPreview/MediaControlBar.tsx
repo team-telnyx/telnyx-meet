@@ -26,6 +26,7 @@ import {
 } from 'utils/storage';
 
 import { MediaDeviceErrors } from './helper';
+import { addVirtualBackgroungStream } from 'utils/virtualBackground';
 
 const breakpointLarge = 1450;
 
@@ -185,34 +186,6 @@ function MediaControlBar({
 
   const handleVirtualBg = async (e: ChangeEvent<HTMLSelectElement>) => {
     saveItem(USER_PREFERENCE_BACKGROUND_TYPE, e.target.value);
-    if (!e.target.value || e.target.value === 'none') {
-      getUserMedia({
-        kind: 'video',
-        deviceId: videoInputDeviceId,
-        options: optionalFeatures,
-        callbacks: {
-          onTrackUpdate: async (
-            kind: 'audio' | 'video',
-            track: MediaStreamTrack | undefined
-          ) => {
-            await camera.current?.stop();
-            if (
-              videoProcessor.current &&
-              videoProcessor.current?.segmentation
-            ) {
-              await videoProcessor.current?.stop();
-              videoProcessor.current = null;
-            }
-            camera.current = null;
-
-            if (track && kind === 'video') {
-              setLocalTracks((tracks) => ({ ...tracks, [kind]: track }));
-            }
-          },
-          onDeviceError: handleDeviceError,
-        },
-      });
-    }
 
     getUserMedia({
       kind: 'video',
@@ -223,69 +196,22 @@ function MediaControlBar({
           kind: 'audio' | 'video',
           track: MediaStreamTrack | undefined
         ) => {
-          if (e.target.value !== 'blur') {
-            // We use this image as our virtual background
-            const image = new Image(996, 664);
-            image.src = `//localhost:3000/${e.target.value}`;
-            if (
-              !videoProcessor.current ||
-              !videoProcessor.current?.segmentation
-            ) {
-              videoProcessor.current = new VideoProcessor();
-            }
-
-            if (camera.current) {
-              await camera.current?.stop();
-            }
-
-            const {
-              videoCameraProcessor,
-              canvasStream,
-            }: { videoCameraProcessor: Camera; canvasStream: MediaStream } =
-              await videoProcessor.current.createVirtualBackgroundStream({
-                track,
-                videoElementId: 'video-preview',
-                canvasElementId: 'canvas',
-                image,
-                frameRate: 20,
-              });
-
-            videoCameraProcessor.start();
-            camera.current = videoCameraProcessor;
+          if (kind === 'video' && track) {
+            const videoTrack = await addVirtualBackgroungStream({
+              videoProcessor: videoProcessor,
+              camera: camera,
+              videoElementId: 'video-preview',
+              canvasElementId: 'canvas',
+              track: track,
+              backgroundValue: e.target.value,
+            });
 
             setLocalTracks((value) => ({
               ...value,
-              video: canvasStream.getVideoTracks()[0],
-            }));
-          } else {
-            if (
-              !videoProcessor.current ||
-              !videoProcessor.current?.segmentation
-            ) {
-              videoProcessor.current = new VideoProcessor();
-            }
-
-            if (camera.current) {
-              await camera.current?.stop();
-            }
-
-            const {
-              videoCameraProcessor,
-              canvasStream,
-            }: { videoCameraProcessor: Camera; canvasStream: MediaStream } =
-              await videoProcessor.current.createGaussianBlurBackgroundStream({
-                track,
-                videoElementId: 'video-preview',
-                frameRate: 20,
-                canvasElementId: 'canvas',
-              });
-
-            videoCameraProcessor.start();
-            camera.current = videoCameraProcessor;
-
-            setLocalTracks((value) => ({
-              ...value,
-              video: canvasStream.getVideoTracks()[0],
+              video:
+                !e.target.value || e.target.value === 'none'
+                  ? track
+                  : videoTrack,
             }));
           }
         },
