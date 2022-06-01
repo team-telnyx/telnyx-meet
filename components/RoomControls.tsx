@@ -23,7 +23,6 @@ import {
   faCheck,
 } from '@fortawesome/free-solid-svg-icons';
 import styled from 'styled-components';
-import { VideoProcessor, Camera } from '@telnyx/video-processors';
 
 import { TelnyxMeetContext } from 'contexts/TelnyxMeetContext';
 import { TelnyxRoom } from 'hooks/room';
@@ -33,6 +32,8 @@ import ErrorDialog from 'components/ErrorDialog';
 import { Chat } from './Chat';
 
 import { getUserMedia } from 'utils/userMedia';
+import { getItem, USER_PREFERENCE_BACKGROUND_TYPE } from 'utils/storage';
+import { addVirtualBackgroundStream } from 'utils/virtualBackground';
 
 const breakpointMedium = 1023;
 
@@ -170,9 +171,14 @@ export default function RoomControls({
     setIsAudioTrackEnabled,
     setIsVideoTrackEnabled,
     optionalFeatures,
+    isVideoPlaying,
   } = useContext(TelnyxMeetContext);
 
   const videoProcessor = useRef<any>(null);
+
+  const [virtualBackgroundType, setVirtualBackgroundType] = useState<
+    string | undefined
+  >();
 
   const [devices, setDevices] = useState<any>({});
   const [localTracks, setLocalTracks] = useState<{
@@ -209,6 +215,7 @@ export default function RoomControls({
     .replace(' ', '-')}`;
 
   const handleVirtualBg = async (e: ChangeEvent<HTMLSelectElement>) => {
+    setVirtualBackgroundType(e.target.value);
     getUserMedia({
       kind: 'video',
       deviceId: videoInputDeviceId,
@@ -217,91 +224,25 @@ export default function RoomControls({
           kind: 'audio' | 'video',
           track: MediaStreamTrack | undefined
         ) => {
-          if (!e.target.value || e.target.value === 'none') {
-            await camera.current?.stop();
-            if (
-              videoProcessor.current &&
-              videoProcessor.current?.segmentation
-            ) {
-              await videoProcessor.current?.stop();
-              videoProcessor.current = null;
-            }
-            camera.current = null;
+          if (kind === 'video' && track) {
+            const videoTrack = await addVirtualBackgroundStream({
+              videoProcessor: videoProcessor,
+              camera: camera,
+              videoElementId: VIDEO_ELEMENT_ID,
+              canvasElementId: 'canvas',
+              track: track,
+              backgroundValue: e.target.value,
+            });
 
-            if (track && kind === 'video') {
-              setVideoInputDeviceId(track.id);
-              setLocalTracks((tracks) => ({ ...tracks, [kind]: track }));
-            }
-          } else if (e.target.value !== 'blur') {
-            // We use this image as our virtual background
-            const image = new Image(996, 664);
-            image.src = `//localhost:3000/${e.target.value}`;
-            if (
-              !videoProcessor.current ||
-              !videoProcessor.current?.segmentation
-            ) {
-              videoProcessor.current = new VideoProcessor();
-            }
+            setVideoInputDeviceId(track.id);
 
-            if (camera.current) {
-              await camera.current?.stop();
-            }
-
-            const {
-              videoCameraProcessor,
-              canvasStream,
-            }: { videoCameraProcessor: Camera; canvasStream: MediaStream } =
-              await videoProcessor.current.createVirtualBackgroundStream({
-                track,
-                videoElementId: VIDEO_ELEMENT_ID,
-                canvasElementId: 'canvas',
-                image,
-                frameRate: 20,
-              });
-
-            videoCameraProcessor.start();
-            camera.current = videoCameraProcessor;
-
-            if (track && kind === 'video') {
-              setVideoInputDeviceId(track.id);
-              setLocalTracks((tracks) => ({
-                ...tracks,
-                video: canvasStream.getVideoTracks()[0],
-              }));
-            }
-          } else {
-            if (
-              !videoProcessor.current ||
-              !videoProcessor.current?.segmentation
-            ) {
-              videoProcessor.current = new VideoProcessor();
-            }
-
-            if (camera.current) {
-              await camera.current?.stop();
-            }
-
-            const {
-              videoCameraProcessor,
-              canvasStream,
-            }: { videoCameraProcessor: Camera; canvasStream: MediaStream } =
-              await videoProcessor.current.createGaussianBlurBackgroundStream({
-                track,
-                videoElementId: VIDEO_ELEMENT_ID,
-                frameRate: 20,
-                canvasElementId: 'canvas',
-              });
-
-            videoCameraProcessor.start();
-            camera.current = videoCameraProcessor;
-
-            if (track && kind === 'video') {
-              setVideoInputDeviceId(track.id);
-              setLocalTracks((tracks) => ({
-                ...tracks,
-                video: canvasStream.getVideoTracks()[0],
-              }));
-            }
+            setLocalTracks((value) => ({
+              ...value,
+              video:
+                !e.target.value || e.target.value === 'none'
+                  ? track
+                  : videoTrack,
+            }));
           }
         },
         onDeviceError: handleDeviceError,
@@ -326,6 +267,7 @@ export default function RoomControls({
         }}
         name={'images'}
         onChange={handleVirtualBg}
+        value={virtualBackgroundType}
         disabled={!selfStream?.videoTrack}
       >
         <option value={'none'}>none</option>
@@ -562,6 +504,51 @@ export default function RoomControls({
     // TODO: avoid disable line
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useEffect(() => {
+    if (isVideoPlaying) {
+      const videoElement = document.getElementById(VIDEO_ELEMENT_ID);
+      if (videoElement) {
+        getUserMedia({
+          kind: 'video',
+          deviceId: undefined,
+          options: optionalFeatures,
+          callbacks: {
+            onTrackUpdate: (
+              kind: 'audio' | 'video',
+              track: MediaStreamTrack | undefined
+            ) => {
+              const backgroundValue = getItem(USER_PREFERENCE_BACKGROUND_TYPE);
+              if (backgroundValue) {
+                if (kind === 'video' && track) {
+                  addVirtualBackgroundStream({
+                    videoProcessor: videoProcessor,
+                    camera: camera,
+                    videoElementId: VIDEO_ELEMENT_ID,
+                    canvasElementId: 'canvas',
+                    track: track,
+                    backgroundValue: backgroundValue,
+                  }).then((videoTrack) => {
+                    setVideoInputDeviceId(track.id);
+                    setLocalTracks((value) => ({
+                      ...value,
+                      video:
+                        !backgroundValue || backgroundValue === 'none'
+                          ? track
+                          : videoTrack,
+                    }));
+                    setVirtualBackgroundType(backgroundValue);
+                  });
+                }
+              }
+            },
+            onDeviceError: handleDeviceError,
+          },
+        });
+      }
+    }
+    //@ts-ignore
+  }, [isVideoPlaying]);
 
   return (
     <Box

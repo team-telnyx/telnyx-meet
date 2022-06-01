@@ -63,7 +63,8 @@ export const useRoom = ({
   callbacks,
 }: Props): TelnyxRoom | undefined => {
   const [_, setDebugState] = useContext(DebugContext);
-  const { sendNotification, setNetworkMetrics } = useContext(TelnyxMeetContext);
+  const { sendNotification, setNetworkMetrics, setVideoPlaying } =
+    useContext(TelnyxMeetContext);
   const roomRef = useRef<Room>();
   const [state, setState] = useState<State>();
   const [clientToken, setClientToken] = useState<string>(tokens.clientToken);
@@ -213,11 +214,19 @@ export const useRoom = ({
 
         roomRef.current.on(
           'track_enabled',
-          (participantId, key, kind, state) => {}
+          (participantId, key, kind, state) => {
+            if (kind === 'video') {
+              setVideoPlaying(true);
+            }
+          }
         );
         roomRef.current.on(
           'track_disabled',
-          (participantId, key, kind, state) => {}
+          (participantId, key, kind, state) => {
+            if (kind === 'video') {
+              setVideoPlaying(false);
+            }
+          }
         );
 
         roomRef.current.on(
