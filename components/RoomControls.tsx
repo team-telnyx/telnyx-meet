@@ -506,7 +506,11 @@ export default function RoomControls({
   }, []);
 
   useEffect(() => {
-    if (isVideoPlaying) {
+    if (
+      isVideoPlaying &&
+      optionalFeatures &&
+      optionalFeatures.isVirtualBackgroundFeatureEnabled
+    ) {
       const videoElement = document.getElementById(VIDEO_ELEMENT_ID);
       if (videoElement) {
         getUserMedia({
@@ -547,7 +551,7 @@ export default function RoomControls({
         });
       }
     }
-    //@ts-ignore
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isVideoPlaying]);
 
   return (
@@ -635,7 +639,9 @@ export default function RoomControls({
             </Box>
           </Button>
         </Box>
-        {renderSelectBackgroungImage()}
+        {optionalFeatures &&
+          optionalFeatures.isVirtualBackgroundFeatureEnabled &&
+          renderSelectBackgroungImage()}
 
         <ControllerBox width='80px'>
           <Button
