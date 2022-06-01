@@ -3,7 +3,7 @@ import { MutableRefObject } from 'react';
 import { VideoProcessor, Camera } from '@telnyx/video-processors';
 
 export interface VirtualBackground {
-  videoProcessor: MutableRefObject<any>;
+  videoProcessor: MutableRefObject<VideoProcessor>;
   camera: MutableRefObject<Camera>;
   videoElementId: string;
   canvasElementId: string;
