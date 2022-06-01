@@ -23,5 +23,5 @@ export const getItem = (key: string) => {
     console.warn('localStorage not supported');
   }
 
-  return localStorage.getItem(key);
+  return localStorage.getItem(key) || undefined;
 };

@@ -4,6 +4,7 @@ import React, {
   SetStateAction,
   useRef,
   ChangeEvent,
+  useState,
 } from 'react';
 import {
   faMicrophone,
@@ -71,6 +72,10 @@ function MediaControlBar({
   camera: any;
 }) {
   const videoProcessor = useRef<any>(null);
+
+  const [virtualBackgroundType, setVirtualBackgroundType] = useState<
+    string | null
+  >();
 
   const handleTrackUpdate = (
     kind: 'audio' | 'video',
@@ -185,7 +190,7 @@ function MediaControlBar({
 
   const handleVirtualBg = async (e: ChangeEvent<HTMLSelectElement>) => {
     saveItem(USER_PREFERENCE_BACKGROUND_TYPE, e.target.value);
-
+    setVirtualBackgroundType(e.target.value);
     getUserMedia({
       kind: 'video',
       deviceId: videoInputDeviceId,
@@ -234,6 +239,7 @@ function MediaControlBar({
         disabled={!isVideoTrackEnabled}
         name={'images'}
         onChange={handleVirtualBg}
+        value={virtualBackgroundType}
       >
         <option value={'none'}>none</option>
         <option value={'blur'}>blur</option>

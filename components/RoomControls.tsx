@@ -5,7 +5,6 @@ import {
   useRef,
   ChangeEvent,
   MutableRefObject,
-  useCallback,
 } from 'react';
 import { getDevices, Participant, Room, Stream } from '@telnyx/video';
 import { Box, Button, Menu, Text } from 'grommet';
@@ -24,7 +23,6 @@ import {
   faCheck,
 } from '@fortawesome/free-solid-svg-icons';
 import styled from 'styled-components';
-import { VideoProcessor, Camera } from '@telnyx/video-processors';
 
 import { TelnyxMeetContext } from 'contexts/TelnyxMeetContext';
 import { TelnyxRoom } from 'hooks/room';
@@ -178,6 +176,10 @@ export default function RoomControls({
 
   const videoProcessor = useRef<any>(null);
 
+  const [virtualBackgroundType, setVirtualBackgroundType] = useState<
+    string | undefined
+  >();
+
   const [devices, setDevices] = useState<any>({});
   const [localTracks, setLocalTracks] = useState<{
     audio: MediaStreamTrack | undefined;
@@ -213,6 +215,7 @@ export default function RoomControls({
     .replace(' ', '-')}`;
 
   const handleVirtualBg = async (e: ChangeEvent<HTMLSelectElement>) => {
+    setVirtualBackgroundType(e.target.value);
     getUserMedia({
       kind: 'video',
       deviceId: videoInputDeviceId,
@@ -264,6 +267,7 @@ export default function RoomControls({
         }}
         name={'images'}
         onChange={handleVirtualBg}
+        value={virtualBackgroundType}
         disabled={!selfStream?.videoTrack}
       >
         <option value={'none'}>none</option>
@@ -533,6 +537,7 @@ export default function RoomControls({
                           ? track
                           : videoTrack,
                     }));
+                    setVirtualBackgroundType(backgroundValue);
                   });
                 }
               }
