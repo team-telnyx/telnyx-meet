@@ -1237,7 +1237,7 @@
     "@mediapipe/camera_utils" "^0.3.1640029074"
     "@mediapipe/selfie_segmentation" "^0.1.1632777926"
 
-"@telnyx/video@^0.2.0-alpha.19":
+"@telnyx/video@^0.2.0-alpha.20":
   version "0.2.0-alpha.20"
   resolved "https://registry.yarnpkg.com/@telnyx/video/-/video-0.2.0-alpha.20.tgz#51affc2b5c81d187f75712fe0fd67b04486fddcc"
   integrity sha512-cqCKJRTBHwp151AryyKFlvEh1ZTUYfy/cgfrNZSMvtg+WDBgnSoktBdqLOG+qebsg7asaYYXgH6RawIEhGL9Ww==
