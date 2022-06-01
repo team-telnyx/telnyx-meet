@@ -74,7 +74,7 @@ function MediaControlBar({
   const videoProcessor = useRef<any>(null);
 
   const [virtualBackgroundType, setVirtualBackgroundType] = useState<
-    string | null
+    string | undefined
   >();
 
   const handleTrackUpdate = (
@@ -188,6 +188,18 @@ function MediaControlBar({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  useEffect(() => {
+    if (
+      optionalFeatures &&
+      optionalFeatures.isVirtualBackgroundFeatureEnabled
+    ) {
+      const backgroundValue = getItem(USER_PREFERENCE_BACKGROUND_TYPE);
+      if (backgroundValue) {
+        saveItem(USER_PREFERENCE_BACKGROUND_TYPE, 'none');
+      }
+    }
+  }, []);
+
   const handleVirtualBg = async (e: ChangeEvent<HTMLSelectElement>) => {
     saveItem(USER_PREFERENCE_BACKGROUND_TYPE, e.target.value);
     setVirtualBackgroundType(e.target.value);
@@ -290,7 +302,9 @@ function MediaControlBar({
           </Text>
         </Box>
       </Button>
-      {renderSelectBackgroungImage()}
+      {optionalFeatures &&
+        optionalFeatures.isVirtualBackgroundFeatureEnabled &&
+        renderSelectBackgroungImage()}
     </React.Fragment>
   );
 }

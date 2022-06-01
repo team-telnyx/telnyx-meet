@@ -12,6 +12,7 @@ const RoomId = () => {
     simulcast: string;
     dial_out: string;
     use_mixed_audio: string;
+    virtual_background: string;
   };
 
   const optionalFeatures = {
@@ -20,6 +21,8 @@ const RoomId = () => {
     isDialOutEnabled: queryParameters.dial_out === 'true',
     useMixedAudioForOutput:
       queryParameters.use_mixed_audio === 'false' ? false : true, // by default this is true
+    isVirtualBackgroundFeatureEnabled:
+      queryParameters.virtual_background === 'true',
   };
 
   return (

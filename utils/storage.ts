@@ -8,10 +8,10 @@ export const saveItem = (key: string, value: string) => {
     throw new Error('key and value must be provided');
   }
 
-  if (!window || !window.localStorage) {
-    console.warn('localStorage not supported');
+  if (!window || !window.sessionStorage) {
+    console.warn('sessionStorage not supported');
   }
-  localStorage.setItem(key, value);
+  sessionStorage.setItem(key, value);
 };
 
 export const getItem = (key: string) => {
@@ -19,9 +19,9 @@ export const getItem = (key: string) => {
     throw new Error('No key provided');
   }
 
-  if (!window || !window.localStorage) {
-    console.warn('localStorage not supported');
+  if (!window || !window.sessionStorage) {
+    console.warn('sessionStorage not supported');
   }
 
-  return localStorage.getItem(key) || undefined;
+  return sessionStorage.getItem(key) || undefined;
 };

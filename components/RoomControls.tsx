@@ -32,7 +32,11 @@ import ErrorDialog from 'components/ErrorDialog';
 import { Chat } from './Chat';
 
 import { getUserMedia } from 'utils/userMedia';
-import { getItem, USER_PREFERENCE_BACKGROUND_TYPE } from 'utils/storage';
+import {
+  getItem,
+  saveItem,
+  USER_PREFERENCE_BACKGROUND_TYPE,
+} from 'utils/storage';
 import { addVirtualBackgroundStream } from 'utils/virtualBackground';
 
 const breakpointMedium = 1023;
@@ -215,6 +219,7 @@ export default function RoomControls({
     .replace(' ', '-')}`;
 
   const handleVirtualBg = async (e: ChangeEvent<HTMLSelectElement>) => {
+    saveItem(USER_PREFERENCE_BACKGROUND_TYPE, e.target.value);
     setVirtualBackgroundType(e.target.value);
     getUserMedia({
       kind: 'video',
@@ -506,7 +511,11 @@ export default function RoomControls({
   }, []);
 
   useEffect(() => {
-    if (isVideoPlaying) {
+    if (
+      isVideoPlaying &&
+      optionalFeatures &&
+      optionalFeatures.isVirtualBackgroundFeatureEnabled
+    ) {
       const videoElement = document.getElementById(VIDEO_ELEMENT_ID);
       if (videoElement) {
         getUserMedia({
@@ -547,7 +556,7 @@ export default function RoomControls({
         });
       }
     }
-    //@ts-ignore
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isVideoPlaying]);
 
   return (
@@ -635,7 +644,9 @@ export default function RoomControls({
             </Box>
           </Button>
         </Box>
-        {renderSelectBackgroungImage()}
+        {optionalFeatures &&
+          optionalFeatures.isVirtualBackgroundFeatureEnabled &&
+          renderSelectBackgroungImage()}
 
         <ControllerBox width='80px'>
           <Button
