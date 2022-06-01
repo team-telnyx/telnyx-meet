@@ -1237,17 +1237,10 @@
     "@mediapipe/camera_utils" "^0.3.1640029074"
     "@mediapipe/selfie_segmentation" "^0.1.1632777926"
 
-"@telnyx/video-processors@./telnyx-video-processors-v0.0.0-alpha.tgz":
-  version "0.0.0-alpha"
-  resolved "./telnyx-video-processors-v0.0.0-alpha.tgz#979f9f6a34d2960e1ca41785a7acd374ca23e44a"
-  dependencies:
-    "@mediapipe/camera_utils" "^0.3.1640029074"
-    "@mediapipe/selfie_segmentation" "^0.1.1632777926"
-
-"@telnyx/video@^0.2.0-alpha.19":
-  version "0.2.0-alpha.19"
-  resolved "https://registry.yarnpkg.com/@telnyx/video/-/video-0.2.0-alpha.19.tgz#778b8724a73460c70b1c8e7f2f848e1df50dc234"
-  integrity sha512-1m1LSLibH5XZy0C5BSEq2FnEBfeFYDQeNHIDk7uEje+1zdxA22QSgRwn+YTpF9fQSeDQnjsmCe9t5AVKoq6Mvg==
+"@telnyx/video@^0.2.0-alpha.20":
+  version "0.2.0-alpha.20"
+  resolved "https://registry.yarnpkg.com/@telnyx/video/-/video-0.2.0-alpha.20.tgz#51affc2b5c81d187f75712fe0fd67b04486fddcc"
+  integrity sha512-cqCKJRTBHwp151AryyKFlvEh1ZTUYfy/cgfrNZSMvtg+WDBgnSoktBdqLOG+qebsg7asaYYXgH6RawIEhGL9Ww==
   dependencies:
     "@types/uuid" "^8.3.0"
     events "^3.3.0"
