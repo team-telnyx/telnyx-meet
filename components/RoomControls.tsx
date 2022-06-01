@@ -5,6 +5,7 @@ import {
   useRef,
   ChangeEvent,
   MutableRefObject,
+  useCallback,
 } from 'react';
 import { getDevices, Participant, Room, Stream } from '@telnyx/video';
 import { Box, Button, Menu, Text } from 'grommet';
@@ -33,7 +34,6 @@ import ErrorDialog from 'components/ErrorDialog';
 import { Chat } from './Chat';
 
 import { getUserMedia } from 'utils/userMedia';
-import { getItem, USER_PREFERENCE_BACKGROUND_TYPE } from 'utils/storage';
 
 const breakpointMedium = 1023;
 
@@ -209,12 +209,11 @@ export default function RoomControls({
     ?.toLowerCase()
     .replace(' ', '-')}`;
 
-  const addVirtualBackgroungStream = async (
+  const addVirtualBackgroungStreamCallBack = async (
     kind: 'audio' | 'video',
     track: MediaStreamTrack | undefined,
     backgroundValue: string
   ) => {
-    debugger;
     if (!backgroundValue || backgroundValue === 'none') {
       await camera.current?.stop();
       if (videoProcessor.current && videoProcessor.current?.segmentation) {
@@ -227,6 +226,7 @@ export default function RoomControls({
         setVideoInputDeviceId(track.id);
         setLocalTracks((tracks) => ({ ...tracks, [kind]: track }));
       }
+      return null;
     } else if (backgroundValue !== 'blur') {
       // We use this image as our virtual background
       const image = new Image(996, 664);
@@ -261,6 +261,7 @@ export default function RoomControls({
           video: canvasStream.getVideoTracks()[0],
         }));
       }
+      return canvasStream;
     } else {
       if (!videoProcessor.current || !videoProcessor.current?.segmentation) {
         videoProcessor.current = new VideoProcessor();
@@ -269,7 +270,6 @@ export default function RoomControls({
       if (camera.current) {
         await camera.current?.stop();
       }
-      debugger;
 
       const {
         videoCameraProcessor,
@@ -282,8 +282,6 @@ export default function RoomControls({
           canvasElementId: 'canvas',
         });
 
-      debugger;
-
       videoCameraProcessor.start();
       camera.current = videoCameraProcessor;
 
@@ -294,8 +292,15 @@ export default function RoomControls({
           video: canvasStream.getVideoTracks()[0],
         }));
       }
+      return canvasStream;
     }
   };
+
+  const addVirtualBackgroungStream = useCallback(
+    addVirtualBackgroungStreamCallBack,
+    [VIDEO_ELEMENT_ID, setVideoInputDeviceId, camera]
+  );
+
   const handleVirtualBg = async (e: ChangeEvent<HTMLSelectElement>) => {
     getUserMedia({
       kind: 'video',
@@ -557,27 +562,7 @@ export default function RoomControls({
         deviceId: videoInputDeviceId,
         options: optionalFeatures,
         callbacks: {
-          onTrackUpdate: async (
-            kind: 'audio' | 'video',
-            track: MediaStreamTrack | undefined
-          ) => {
-            if (kind === 'video') {
-              setIsVideoTrackEnabled(track !== undefined ? true : false);
-            }
-            setLocalTracks((tracks) => ({ ...tracks, [kind]: track }));
-
-            const backgroundVideoType = getItem(
-              USER_PREFERENCE_BACKGROUND_TYPE
-            );
-
-            if (backgroundVideoType) {
-              await addVirtualBackgroungStream(
-                'video',
-                track,
-                backgroundVideoType
-              );
-            }
-          },
+          onTrackUpdate: handleTrackUpdate,
           onDeviceError: handleDeviceError,
         },
       });
