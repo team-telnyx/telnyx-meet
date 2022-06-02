@@ -74,6 +74,7 @@ function Feed({
 
   function resetWebRTCStats() {
     clearInterval(intervalStatsId.current);
+    intervalStatsId.current = null;
     setStats(null);
     setShowStatsOverlay(false);
   }
@@ -88,22 +89,24 @@ function Feed({
         <button
           style={{ margin: 4 }}
           onClick={async () => {
-            intervalStatsId.current = setInterval(async () => {
-              try {
-                const stats = await getStatsForParticipantStream(
-                  participant.id,
-                  stream.key
-                );
+            if (!intervalStatsId.current) {
+              intervalStatsId.current = setInterval(async () => {
+                try {
+                  const stats = await getStatsForParticipantStream(
+                    participant.id,
+                    stream.key
+                  );
 
-                if (stats) {
-                  setStats(stats);
-                  setShowStatsOverlay(true);
+                  if (stats) {
+                    setStats(stats);
+                    setShowStatsOverlay(true);
+                  }
+                } catch (error) {
+                  resetWebRTCStats();
+                  throw error;
                 }
-              } catch (error) {
-                resetWebRTCStats();
-                throw error;
-              }
-            }, 500);
+              }, 500);
+            }
           }}
           disabled={!stream}
         >
@@ -157,7 +160,7 @@ function Feed({
             justifyContent: 'space-between',
           }}
         >
-          {renderStats()}
+          {stream?.isConfigured && renderStats()}
           {!showStatsOverlay && peerMetrics && (
             <NetworkMetricsMonitor
               connectionQuality={peerMetrics.connectionQuality}
