@@ -23,7 +23,6 @@ Head to [telnyx.com/sign-up](https://telnyx.com/sign-up) to sign up for your fre
 
 Once signed up you will have access to Telnyx Portal, where you can set up and manage your API KEY, and more.
 
-
 ## Step 2: Create an API KEY
 
 Go to [API Keys](https://portal.telnyx.com/#/app/api-keys) section and click on `Create API Key` button. It will generate a key for you. Copy and save this key in a safe place and don't share it with anyone it is a sensitive value.
@@ -40,7 +39,8 @@ You should read this documentation [video/Rooms](https://developers.telnyx.com/d
 
 Create a new copy of `.env.sample` with the name `.env.local` and set the env var `TELNYX_API_KEY` with your Telnyx API KEY value.
 
-Your `.env.local` file should look like this: 
+Your `.env.local` file should look like this:
+
 ```js
 TELNYX_API_HOST=https://api.telnyx.com/v2
 TELNYX_API_KEY="KEYae7df0................"
@@ -48,7 +48,7 @@ TELNYX_API_KEY="KEYae7df0................"
 
 ## Step 5: Run the code
 
-After you have cloned this repo: 
+After you have cloned this repo:
 
 ```bash
   % git clone https://github.com/team-telnyx/telnyx-meet.git
@@ -79,7 +79,3 @@ You can deploy this app with [Vercel](https://vercel.com) ([Documentation](https
 To deploy your local project to Vercel, push it to GitHub/GitLab/Bitbucket and [import to Vercel](https://vercel.com/new).
 
 **Important**: When you import your project on Vercel, make sure to click on **Environment Variables** and set them to match your `.env.local` file.
-
-## **Deploy using docker-compose**
-
-To deploy your local project to a docker container for development purposes, run `docker-compose up -d` from within the telnyx-meet directory.

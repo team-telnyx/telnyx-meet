@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useContext } from 'react';
+import React, { useState, useEffect, useRef, useContext } from 'react';
 import { Text } from 'grommet';
 import styled from 'styled-components';
 
@@ -37,31 +37,54 @@ const VideoPreview = styled.div`
   }
 `;
 
-function MediaPreview({ error, setError }: { error: any; setError: any }) {
+function MediaPreview() {
   const {
     audioInputDeviceId,
     videoInputDeviceId,
-    localTracks,
-    setLocalTracks,
+    isAudioTrackEnabled,
+    isVideoTrackEnabled,
+    setIsAudioTrackEnabled,
+    setIsVideoTrackEnabled,
+    optionalFeatures,
   } = useContext(TelnyxMeetContext);
 
+  const [localTracks, setLocalTracks] = useState<{
+    audio: MediaStreamTrack | undefined;
+    video: MediaStreamTrack | undefined;
+  }>({
+    audio: undefined,
+    video: undefined,
+  });
+
+  const [error, setError] = useState<
+    { title: string; body: string } | undefined
+  >(undefined);
+
   const videoElRef = useRef<HTMLVideoElement>(null);
+
+  useEffect(() => {
+    return () => {
+      if (localTracks.audio) {
+        localTracks?.audio?.stop();
+      }
+    };
+  }, [localTracks?.audio]);
 
   useEffect(() => {
     if (!videoElRef.current) {
       return;
     }
+
     if (localTracks?.video) {
-      const stream = new MediaStream();
-      stream.addTrack(localTracks.video);
-
-      videoElRef.current.srcObject = stream;
+      videoElRef.current.srcObject = new MediaStream([localTracks.video]);
     }
-  }, [localTracks?.video]);
 
-  const onClose = () => {
-    setError(undefined);
-  };
+    return () => {
+      if (localTracks.video) {
+        localTracks?.video?.stop();
+      }
+    };
+  }, [localTracks?.video]);
 
   return (
     <div
@@ -74,10 +97,11 @@ function MediaPreview({ error, setError }: { error: any; setError: any }) {
       }}
     >
       {error && (
-        <ErrorDialog onClose={onClose} title={error.title} body={error.body} />
+        <ErrorDialog onClose={() => setError(undefined)} error={error} />
       )}
+
       <VideoPreview id='preview-video'>
-        {localTracks?.video?.enabled && (
+        {isVideoTrackEnabled ? (
           <video
             id='video-preview'
             ref={videoElRef}
@@ -95,8 +119,7 @@ function MediaPreview({ error, setError }: { error: any; setError: any }) {
               objectFit: 'cover',
             }}
           ></video>
-        )}
-        {!localTracks?.video?.enabled && (
+        ) : (
           <Text
             style={{
               position: 'absolute',
@@ -119,10 +142,15 @@ function MediaPreview({ error, setError }: { error: any; setError: any }) {
           }}
         >
           <MediaControlBar
-            localTracks={localTracks}
-            setLocalTracks={setLocalTracks}
             audioInputDeviceId={audioInputDeviceId}
             videoInputDeviceId={videoInputDeviceId}
+            isAudioTrackEnabled={isAudioTrackEnabled}
+            isVideoTrackEnabled={isVideoTrackEnabled}
+            setIsAudioTrackEnabled={setIsAudioTrackEnabled}
+            setIsVideoTrackEnabled={setIsVideoTrackEnabled}
+            optionalFeatures={optionalFeatures}
+            localTracks={localTracks}
+            setLocalTracks={setLocalTracks}
             setError={setError}
           />
         </div>

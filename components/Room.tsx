@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import { Box, Text, Button } from 'grommet';
 import { State, Participant } from '@telnyx/video';
 
 import { useRoom } from 'hooks/room';
+import { TelnyxMeetContext } from 'contexts/TelnyxMeetContext';
 
 import Feeds from 'components/Feeds';
 import RoomInfo from 'components/RoomInfo';
@@ -13,13 +14,11 @@ import RoomAudio from 'components/RoomAudio';
 
 function Room({
   roomId,
-  showMetricsActionButton,
   tokens,
   context,
   onDisconnected,
 }: {
   roomId: string;
-  showMetricsActionButton: boolean;
   tokens: {
     clientToken: string;
     refreshToken: string;
@@ -30,6 +29,7 @@ function Room({
   };
   onDisconnected: () => void;
 }) {
+  const { optionalFeatures, setNetworkMetrics } = useContext(TelnyxMeetContext);
   const [isParticipantsListVisible, setIsParticipantsListVisible] =
     useState<boolean>(false);
   const [isInviteParticipantVisible, setIsInviteParticipantVisible] =
@@ -122,7 +122,7 @@ function Room({
 
           {state.status === 'connected' && (
             <React.Fragment>
-              {showMetricsActionButton && (
+              {optionalFeatures.isNetworkMetricsEnabled && (
                 <div key='report-actions'>
                   <Button
                     color='#7D4CDB'
@@ -140,7 +140,10 @@ function Room({
                     color='#cecece'
                     size='small'
                     label='Stop Metrics'
-                    onClick={() => room.disableNetworkMetricsReport()}
+                    onClick={() => {
+                      room.disableNetworkMetricsReport();
+                      setNetworkMetrics(undefined);
+                    }}
                   />
                 </div>
               )}
@@ -204,7 +207,7 @@ function Room({
             getLocalParticipant={room.getLocalParticipant}
           />
           <RoomAudio
-            useAudioMixer={true}
+            useMixedAudioForOutput={optionalFeatures.useMixedAudioForOutput}
             participants={state.participants}
             streams={state.streams}
             mixedAudioTrack={state.mixedAudioTrack}

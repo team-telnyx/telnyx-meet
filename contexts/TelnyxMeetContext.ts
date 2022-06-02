@@ -7,31 +7,22 @@ const TelnyxMeetContext = React.createContext<{
   audioInputDeviceId: string | undefined;
   audioOutputDeviceId: string | undefined;
   videoInputDeviceId: string | undefined;
-  networkMetrics: NetworkMetrics | undefined;
   unreadMessages: React.MutableRefObject<TelnyxRoom['messages'] | null>;
-
   setAudioInputDeviceId: Dispatch<SetStateAction<string | undefined>>;
   setAudioOutputDeviceId: Dispatch<SetStateAction<string | undefined>>;
   setVideoInputDeviceId: Dispatch<SetStateAction<string | undefined>>;
-
-  localTracks: {
-    audio: MediaStreamTrack | undefined;
-    video: MediaStreamTrack | undefined;
-  };
-  setLocalTracks: Dispatch<
-    SetStateAction<{
-      audio: MediaStreamTrack | undefined;
-      video: MediaStreamTrack | undefined;
-    }>
-  >;
-  setNetworkMetrics: Dispatch<SetStateAction<NetworkMetrics | undefined>>;
-
+  isAudioTrackEnabled: boolean;
+  isVideoTrackEnabled: boolean;
+  setIsAudioTrackEnabled: Dispatch<SetStateAction<boolean>>;
+  setIsVideoTrackEnabled: Dispatch<SetStateAction<boolean>>;
   sendNotification: (message: { body: string }) => void;
+  networkMetrics: NetworkMetrics | undefined;
+  setNetworkMetrics: Dispatch<SetStateAction<NetworkMetrics | undefined>>;
+  optionalFeatures: { [key: string]: boolean };
 }>({
   audioInputDeviceId: undefined,
   audioOutputDeviceId: undefined,
   videoInputDeviceId: undefined,
-  networkMetrics: undefined,
   unreadMessages: React.createRef<TelnyxRoom['messages'] | null>(),
 
   setAudioInputDeviceId: (
@@ -43,17 +34,16 @@ const TelnyxMeetContext = React.createContext<{
   setVideoInputDeviceId: (
     value: React.SetStateAction<string | undefined>
   ) => {},
-  localTracks: { audio: undefined, video: undefined },
-  setLocalTracks: (
-    value: React.SetStateAction<{
-      audio: MediaStreamTrack | undefined;
-      video: MediaStreamTrack | undefined;
-    }>
-  ) => {},
+  isAudioTrackEnabled: false,
+  isVideoTrackEnabled: false,
+  setIsAudioTrackEnabled: (value: React.SetStateAction<boolean>) => {},
+  setIsVideoTrackEnabled: (value: React.SetStateAction<boolean>) => {},
+  sendNotification: (message: { body: string }) => {},
+  networkMetrics: undefined,
   setNetworkMetrics: (
     value: React.SetStateAction<NetworkMetrics | undefined>
   ) => {},
-  sendNotification: (message: { body: string }) => {},
+  optionalFeatures: {},
 });
 
 export { TelnyxMeetContext };

@@ -28,6 +28,29 @@ export function ReportIssueModal() {
     </div>
   );
 
+  const debugReplacer = (key: any, value: any) => {
+    if (value instanceof Map) {
+      return Object.fromEntries(value);
+    }
+
+    if (value instanceof MediaStreamTrack) {
+      // Type 'MediaStreamTrack' does not have a '[Symbol.iterator]()' method
+      // that returns an iterator. Creating a mock object with some of its
+      // properties is sufficient.
+      return {
+        contentHint: value.contentHint,
+        enabled: value.enabled,
+        id: value.id,
+        kind: value.kind,
+        label: value.label,
+        muted: value.muted,
+        readyState: value.readyState,
+      };
+    }
+
+    return value;
+  };
+
   const content = (
     <pre
       style={{
@@ -36,14 +59,14 @@ export function ReportIssueModal() {
         height: 400,
       }}
     >
-      <code>{JSON.stringify(debugState, null, 1)}</code>
+      <code>{JSON.stringify(debugState, debugReplacer, 2)}</code>
     </pre>
   );
 
   const footer = (
     <Box as='footer' gap='small' direction='row' align='center' justify='start'>
       <CopyToClipboard
-        text={JSON.stringify(debugState, null, 1)}
+        text={JSON.stringify(debugState, debugReplacer, 2)}
         onCopy={() => setIsCopied(true)}
       >
         <div style={{ display: 'flex', alignItems: 'center', height: 60 }}>
