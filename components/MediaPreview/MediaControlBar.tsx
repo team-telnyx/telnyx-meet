@@ -23,6 +23,8 @@ import {
   USER_PREFERENCE_AUDIO_ENABLED,
   USER_PREFERENCE_VIDEO_ENABLED,
   USER_PREFERENCE_BACKGROUND_TYPE,
+  getItemSessionStorage,
+  saveItemSessionStorage,
 } from 'utils/storage';
 
 import { MediaDeviceErrors } from './helper';
@@ -193,15 +195,17 @@ function MediaControlBar({
       optionalFeatures &&
       optionalFeatures.isVirtualBackgroundFeatureEnabled
     ) {
-      const backgroundValue = getItem(USER_PREFERENCE_BACKGROUND_TYPE);
+      const backgroundValue = getItemSessionStorage(
+        USER_PREFERENCE_BACKGROUND_TYPE
+      );
       if (backgroundValue) {
-        saveItem(USER_PREFERENCE_BACKGROUND_TYPE, 'none');
+        saveItemSessionStorage(USER_PREFERENCE_BACKGROUND_TYPE, 'none');
       }
     }
   }, []);
 
   const handleVirtualBg = async (e: ChangeEvent<HTMLSelectElement>) => {
-    saveItem(USER_PREFERENCE_BACKGROUND_TYPE, e.target.value);
+    saveItemSessionStorage(USER_PREFERENCE_BACKGROUND_TYPE, e.target.value);
     setVirtualBackgroundType(e.target.value);
     getUserMedia({
       kind: 'video',

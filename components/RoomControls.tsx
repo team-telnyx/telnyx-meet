@@ -33,8 +33,8 @@ import { Chat } from './Chat';
 
 import { getUserMedia } from 'utils/userMedia';
 import {
-  getItem,
-  saveItem,
+  getItemSessionStorage,
+  saveItemSessionStorage,
   USER_PREFERENCE_BACKGROUND_TYPE,
 } from 'utils/storage';
 import { addVirtualBackgroundStream } from 'utils/virtualBackground';
@@ -219,7 +219,7 @@ export default function RoomControls({
     .replace(' ', '-')}`;
 
   const handleVirtualBg = async (e: ChangeEvent<HTMLSelectElement>) => {
-    saveItem(USER_PREFERENCE_BACKGROUND_TYPE, e.target.value);
+    saveItemSessionStorage(USER_PREFERENCE_BACKGROUND_TYPE, e.target.value);
     setVirtualBackgroundType(e.target.value);
     getUserMedia({
       kind: 'video',
@@ -527,7 +527,9 @@ export default function RoomControls({
               kind: 'audio' | 'video',
               track: MediaStreamTrack | undefined
             ) => {
-              const backgroundValue = getItem(USER_PREFERENCE_BACKGROUND_TYPE);
+              const backgroundValue = getItemSessionStorage(
+                USER_PREFERENCE_BACKGROUND_TYPE
+              );
               if (backgroundValue) {
                 if (kind === 'video' && track) {
                   addVirtualBackgroundStream({

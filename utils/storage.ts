@@ -8,13 +8,36 @@ export const saveItem = (key: string, value: string) => {
     throw new Error('key and value must be provided');
   }
 
+  if (!window || !window.localStorage) {
+    console.warn('localStorage not supported');
+  }
+  localStorage.setItem(key, value);
+};
+
+export const getItem = (key: string) => {
+  if (!key) {
+    throw new Error('No key provided');
+  }
+
+  if (!window || !window.localStorage) {
+    console.warn('localStorage not supported');
+  }
+
+  return localStorage.getItem(key) || undefined;
+};
+
+export const saveItemSessionStorage = (key: string, value: string) => {
+  if (!key || !value) {
+    throw new Error('key and value must be provided');
+  }
+
   if (!window || !window.sessionStorage) {
     console.warn('sessionStorage not supported');
   }
   sessionStorage.setItem(key, value);
 };
 
-export const getItem = (key: string) => {
+export const getItemSessionStorage = (key: string) => {
   if (!key) {
     throw new Error('No key provided');
   }
