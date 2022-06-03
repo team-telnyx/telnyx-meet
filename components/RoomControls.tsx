@@ -361,7 +361,7 @@ export default function RoomControls({
         video: {
           track: localTracks.video,
           options: {
-            enableSimulcast: !!optionalFeatures?.isSimulcastEnabled,
+            enableSimulcast: optionalFeatures.isSimulcastEnabled,
           },
         },
       });
@@ -388,7 +388,7 @@ export default function RoomControls({
           video: {
             track: presentationTracks.video,
             options: {
-              enableSimulcast: !!optionalFeatures?.isSimulcastEnabled
+              enableSimulcast: optionalFeatures.isSimulcastEnabled
             },
           },
         });
@@ -639,7 +639,7 @@ export default function RoomControls({
           </Button>
         </ControllerBox>
 
-        {!!optionalFeatures?.isDialOutEnabled && (
+        {optionalFeatures.isDialOutEnabled && (
           <ControllerBox width='80px'>
             <Button
               data-testid='btn-invite-participant'

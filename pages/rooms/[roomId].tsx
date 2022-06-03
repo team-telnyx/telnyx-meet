@@ -14,7 +14,7 @@ const RoomId = () => {
     use_mixed_audio: string;
   };
 
-  const optionalFeatures = {
+  const applicableFeatures = {
     isNetworkMetricsEnabled: queryParameters.network_metrics === 'true',
     isSimulcastEnabled: queryParameters.simulcast === 'true',
     isDialOutEnabled: queryParameters.dial_out === 'true',
@@ -29,7 +29,7 @@ const RoomId = () => {
           id={queryParameters.roomId}
           clientToken={queryParameters.client_token}
           refreshToken={queryParameters.refresh_token}
-          optionalFeatures={optionalFeatures}
+          applicableFeatures={applicableFeatures}
         />
       )}
     </>

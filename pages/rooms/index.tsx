@@ -42,12 +42,12 @@ export default function Rooms({
   id,
   clientToken,
   refreshToken,
-  optionalFeatures,
+  applicableFeatures,
 }: {
   id: string;
   clientToken: string;
   refreshToken: string;
-  optionalFeatures: { [key: string]: boolean };
+  applicableFeatures: { [key: string]: boolean };
 }) {
   const [roomId, setRoomId] = useState<string>();
   const [username, setUsername] = useState<string>('');
@@ -57,6 +57,14 @@ export default function Rooms({
   }>({
     clientToken: '',
     refreshToken: '',
+  });
+  const [optionalFeatures, setOptionalFeatures] = useState<{
+    [key: string]: boolean;
+  }>({
+    isNetworkMetricsEnabled: false,
+    isSimulcastEnabled: false,
+    isDialOutEnabled: false,
+    useMixedAudioForOutput: true,
   });
   const [isReady, setIsReady] = useState(false);
 
@@ -95,6 +103,12 @@ export default function Rooms({
   useEffect(() => {
     setRoomId(id);
   }, [id]);
+
+  useEffect(() => {
+    if (applicableFeatures) {
+      setOptionalFeatures(applicableFeatures);
+    }
+  }, [applicableFeatures]);
 
   useEffect(() => {
     if (roomId && username && tokens.clientToken && tokens.refreshToken) {
