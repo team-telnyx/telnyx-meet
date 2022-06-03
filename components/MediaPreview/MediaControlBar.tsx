@@ -45,7 +45,7 @@ function MediaControlBar({
   isVideoTrackEnabled: boolean;
   setIsAudioTrackEnabled: Dispatch<SetStateAction<boolean>>;
   setIsVideoTrackEnabled: Dispatch<SetStateAction<boolean>>;
-  optionalFeatures: { [key: string]: boolean };
+  optionalFeatures?: { [key: string]: boolean };
   localTracks: {
     audio: MediaStreamTrack | undefined;
     video: MediaStreamTrack | undefined;

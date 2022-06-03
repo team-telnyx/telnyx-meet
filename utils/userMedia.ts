@@ -1,7 +1,7 @@
 const getMediaConstraints = (
   kind: 'audio' | 'video',
   deviceId: string | undefined,
-  options: { [key: string]: boolean } | undefined
+  options?: { [key: string]: boolean }
 ) => {
   const mediaConstraints: {
     deviceId?: string;
