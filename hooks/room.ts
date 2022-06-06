@@ -170,8 +170,6 @@ export const useRoom = ({
               participantIds.push(item.id);
             });
 
-            debugger;
-
             roomRef.current!.enableNetworkMetricsReport(participantIds);
           }
 
