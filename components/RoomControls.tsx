@@ -443,7 +443,6 @@ export default function RoomControls({
       if (isNotLocalParticipantMessage && !showChatBox && existUnreadMessages) {
         return true;
       }
-      return false;
     }
     return false;
   };
