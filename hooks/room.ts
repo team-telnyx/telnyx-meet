@@ -63,7 +63,8 @@ export const useRoom = ({
   callbacks,
 }: Props): TelnyxRoom | undefined => {
   const [_, setDebugState] = useContext(DebugContext);
-  const { sendNotification, setNetworkMetrics } = useContext(TelnyxMeetContext);
+  const { sendNotification, setNetworkMetrics, unreadMessages } =
+    useContext(TelnyxMeetContext);
   const roomRef = useRef<Room>();
   const [state, setState] = useState<State>();
   const [clientToken, setClientToken] = useState<string>(tokens.clientToken);
@@ -75,7 +76,19 @@ export const useRoom = ({
   const [dominantSpeakerId, setDominantSpeakerId] =
     useState<Participant['id']>();
 
-  const [messages, setMessages] = useState<TelnyxRoom['messages']>([]);
+  const [messages, _setMessages] = useState<TelnyxRoom['messages']>([]);
+
+  const messagesRef = useRef(messages);
+  const setMessages = (data: any) => {
+    messagesRef.current = messagesRef.current.concat({
+      from: data.from,
+      fromUsername: data.fromUsername,
+      message: data.message,
+      recipients: data.recipients,
+    });
+
+    _setMessages(messagesRef.current);
+  };
 
   useEffect(() => {
     const connectAndJoinRoom = async () => {
@@ -294,22 +307,30 @@ export const useRoom = ({
           'subscription_ended',
           (participantId, key, state) => {}
         );
-
         roomRef.current.on(
           'message_received',
           (participantId, message, recipients, state) => {
             const participant = state.participants.get(participantId);
             const fromUsername = JSON.parse(participant.context).username;
 
-            setMessages((value) => {
-              const messages = value.concat({
-                from: participantId,
-                fromUsername,
-                message,
-                recipients,
-              });
+            if (!unreadMessages.current) {
+              unreadMessages.current = [];
+            }
 
-              return messages;
+            const newMessages = unreadMessages.current.concat({
+              from: participantId,
+              fromUsername,
+              message,
+              recipients,
+            });
+
+            unreadMessages.current = newMessages;
+
+            setMessages({
+              from: participantId,
+              fromUsername,
+              message,
+              recipients,
             });
           }
         );

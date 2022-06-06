@@ -1,4 +1,4 @@
-import { Fragment, useEffect, useState } from 'react';
+import { Fragment, useEffect, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 import Head from 'next/head';
 import { Main } from 'grommet';
@@ -6,13 +6,14 @@ import toast, { Toaster } from 'react-hot-toast';
 import styled from 'styled-components';
 import { NetworkMetrics } from '@telnyx/video';
 
-import { TelnyxMeetContext } from 'contexts/TelnyxMeetContext';
-
 import Room from 'components/Room';
 import JoinRoom from 'components/JoinRoom';
 import MediaPreview from 'components/MediaPreview';
 
 import { generateUsername, generateId } from 'utils/helpers';
+import { TelnyxMeetContext } from 'contexts/TelnyxMeetContext';
+
+import { TelnyxRoom } from 'hooks/room';
 import { getItem, USERNAME_KEY } from 'utils/storage';
 
 const breakpointMedium = 1021;
@@ -68,6 +69,9 @@ export default function Rooms({
   const [videoInputDeviceId, setVideoInputDeviceId] = useState<
     string | undefined
   >();
+
+  const unreadMessages = useRef<TelnyxRoom['messages'] | null>(null);
+
   const [isAudioTrackEnabled, setIsAudioTrackEnabled] =
     useState<boolean>(false);
   const [isVideoTrackEnabled, setIsVideoTrackEnabled] =
@@ -126,6 +130,7 @@ export default function Rooms({
           sendNotification,
           networkMetrics,
           setNetworkMetrics,
+          unreadMessages,
           optionalFeatures,
         }}
       >

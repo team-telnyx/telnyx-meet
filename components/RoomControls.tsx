@@ -55,6 +55,21 @@ const FontAwesomeIconStyled = styled(FontAwesomeIcon)`
   }
 `;
 
+const Bubble = styled.div`
+  background-color: #8ab4f8;
+  border-color: #202124;
+  right: -3px;
+  position: absolute;
+  top: -4px;
+  border-radius: 50%;
+  border: 2px solid white;
+  height: 18px;
+  width: 18px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+`;
+
 const isSinkIdSupported = (): boolean => {
   const audio = document.createElement('audio');
   // @ts-expect-error
@@ -155,6 +170,7 @@ export default function RoomControls({
     setAudioInputDeviceId,
     setAudioOutputDeviceId,
     setVideoInputDeviceId,
+    unreadMessages,
     isAudioTrackEnabled,
     isVideoTrackEnabled,
     setIsAudioTrackEnabled,
@@ -410,6 +426,36 @@ export default function RoomControls({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  const hasUnreadMessages = () => {
+    if (unreadMessages.current && unreadMessages.current.length > 0) {
+      return true;
+    }
+    return false;
+  };
+
+  const checkBubbleNotification = () => {
+    if (messages && messages.length > 0) {
+      const lastMessage = messages.length - 1;
+      const isNotLocalParticipantMessage =
+        messages[lastMessage].from !== localParticipant.id;
+      const existUnreadMessages = hasUnreadMessages();
+
+      if (isNotLocalParticipantMessage && !showChatBox && existUnreadMessages) {
+        return true;
+      }
+    }
+    return false;
+  };
+
+  const getTotalUnreadMessages = () => {
+    if (!unreadMessages || !unreadMessages.current) {
+      return 1;
+    }
+    return unreadMessages.current.length;
+  };
+
+  const showBubbleNotification = checkBubbleNotification();
+
   return (
     <Box
       gridArea='controls'
@@ -429,7 +475,10 @@ export default function RoomControls({
         <Chat
           sendMessage={sendMessage}
           messages={messages}
-          onClose={() => setShowChatBox(false)}
+          onClose={() => {
+            setShowChatBox(false);
+            unreadMessages.current = [];
+          }}
           localParticipant={localParticipant}
         ></Chat>
       )}
@@ -618,10 +667,24 @@ export default function RoomControls({
               size='large'
               onClick={() => {
                 setShowChatBox((value) => !value);
+                unreadMessages.current = [];
               }}
             >
               <Box align='center' gap='xsmall'>
                 <Box style={{ position: 'relative' }}>
+                  {showBubbleNotification && (
+                    <Bubble>
+                      <span
+                        style={{
+                          fontSize: '10px',
+                          textAlign: 'center',
+                          fontWeight: 'bold',
+                        }}
+                      >
+                        {getTotalUnreadMessages()}
+                      </span>
+                    </Bubble>
+                  )}
                   <ChatIcon
                     size='large'
                     color={showChatBox ? 'accent-1' : 'light-5'}

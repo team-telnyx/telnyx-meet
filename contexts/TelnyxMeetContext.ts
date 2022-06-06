@@ -1,10 +1,13 @@
 import { NetworkMetrics } from '@telnyx/video';
 import React, { Dispatch, SetStateAction } from 'react';
 
+import { TelnyxRoom } from 'hooks/room';
+
 const TelnyxMeetContext = React.createContext<{
   audioInputDeviceId: string | undefined;
   audioOutputDeviceId: string | undefined;
   videoInputDeviceId: string | undefined;
+  unreadMessages: React.MutableRefObject<TelnyxRoom['messages'] | null>;
   setAudioInputDeviceId: Dispatch<SetStateAction<string | undefined>>;
   setAudioOutputDeviceId: Dispatch<SetStateAction<string | undefined>>;
   setVideoInputDeviceId: Dispatch<SetStateAction<string | undefined>>;
@@ -20,6 +23,8 @@ const TelnyxMeetContext = React.createContext<{
   audioInputDeviceId: undefined,
   audioOutputDeviceId: undefined,
   videoInputDeviceId: undefined,
+  unreadMessages: React.createRef<TelnyxRoom['messages'] | null>(),
+
   setAudioInputDeviceId: (
     value: React.SetStateAction<string | undefined>
   ) => {},
