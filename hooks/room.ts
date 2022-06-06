@@ -126,12 +126,12 @@ export const useRoom = ({
             }
 
             if (
-              stream.participantId === roomRef.current?.getLocalParticipant().id
+              stream.participantId === roomRef.current!.getLocalParticipant().id
             ) {
               return;
             }
 
-            roomRef.current?.addSubscription(stream.participantId, stream.key, {
+            roomRef.current!.addSubscription(stream.participantId, stream.key, {
               audio: true,
               video: true,
             });
@@ -150,8 +150,7 @@ export const useRoom = ({
               participantIds.push(item.id);
             });
 
-            debugger;
-            roomRef.current?.enableNetworkMetricsReport(participantIds);
+            roomRef.current!.enableNetworkMetricsReport(participantIds);
           }
         });
 
@@ -173,7 +172,7 @@ export const useRoom = ({
 
             debugger;
 
-            roomRef.current?.enableNetworkMetricsReport(participantIds);
+            roomRef.current!.enableNetworkMetricsReport(participantIds);
           }
 
           setParticipantsByActivity((value) => {
@@ -213,9 +212,7 @@ export const useRoom = ({
               optionalFeatures.isNetworkMetricsEnabled &&
               state.participants.size > 0
             ) {
-              debugger;
-
-              roomRef.current?.disableNetworkMetricsReport([participantId]);
+              roomRef.current!.disableNetworkMetricsReport([participantId]);
             }
           }
         );
@@ -241,9 +238,7 @@ export const useRoom = ({
             optionalFeatures.isNetworkMetricsEnabled &&
             state.participants.size > 0
           ) {
-            debugger;
-
-            roomRef.current?.disableNetworkMetricsReport([participantId]);
+            roomRef.current!.disableNetworkMetricsReport([participantId]);
           }
         });
 
@@ -252,11 +247,11 @@ export const useRoom = ({
             setPresenter(state.participants.get(participantId));
           }
 
-          if (participantId === roomRef.current?.getLocalParticipant().id) {
+          if (participantId === roomRef.current!.getLocalParticipant().id) {
             return;
           }
 
-          roomRef.current?.addSubscription(participantId, key, {
+          roomRef.current!.addSubscription(participantId, key, {
             audio: true,
             video: true,
           });
@@ -333,7 +328,7 @@ export const useRoom = ({
         roomRef.current.on('audio_activity', (participantId, key) => {
           if (
             key !== 'presentation' &&
-            participantId !== roomRef.current?.getLocalParticipant().id
+            participantId !== roomRef.current!.getLocalParticipant().id
           ) {
             setDominantSpeakerId(participantId);
             setParticipantsByActivity((value) => {
@@ -420,7 +415,7 @@ export const useRoom = ({
   useEffect(() => {
     const updateClientToken = async () => {
       if (state?.status === 'connected') {
-        await roomRef.current?.updateClientToken(clientToken);
+        await roomRef.current!.updateClientToken(clientToken);
       }
     };
 
