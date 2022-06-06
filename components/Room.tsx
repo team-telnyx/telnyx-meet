@@ -122,7 +122,7 @@ function Room({
 
           {state.status === 'connected' && (
             <React.Fragment>
-              {optionalFeatures.isNetworkMetricsEnabled && (
+              {/* {optionalFeatures.isNetworkMetricsEnabled && (
                 <div key='report-actions'>
                   <Button
                     color='#7D4CDB'
@@ -146,7 +146,7 @@ function Room({
                     }}
                   />
                 </div>
-              )}
+              )} */}
 
               <Feeds
                 key='feeds'
