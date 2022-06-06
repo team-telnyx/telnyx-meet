@@ -30,6 +30,8 @@ function Room({
   onDisconnected: () => void;
 }) {
   const { optionalFeatures, setNetworkMetrics } = useContext(TelnyxMeetContext);
+  const [useMixedAudioForOutput, setUseMixedAudioForOutput] =
+    useState<boolean>(true);
   const [isParticipantsListVisible, setIsParticipantsListVisible] =
     useState<boolean>(false);
   const [isInviteParticipantVisible, setIsInviteParticipantVisible] =
@@ -161,8 +163,10 @@ function Room({
           <RoomControls
             isParticipantsListVisible={isParticipantsListVisible}
             isInviteParticipantVisible={isInviteParticipantVisible}
+            useMixedAudioForOutput={useMixedAudioForOutput}
             setIsParticipantsListVisible={setIsParticipantsListVisible}
             setIsInviteParticipantVisible={setIsInviteParticipantVisible}
+            setUseMixedAudioForOutput={setUseMixedAudioForOutput}
             participantsByActivity={room.participantsByActivity}
             addStream={room.addStream}
             removeStream={room.removeStream}
@@ -179,7 +183,7 @@ function Room({
             getLocalParticipant={room.getLocalParticipant}
           />
           <RoomAudio
-            useMixedAudioForOutput={optionalFeatures.useMixedAudioForOutput}
+            useMixedAudioForOutput={useMixedAudioForOutput}
             participants={state.participants}
             streams={state.streams}
             mixedAudioTrack={state.mixedAudioTrack}
