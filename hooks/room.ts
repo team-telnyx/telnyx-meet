@@ -135,6 +135,21 @@ export const useRoom = ({
               audio: true,
               video: true,
             });
+
+            if (
+              optionalFeatures.isNetworkMetricsEnabled &&
+              state.participants.size > 0 &&
+              roomRef.current!.getLocalParticipant().id
+            ) {
+              const participantIds: Array<string> = [
+                roomRef.current!.getLocalParticipant().id,
+              ];
+              state.participants.forEach((item) => {
+                participantIds.push(item.id);
+              });
+
+              roomRef.current?.enableNetworkMetricsReport(participantIds);
+            }
           });
           typeof callbacks?.onConnected === 'function' &&
             callbacks.onConnected();
