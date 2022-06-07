@@ -58,14 +58,14 @@ export default function Rooms({
     clientToken: '',
     refreshToken: '',
   });
-  const [optionalFeatures, setOptionalFeatures] = useState<{
+  const optionalFeatures: {
     [key: string]: boolean;
-  }>({
+  } = applicableFeatures || {
     isNetworkMetricsEnabled: false,
     isSimulcastEnabled: false,
     isDialOutEnabled: false,
     useMixedAudioForOutput: true,
-  });
+  };
   const [isReady, setIsReady] = useState(false);
 
   const [audioInputDeviceId, setAudioInputDeviceId] = useState<
@@ -103,12 +103,6 @@ export default function Rooms({
   useEffect(() => {
     setRoomId(id);
   }, [id]);
-
-  useEffect(() => {
-    if (applicableFeatures) {
-      setOptionalFeatures(applicableFeatures);
-    }
-  }, [applicableFeatures]);
 
   useEffect(() => {
     if (roomId && username && tokens.clientToken && tokens.refreshToken) {
