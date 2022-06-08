@@ -379,10 +379,10 @@
   resolved "https://registry.yarnpkg.com/@rushstack/eslint-patch/-/eslint-patch-1.1.0.tgz#7f698254aadf921e48dda8c0a6b304026b8a9323"
   integrity sha512-JLo+Y592QzIE+q7Dl2pMUtt4q8SKYI5jDrZxrozEQxnGVOyYE+GWK9eLkwTaeN9DDctlaRAQ3TBmzZ1qdLE30A==
 
-"@telnyx/video@^0.2.0-alpha.21":
-  version "0.2.0-alpha.21"
-  resolved "https://registry.yarnpkg.com/@telnyx/video/-/video-0.2.0-alpha.21.tgz#12f25059be73e17d485d4d14a1b28331d6b0bb96"
-  integrity sha512-2XOCHW0rW4mSvbYTLJFe1Y0ch+gLU/ylwuZXBDZ6xtDTA9NODfvU3dI/G23+yCkp5qHDjTecZg2q9iPpyH4F5g==
+"@telnyx/video@^0.2.0-alpha.22":
+  version "0.2.0-alpha.22"
+  resolved "https://registry.yarnpkg.com/@telnyx/video/-/video-0.2.0-alpha.22.tgz#3cee17530534972fe3656de2e66bda3376a73cd1"
+  integrity sha512-bYHAgOSDp1WigwdpNZ8NeokF1LJQUx2Lc1DWRb+K4S5oSa7kNhLzkPSd/dqWoRCWLh8EtpfcmBKn3WMz4yMY1g==
   dependencies:
     "@types/uuid" "^8.3.0"
     events "^3.3.0"
