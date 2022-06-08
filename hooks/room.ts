@@ -63,8 +63,12 @@ export const useRoom = ({
   callbacks,
 }: Props): TelnyxRoom | undefined => {
   const [_, setDebugState] = useContext(DebugContext);
-  const { sendNotification, setNetworkMetrics, unreadMessages } =
-    useContext(TelnyxMeetContext);
+  const {
+    sendNotification,
+    setNetworkMetrics,
+    unreadMessages,
+    optionalFeatures,
+  } = useContext(TelnyxMeetContext);
   const roomRef = useRef<Room>();
   const [state, setState] = useState<State>();
   const [clientToken, setClientToken] = useState<string>(tokens.clientToken);
@@ -122,18 +126,32 @@ export const useRoom = ({
             }
 
             if (
-              stream.participantId === roomRef.current?.getLocalParticipant().id
+              stream.participantId === roomRef.current!.getLocalParticipant().id
             ) {
               return;
             }
 
-            roomRef.current?.addSubscription(stream.participantId, stream.key, {
+            roomRef.current!.addSubscription(stream.participantId, stream.key, {
               audio: true,
               video: true,
             });
           });
           typeof callbacks?.onConnected === 'function' &&
             callbacks.onConnected();
+
+          if (
+            optionalFeatures.isNetworkMetricsEnabled &&
+            state.participants.size > 0 &&
+            roomRef.current!.getLocalParticipant().id
+          ) {
+            const participantIds: Array<string> = [];
+
+            state.participants.forEach((item) => {
+              participantIds.push(item.id);
+            });
+
+            roomRef.current!.enableNetworkMetricsReport(participantIds);
+          }
         });
 
         roomRef.current.on('disconnected', (state) => {
@@ -143,6 +161,18 @@ export const useRoom = ({
         });
 
         roomRef.current.on('participant_joined', (participantId, state) => {
+          if (
+            optionalFeatures.isNetworkMetricsEnabled &&
+            state.participants.size > 0
+          ) {
+            const participantIds: Array<string> = [];
+            state.participants.forEach((item) => {
+              participantIds.push(item.id);
+            });
+
+            roomRef.current!.enableNetworkMetricsReport(participantIds);
+          }
+
           setParticipantsByActivity((value) => {
             return new Set([
               roomRef.current!.getLocalParticipant().id,
@@ -175,10 +205,17 @@ export const useRoom = ({
                 });
               }
             }
+
+            if (
+              optionalFeatures.isNetworkMetricsEnabled &&
+              state.participants.size > 0
+            ) {
+              roomRef.current!.disableNetworkMetricsReport([participantId]);
+            }
           }
         );
 
-        roomRef.current.on('participant_left', (participantId) => {
+        roomRef.current.on('participant_left', (participantId, state) => {
           if (presenter?.id === participantId) {
             setPresenter(undefined);
           }
@@ -194,6 +231,13 @@ export const useRoom = ({
               ...value,
             ]);
           });
+
+          if (
+            optionalFeatures.isNetworkMetricsEnabled &&
+            state.participants.size > 0
+          ) {
+            roomRef.current!.disableNetworkMetricsReport([participantId]);
+          }
         });
 
         roomRef.current.on('stream_published', (participantId, key, state) => {
@@ -201,11 +245,11 @@ export const useRoom = ({
             setPresenter(state.participants.get(participantId));
           }
 
-          if (participantId === roomRef.current?.getLocalParticipant().id) {
+          if (participantId === roomRef.current!.getLocalParticipant().id) {
             return;
           }
 
-          roomRef.current?.addSubscription(participantId, key, {
+          roomRef.current!.addSubscription(participantId, key, {
             audio: true,
             video: true,
           });
@@ -282,7 +326,7 @@ export const useRoom = ({
         roomRef.current.on('audio_activity', (participantId, key) => {
           if (
             key !== 'presentation' &&
-            participantId !== roomRef.current?.getLocalParticipant().id
+            participantId !== roomRef.current!.getLocalParticipant().id
           ) {
             setDominantSpeakerId(participantId);
             setParticipantsByActivity((value) => {
@@ -337,7 +381,6 @@ export const useRoom = ({
 
         roomRef.current.on('network_metrics_report', (networkMetrics) => {
           console.debug('network_metrics_report', networkMetrics);
-
           setNetworkMetrics(networkMetrics);
         });
       }
@@ -370,7 +413,7 @@ export const useRoom = ({
   useEffect(() => {
     const updateClientToken = async () => {
       if (state?.status === 'connected') {
-        await roomRef.current?.updateClientToken(clientToken);
+        await roomRef.current!.updateClientToken(clientToken);
       }
     };
 
