@@ -39,12 +39,8 @@ export default async function handler(
           notify(`${response.status}: Failed to refresh client token`);
           transformFetchErrorToBugsnag(requestId, data, response.status);
 
-          if (response.status >= 500) {
-            res.status(response.status).end();
-          } else {
-            const json = await response.json();
-            res.status(response.status).json(json);
-          }
+          const json = await response.json();
+          res.status(response.status).json(json);
         }
       } catch (error) {
         notify(`request_id: ${requestId} - ${error}`);

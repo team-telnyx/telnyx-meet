@@ -124,32 +124,6 @@ function Room({
 
           {state.status === 'connected' && (
             <React.Fragment>
-              {optionalFeatures.isNetworkMetricsEnabled && (
-                <div key='report-actions'>
-                  <Button
-                    color='#7D4CDB'
-                    primary
-                    size='small'
-                    label='Start Metrics'
-                    onClick={() =>
-                      room.enableNetworkMetricsReport(participantIds)
-                    }
-                    style={{ marginRight: 4 }}
-                  />
-
-                  <Button
-                    primary
-                    color='#cecece'
-                    size='small'
-                    label='Stop Metrics'
-                    onClick={() => {
-                      room.disableNetworkMetricsReport();
-                      setNetworkMetrics(undefined);
-                    }}
-                  />
-                </div>
-              )}
-
               <Feeds
                 key='feeds'
                 dataTestId='feeds'
