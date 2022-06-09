@@ -1,4 +1,5 @@
-import React, { useEffect, useCallback, Dispatch, SetStateAction } from 'react';
+import React, { useEffect, Dispatch, SetStateAction } from 'react';
+import { useRouter } from 'next/router';
 import {
   faMicrophone,
   faMicrophoneSlash,
@@ -60,6 +61,8 @@ function MediaControlBar({
     SetStateAction<{ title: string; body: string } | undefined>
   >;
 }) {
+  const router = useRouter();
+
   const handleTrackUpdate = (
     kind: 'audio' | 'video',
     track: MediaStreamTrack | undefined
@@ -140,6 +143,10 @@ function MediaControlBar({
   }, [setError]);
 
   useEffect(() => {
+    if (!router.isReady) {
+      return;
+    }
+
     const isAudioEnabled = getItem(USER_PREFERENCE_AUDIO_ENABLED) || null;
     const isVideoEnabled = getItem(USER_PREFERENCE_VIDEO_ENABLED) || null;
 
@@ -169,7 +176,7 @@ function MediaControlBar({
     }
     // TODO: avoid disable line
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [router.isReady]);
 
   return (
     <React.Fragment>

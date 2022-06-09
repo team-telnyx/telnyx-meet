@@ -12,13 +12,11 @@ const RoomId = () => {
 
   return (
     <>
-      {router.isReady && (
-        <Rooms
-          id={queryParameters.roomId}
-          clientToken={queryParameters.client_token}
-          refreshToken={queryParameters.refresh_token}
-        />
-      )}
+      <Rooms
+        id={queryParameters.roomId}
+        clientToken={queryParameters.client_token}
+        refreshToken={queryParameters.refresh_token}
+      />
     </>
   );
 };

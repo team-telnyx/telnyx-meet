@@ -126,7 +126,9 @@ export default function Rooms({
         <link rel='icon' href='/favicon.ico' />
       </Head>
 
-      {router.isReady && (
+      <Main align='center' justify='center' background='light-2'>
+        <Toaster />
+
         <TelnyxMeetContext.Provider
           value={{
             audioInputDeviceId,
@@ -146,36 +148,32 @@ export default function Rooms({
             optionalFeatures,
           }}
         >
-          <Main align='center' justify='center' background='light-2'>
-            <Toaster />
-
-            {roomId && isReady ? (
-              <Room
-                roomId={roomId}
-                tokens={tokens}
-                context={{
-                  id: generateId(),
-                  username,
-                }}
-                onDisconnected={onDisconnected}
+          {roomId && isReady ? (
+            <Room
+              roomId={roomId}
+              tokens={tokens}
+              context={{
+                id: generateId(),
+                username,
+              }}
+              onDisconnected={onDisconnected}
+            />
+          ) : (
+            <GridPreviewContainer>
+              <MediaPreview />
+              <JoinRoom
+                roomId={roomId || ''}
+                username={username}
+                updateUsername={setUsername}
+                updateRoomId={setRoomId}
+                updateTokens={setTokens}
+                clientToken={clientToken}
+                refreshToken={refreshToken}
               />
-            ) : (
-              <GridPreviewContainer>
-                <MediaPreview />
-                <JoinRoom
-                  roomId={roomId || ''}
-                  username={username}
-                  updateUsername={setUsername}
-                  updateRoomId={setRoomId}
-                  updateTokens={setTokens}
-                  clientToken={clientToken}
-                  refreshToken={refreshToken}
-                />
-              </GridPreviewContainer>
-            )}
-          </Main>
+            </GridPreviewContainer>
+          )}
         </TelnyxMeetContext.Provider>
-      )}
+      </Main>
     </Fragment>
   );
 }
