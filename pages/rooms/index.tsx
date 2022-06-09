@@ -4,6 +4,7 @@ import Head from 'next/head';
 import { Main } from 'grommet';
 import toast, { Toaster } from 'react-hot-toast';
 import styled from 'styled-components';
+import { useRouter } from 'next/router';
 import { NetworkMetrics } from '@telnyx/video';
 
 import Room from 'components/Room';
@@ -42,13 +43,23 @@ export default function Rooms({
   id,
   clientToken,
   refreshToken,
-  applicableFeatures,
 }: {
   id: string;
   clientToken: string;
   refreshToken: string;
-  applicableFeatures: { [key: string]: boolean };
 }) {
+  const router = useRouter();
+  const queryParameters = router.query as {
+    dial_out: string;
+    network_metrics: string;
+    simulcast: string;
+  };
+  const optionalFeatures = {
+    isDialOutEnabled: queryParameters.dial_out === 'true',
+    isNetworkMetricsEnabled: queryParameters.network_metrics === 'true',
+    isSimulcastEnabled: queryParameters.simulcast === 'true',
+  };
+
   const [roomId, setRoomId] = useState<string>();
   const [username, setUsername] = useState<string>('');
   const [tokens, setTokens] = useState<{
@@ -58,14 +69,6 @@ export default function Rooms({
     clientToken: '',
     refreshToken: '',
   });
-  const optionalFeatures: {
-    [key: string]: boolean;
-  } = applicableFeatures || {
-    isNetworkMetricsEnabled: false,
-    isSimulcastEnabled: false,
-    isDialOutEnabled: false,
-    useMixedAudioForOutput: true,
-  };
   const [isReady, setIsReady] = useState(false);
 
   const [audioInputDeviceId, setAudioInputDeviceId] = useState<
@@ -123,54 +126,56 @@ export default function Rooms({
         <link rel='icon' href='/favicon.ico' />
       </Head>
 
-      <TelnyxMeetContext.Provider
-        value={{
-          audioInputDeviceId,
-          audioOutputDeviceId,
-          videoInputDeviceId,
-          setAudioInputDeviceId,
-          setAudioOutputDeviceId,
-          setVideoInputDeviceId,
-          isAudioTrackEnabled,
-          isVideoTrackEnabled,
-          setIsAudioTrackEnabled,
-          setIsVideoTrackEnabled,
-          sendNotification,
-          networkMetrics,
-          setNetworkMetrics,
-          unreadMessages,
-          optionalFeatures,
-        }}
-      >
-        <Main align='center' justify='center' background='light-2'>
-          <Toaster />
+      {router.isReady && (
+        <TelnyxMeetContext.Provider
+          value={{
+            audioInputDeviceId,
+            audioOutputDeviceId,
+            videoInputDeviceId,
+            setAudioInputDeviceId,
+            setAudioOutputDeviceId,
+            setVideoInputDeviceId,
+            isAudioTrackEnabled,
+            isVideoTrackEnabled,
+            setIsAudioTrackEnabled,
+            setIsVideoTrackEnabled,
+            sendNotification,
+            networkMetrics,
+            setNetworkMetrics,
+            unreadMessages,
+            optionalFeatures,
+          }}
+        >
+          <Main align='center' justify='center' background='light-2'>
+            <Toaster />
 
-          {roomId && isReady ? (
-            <Room
-              roomId={roomId}
-              tokens={tokens}
-              context={{
-                id: generateId(),
-                username,
-              }}
-              onDisconnected={onDisconnected}
-            />
-          ) : (
-            <GridPreviewContainer>
-              <MediaPreview />
-              <JoinRoom
-                roomId={roomId || ''}
-                username={username}
-                updateUsername={setUsername}
-                updateRoomId={setRoomId}
-                updateTokens={setTokens}
-                clientToken={clientToken}
-                refreshToken={refreshToken}
+            {roomId && isReady ? (
+              <Room
+                roomId={roomId}
+                tokens={tokens}
+                context={{
+                  id: generateId(),
+                  username,
+                }}
+                onDisconnected={onDisconnected}
               />
-            </GridPreviewContainer>
-          )}
-        </Main>
-      </TelnyxMeetContext.Provider>
+            ) : (
+              <GridPreviewContainer>
+                <MediaPreview />
+                <JoinRoom
+                  roomId={roomId || ''}
+                  username={username}
+                  updateUsername={setUsername}
+                  updateRoomId={setRoomId}
+                  updateTokens={setTokens}
+                  clientToken={clientToken}
+                  refreshToken={refreshToken}
+                />
+              </GridPreviewContainer>
+            )}
+          </Main>
+        </TelnyxMeetContext.Provider>
+      )}
     </Fragment>
   );
 }
