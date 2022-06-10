@@ -20,6 +20,7 @@ import VideoTrack from 'components/VideoTrack';
 import { WebRTCStats } from 'components/WebRTCStats';
 import { TelnyxMeetContext } from 'contexts/TelnyxMeetContext';
 import { NetworkMetricsMonitor } from './NetworkMetricsMonitor';
+import { VideoBitrate } from 'components/VideoBitrate';
 
 const VIDEO_BG_COLOR = '#111';
 
@@ -72,6 +73,24 @@ function Feed({
     setAllowedBrowser(allowed);
   }, []);
 
+  const renderVideoBitrate = () => {
+    if (participant.origin === 'local') {
+      return null;
+    }
+
+    if (!stream || !stream.isConfigured || !allowedBrowser) {
+      return null;
+    }
+
+    return (
+      <VideoBitrate
+        participant={participant}
+        stream={stream}
+        getStatsForParticipantStream={getStatsForParticipantStream}
+      />
+    );
+  };
+
   function resetWebRTCStats() {
     clearInterval(intervalStatsId.current);
     intervalStatsId.current = null;
@@ -80,7 +99,7 @@ function Feed({
   }
 
   function renderStats() {
-    if (!stream || !allowedBrowser) {
+    if (!stream || !stream.isConfigured || !allowedBrowser) {
       return null;
     }
 
@@ -160,12 +179,13 @@ function Feed({
             justifyContent: 'space-between',
           }}
         >
-          {stream?.isConfigured && renderStats()}
+          {renderStats()}
           {!showStatsOverlay && peerMetrics && (
             <NetworkMetricsMonitor
               connectionQuality={peerMetrics.connectionQuality}
             />
           )}
+          {renderVideoBitrate()}
         </div>
       </div>
 

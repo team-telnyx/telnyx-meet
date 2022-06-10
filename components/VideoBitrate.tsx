@@ -54,12 +54,6 @@ function VideoBitrate({
       return;
     }
 
-    if (previousBytesReceived === 0) {
-      setBitrate(8 * currentBytesReceived);
-      setPreviousBytesReceived(currentBytesReceived);
-      return;
-    }
-
     setBitrate(8 * (currentBytesReceived - previousBytesReceived));
     setPreviousBytesReceived(currentBytesReceived);
   }, [previousBytesReceived, currentBytesReceived]);
@@ -76,9 +70,11 @@ function VideoBitrate({
         round='xxsmall'
         width='106px'
       >
-        <Text color='status-disabled' size='xsmall'>Video:</Text>
         <Text color='status-disabled' size='xsmall'>
-          {stream?.isVideoEnabled ? Math.floor(bitrate / 1000) : 0} kbps
+          Video:
+        </Text>
+        <Text color='status-disabled' size='xsmall'>
+          {stream.isVideoEnabled ? Math.floor(bitrate / 1000) : 0} kbps
         </Text>
       </Box>
     </Box>
