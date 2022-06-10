@@ -121,19 +121,17 @@ function Room({
           )}
 
           {state.status === 'connected' && (
-            <React.Fragment>
-              <Feeds
-                key='feeds'
-                dataTestId='feeds'
-                participants={state.participants}
-                participantsByActivity={room.participantsByActivity}
-                dominantSpeakerId={room.dominantSpeakerId}
-                presenter={room.presenter}
-                streams={room.state.streams}
-                getParticipantStream={room.getParticipantStream}
-                getStatsForParticipantStream={room.getWebRTCStatsForStream}
-              />
-            </React.Fragment>
+            <Feeds
+              key='feeds'
+              dataTestId='feeds'
+              participants={state.participants}
+              participantsByActivity={room.participantsByActivity}
+              dominantSpeakerId={room.dominantSpeakerId}
+              presenter={room.presenter}
+              streams={room.state.streams}
+              getParticipantStream={room.getParticipantStream}
+              getStatsForParticipantStream={room.getWebRTCStatsForStream}
+            />
           )}
         </Box>
 

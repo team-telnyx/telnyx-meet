@@ -4,6 +4,7 @@ import Head from 'next/head';
 import { Main } from 'grommet';
 import toast, { Toaster } from 'react-hot-toast';
 import styled from 'styled-components';
+import { useRouter } from 'next/router';
 import { NetworkMetrics } from '@telnyx/video';
 
 import Room from 'components/Room';
@@ -42,13 +43,23 @@ export default function Rooms({
   id,
   clientToken,
   refreshToken,
-  optionalFeatures,
 }: {
   id: string;
   clientToken: string;
   refreshToken: string;
-  optionalFeatures: { [key: string]: boolean };
 }) {
+  const router = useRouter();
+  const queryParameters = router.query as {
+    dial_out: string;
+    network_metrics: string;
+    simulcast: string;
+  };
+  const optionalFeatures = {
+    isDialOutEnabled: queryParameters.dial_out === 'true',
+    isNetworkMetricsEnabled: queryParameters.network_metrics === 'true',
+    isSimulcastEnabled: queryParameters.simulcast === 'true',
+  };
+
   const [roomId, setRoomId] = useState<string>();
   const [username, setUsername] = useState<string>('');
   const [tokens, setTokens] = useState<{
@@ -115,28 +126,28 @@ export default function Rooms({
         <link rel='icon' href='/favicon.ico' />
       </Head>
 
-      <TelnyxMeetContext.Provider
-        value={{
-          audioInputDeviceId,
-          audioOutputDeviceId,
-          videoInputDeviceId,
-          setAudioInputDeviceId,
-          setAudioOutputDeviceId,
-          setVideoInputDeviceId,
-          isAudioTrackEnabled,
-          isVideoTrackEnabled,
-          setIsAudioTrackEnabled,
-          setIsVideoTrackEnabled,
-          sendNotification,
-          networkMetrics,
-          setNetworkMetrics,
-          unreadMessages,
-          optionalFeatures,
-        }}
-      >
-        <Main align='center' justify='center' background='light-2'>
-          <Toaster />
+      <Main align='center' justify='center' background='light-2'>
+        <Toaster />
 
+        <TelnyxMeetContext.Provider
+          value={{
+            audioInputDeviceId,
+            audioOutputDeviceId,
+            videoInputDeviceId,
+            setAudioInputDeviceId,
+            setAudioOutputDeviceId,
+            setVideoInputDeviceId,
+            isAudioTrackEnabled,
+            isVideoTrackEnabled,
+            setIsAudioTrackEnabled,
+            setIsVideoTrackEnabled,
+            sendNotification,
+            networkMetrics,
+            setNetworkMetrics,
+            unreadMessages,
+            optionalFeatures,
+          }}
+        >
           {roomId && isReady ? (
             <Room
               roomId={roomId}
@@ -161,8 +172,8 @@ export default function Rooms({
               />
             </GridPreviewContainer>
           )}
-        </Main>
-      </TelnyxMeetContext.Provider>
+        </TelnyxMeetContext.Provider>
+      </Main>
     </Fragment>
   );
 }
