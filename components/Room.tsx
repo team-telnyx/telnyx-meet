@@ -1,9 +1,8 @@
-import React, { useState, useContext } from 'react';
-import { Box, Text, Button } from 'grommet';
+import React, { useState } from 'react';
+import { Box, Text } from 'grommet';
 import { State, Participant } from '@telnyx/video';
 
 import { useRoom } from 'hooks/room';
-import { TelnyxMeetContext } from 'contexts/TelnyxMeetContext';
 
 import Feeds from 'components/Feeds';
 import RoomInfo from 'components/RoomInfo';
@@ -29,7 +28,6 @@ function Room({
   };
   onDisconnected: () => void;
 }) {
-  const { optionalFeatures, setNetworkMetrics } = useContext(TelnyxMeetContext);
   const [useMixedAudioForOutput, setUseMixedAudioForOutput] =
     useState<boolean>(true);
   const [isParticipantsListVisible, setIsParticipantsListVisible] =

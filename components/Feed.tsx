@@ -1,10 +1,4 @@
-import React, {
-  useContext,
-  useEffect,
-  useRef,
-  useState,
-  useCallback,
-} from 'react';
+import React, { useContext, useEffect, useRef, useState } from 'react';
 import { Box, Text, Spinner } from 'grommet';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
@@ -154,9 +148,7 @@ function Feed({
       style={{
         backgroundColor: VIDEO_BG_COLOR,
         position: 'relative',
-        paddingTop: isPresentation
-          ? 'unset'
-          : `${(9 / 16) * 100}%` /* 56.25% - 16:9 Aspect Ratio */,
+        paddingTop: isPresentation ? 'unset' : `${(9 / 16) * 100}%`, // 56.25% - 16:9 Aspect Ratio
         overflow: 'hidden',
         borderWidth: '3px',
         borderStyle: 'solid',
