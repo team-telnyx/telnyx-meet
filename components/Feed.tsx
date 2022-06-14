@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Box, Text, Spinner } from 'grommet';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
@@ -12,7 +12,6 @@ import { TelnyxRoom } from 'hooks/room';
 
 import VideoTrack from 'components/VideoTrack';
 import { WebRTCStats } from 'components/WebRTCStats';
-import { TelnyxMeetContext } from 'contexts/TelnyxMeetContext';
 import { NetworkMetricsMonitor } from './NetworkMetricsMonitor';
 import { VideoBitrate } from 'components/VideoBitrate';
 
@@ -35,7 +34,6 @@ function Feed({
   mirrorVideo: boolean;
   dataId?: string;
 }) {
-  const { networkMetrics } = useContext(TelnyxMeetContext);
   const isTelephonyEngineParticipant =
     participant.origin === 'telephony_engine';
   const showAudioActivityIndicator = isSpeaking && stream?.key === 'self';
@@ -66,6 +64,19 @@ function Feed({
     const allowed = allowedBrowsers.includes(browser.getBrowserName());
     setAllowedBrowser(allowed);
   }, []);
+
+  const renderNetworkMetricsMonitor = () => {
+    if (
+      !stream ||
+      !stream.isConfigured ||
+      !allowedBrowser ||
+      showStatsOverlay
+    ) {
+      return null;
+    }
+
+    return <NetworkMetricsMonitor participant={participant} />;
+  };
 
   const renderVideoBitrate = () => {
     if (participant.origin === 'local') {
@@ -136,8 +147,6 @@ function Feed({
     }
   }
 
-  const peerMetrics = networkMetrics ? networkMetrics[participant.id] : null;
-
   return (
     <div
       // id={stream?.isSpeaking ? 'speaking-box' : ''}
@@ -172,11 +181,7 @@ function Feed({
           }}
         >
           {renderStats()}
-          {!showStatsOverlay && peerMetrics && (
-            <NetworkMetricsMonitor
-              connectionQuality={peerMetrics.connectionQuality}
-            />
-          )}
+          {renderNetworkMetricsMonitor()}
           {renderVideoBitrate()}
         </div>
       </div>
