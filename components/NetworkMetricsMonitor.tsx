@@ -1,6 +1,7 @@
 import React, { useContext } from 'react';
-import { TelnyxMeetContext } from 'contexts/TelnyxMeetContext';
 import { Participant } from '@telnyx/video';
+
+import { TelnyxMeetContext } from 'contexts/TelnyxMeetContext';
 
 export function NetworkMetricsMonitor({
   participant,
