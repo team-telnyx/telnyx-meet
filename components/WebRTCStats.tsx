@@ -1,5 +1,12 @@
-import React, { MouseEventHandler, ReactElement } from 'react';
+import React, {
+  useState,
+  useEffect,
+  ReactElement,
+} from 'react';
 import styled from 'styled-components';
+import { Participant, Stream } from '@telnyx/video';
+
+import { TelnyxRoom } from 'hooks/room';
 
 const ContainerOverlay = styled.div`
   position: absolute;
@@ -79,10 +86,6 @@ interface DataRTCInbound {
   audioLevel?: number;
   totalAudioEnergy?: number;
   totalSamplesDuration?: number;
-}
-interface IWebRTCStats {
-  data: any;
-  onClose: MouseEventHandler<any>;
 }
 
 interface IDescription {
@@ -285,70 +288,122 @@ function generateInboundRTPDescriptions(inboundRTPs: any) {
   };
 }
 
-function WebRTCStats({ data, onClose }: IWebRTCStats) {
-  const [tab, setTab] = React.useState('audio');
+function getRTCDescriptionByType(stats: any): {
+  audioRTP: ReactElement | null;
+  videoRTP: ReactElement | null;
+} {
+  let audioRTP = null,
+    videoRTP = null;
 
-  function getRTCDescriptionByType(): {
-    audioRTP: ReactElement | null;
-    videoRTP: ReactElement | null;
-  } {
-    let audioRTP = null,
-      videoRTP = null;
-
-    if (!data) {
-      return {
-        audioRTP,
-        videoRTP,
-      };
-    }
-
-    const inboundRTPs = data['receivers'];
-
-    if (inboundRTPs && (inboundRTPs['audio'] || inboundRTPs['video'])) {
-      return generateInboundRTPDescriptions(inboundRTPs);
-    }
-
-    const outboundRtps = data['senders'];
-
-    if (outboundRtps && (outboundRtps['audio'] || outboundRtps['video'])) {
-      return generateOutBoundRTPDescriptions(outboundRtps);
-    }
-
+  if (!stats) {
     return {
       audioRTP,
       videoRTP,
     };
   }
 
-  const { audioRTP, videoRTP } = getRTCDescriptionByType();
+  const inboundRTPs = stats['receivers'];
+
+  if (inboundRTPs && (inboundRTPs['audio'] || inboundRTPs['video'])) {
+    return generateInboundRTPDescriptions(inboundRTPs);
+  }
+
+  const outboundRtps = stats['senders'];
+
+  if (outboundRtps && (outboundRtps['audio'] || outboundRtps['video'])) {
+    return generateOutBoundRTPDescriptions(outboundRtps);
+  }
+
+  return {
+    audioRTP,
+    videoRTP,
+  };
+}
+
+function WebRTCStats({
+  participant,
+  stream,
+  getStatsForParticipantStream,
+  showStatsOverlay,
+  setShowStatsOverlay,
+}: {
+  participant: Participant;
+  stream: Stream;
+  getStatsForParticipantStream: TelnyxRoom['getWebRTCStatsForStream'];
+  showStatsOverlay: boolean;
+  setShowStatsOverlay: React.Dispatch<React.SetStateAction<boolean>>;
+}) {
+  const [tab, setTab] = useState('audio');
+  const [stats, setStats] = useState<any>(null);
+  const { audioRTP, videoRTP } = getRTCDescriptionByType(stats);
+
+  useEffect(() => {
+    if (!showStatsOverlay) {
+      return;
+    }
+
+    const interval = setInterval(async () => {
+      try {
+        const stats = await getStatsForParticipantStream(
+          participant.id,
+          stream.key
+        );
+
+        if (stats) {
+          setStats(stats);
+        }
+      } catch (error) {
+        clearInterval(interval);
+        setStats(null);
+        setShowStatsOverlay(false);
+        throw error;
+      }
+    }, 500);
+
+    return () => clearInterval(interval);
+  }, [
+    participant,
+    stream,
+    getStatsForParticipantStream,
+    showStatsOverlay,
+    setShowStatsOverlay,
+  ]);
 
   return (
-    <ContainerOverlay>
-      <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-        <CloseButton onClick={onClose}>[x]</CloseButton>
-      </div>
-      {!data ? (
-        <p>Sorry, we do not have any stat metrics yet</p>
+    <>
+      {!showStatsOverlay || !stats ? (
+        <button style={{ margin: 4 }} onClick={() => setShowStatsOverlay(true)}>
+          stats
+        </button>
       ) : (
-        <React.Fragment>
-          {audioRTP && (
-            <TabButton active={tab === 'audio'} onClick={() => setTab('audio')}>
+        <ContainerOverlay>
+          <div style={{ display: 'flex', margin: '4px 0 8px' }}>
+            <TabButton
+              style={{ marginTop: 4 }}
+              active={tab === 'audio'}
+              onClick={() => setTab('audio')}
+            >
               Audio
             </TabButton>
-          )}
-          {videoRTP && (
-            <TabButton active={tab === 'video'} onClick={() => setTab('video')}>
+            <TabButton
+              style={{ marginTop: 4 }}
+              active={tab === 'video'}
+              onClick={() => setTab('video')}
+            >
               Video
             </TabButton>
-          )}
-          {audioRTP && tab === 'audio' ? (
-            <React.Fragment>{audioRTP}</React.Fragment>
-          ) : (
-            <React.Fragment>{videoRTP}</React.Fragment>
-          )}
-        </React.Fragment>
+            <CloseButton
+              style={{ marginLeft: 'auto' }}
+              onClick={() => setShowStatsOverlay(false)}
+            >
+              [x]
+            </CloseButton>
+          </div>
+          {tab === 'audio' && audioRTP}
+          {tab === 'video' && videoRTP}
+        </ContainerOverlay>
       )}
-    </ContainerOverlay>
+    </>
   );
 }
 export { WebRTCStats };
