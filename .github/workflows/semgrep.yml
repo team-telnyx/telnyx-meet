@@ -8,7 +8,7 @@ on:
     paths:
       - .github/workflows/semgrep.yml
   schedule:
-    - cron: '31 7 * * 3'
+    - cron: '25 1 * * 4'
 jobs:
   semgrep:
     name: Static Analysis Scan
@@ -20,7 +20,4 @@ jobs:
     if: (github.actor != 'dependabot[bot]')
     steps:
       - uses: actions/checkout@v3
-      - run: |
-          echo $SEMGREP_APP_TOKEN
-          semgrep ci
-
+      - run: semgrep ci
