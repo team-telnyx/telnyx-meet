@@ -1,7 +1,6 @@
 import React, {
   useState,
   useEffect,
-  MouseEventHandler,
   ReactElement,
 } from 'react';
 import styled from 'styled-components';
