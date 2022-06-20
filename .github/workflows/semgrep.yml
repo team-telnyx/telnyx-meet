@@ -12,7 +12,7 @@ on:
 jobs:
   semgrep:
     name: Static Analysis Scan
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     env:
       SEMGREP_APP_TOKEN: ${{ secrets.SEMGREP_APP_TOKEN }}
     container:
@@ -20,4 +20,5 @@ jobs:
     if: (github.actor != 'dependabot[bot]')
     steps:
       - uses: actions/checkout@v3
-      - run: semgrep ci
+      - name: Scan output
+        run: semgrep ci
