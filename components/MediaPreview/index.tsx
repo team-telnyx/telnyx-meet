@@ -61,6 +61,7 @@ function MediaPreview() {
   >(undefined);
 
   const videoElRef = useRef<HTMLVideoElement>(null);
+  const camera = useRef<any>(null);
 
   useEffect(() => {
     return () => {
@@ -102,12 +103,7 @@ function MediaPreview() {
 
       <VideoPreview id='preview-video'>
         {isVideoTrackEnabled ? (
-          <video
-            id='video-preview'
-            ref={videoElRef}
-            playsInline={true}
-            autoPlay={true}
-            muted={true}
+          <div
             style={{
               position: 'absolute',
               left: 0,
@@ -118,7 +114,39 @@ function MediaPreview() {
               transform: 'scaleX(-1)',
               objectFit: 'cover',
             }}
-          ></video>
+          >
+            <canvas
+              style={{
+                position: 'absolute',
+                left: 0,
+                top: 0,
+                height: '100%',
+                width: '100%',
+                borderRadius: '8px',
+                objectFit: 'cover',
+                zIndex: camera.current ? 1 : 0,
+              }}
+              id='canvas'
+              className='hide'
+            ></canvas>
+            <video
+              style={{
+                position: 'absolute',
+                left: 0,
+                top: 0,
+                height: '100%',
+                width: '100%',
+                borderRadius: '8px',
+                objectFit: 'cover',
+                zIndex: !camera.current ? 1 : 0,
+              }}
+              id='video-preview'
+              ref={videoElRef}
+              playsInline={true}
+              autoPlay={true}
+              muted={true}
+            ></video>
+          </div>
         ) : (
           <Text
             style={{
@@ -132,7 +160,6 @@ function MediaPreview() {
             Camera is off
           </Text>
         )}
-
         <div
           style={{
             position: 'absolute',
@@ -152,6 +179,7 @@ function MediaPreview() {
             localTracks={localTracks}
             setLocalTracks={setLocalTracks}
             setError={setError}
+            camera={camera}
           />
         </div>
       </VideoPreview>

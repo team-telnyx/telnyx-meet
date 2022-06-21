@@ -1,9 +1,10 @@
-import React from 'react';
+import React, { MutableRefObject } from 'react';
 import { Participant } from '@telnyx/video';
 
 import { TelnyxRoom } from 'hooks/room';
 import GridLayout from 'components/GridLayout';
 import ScreenSharingLayout from 'components/ScreenSharingLayout';
+import { VirtualBackground } from 'utils/virtualBackground';
 
 function Feeds({
   participants,
@@ -14,6 +15,7 @@ function Feeds({
   getParticipantStream,
   getStatsForParticipantStream,
   dataTestId,
+  camera,
 }: {
   participants: TelnyxRoom['state']['participants'];
   streams: TelnyxRoom['state']['streams'];
@@ -23,6 +25,7 @@ function Feeds({
   getParticipantStream: TelnyxRoom['getParticipantStream'];
   getStatsForParticipantStream: TelnyxRoom['getWebRTCStatsForStream'];
   dataTestId: string;
+  camera: VirtualBackground['camera'];
 }) {
   if (presenter) {
     return (
@@ -35,6 +38,7 @@ function Feeds({
         dominantSpeakerId={dominantSpeakerId}
         getParticipantStream={getParticipantStream}
         getStatsForParticipantStream={getStatsForParticipantStream}
+        virtualBackgroundCamera={camera}
       />
     );
   }
@@ -48,6 +52,7 @@ function Feeds({
       dominantSpeakerId={dominantSpeakerId}
       getParticipantStream={getParticipantStream}
       getStatsForParticipantStream={getStatsForParticipantStream}
+      virtualBackgroundCamera={camera}
     />
   );
 }

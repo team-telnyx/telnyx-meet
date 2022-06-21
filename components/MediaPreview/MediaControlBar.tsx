@@ -1,4 +1,12 @@
-import React, { useEffect, useCallback, Dispatch, SetStateAction } from 'react';
+import React, {
+  useEffect,
+  Dispatch,
+  SetStateAction,
+  useRef,
+  ChangeEvent,
+  useState,
+} from 'react';
+import { useRouter } from 'next/router';
 import {
   faMicrophone,
   faMicrophoneSlash,
@@ -9,15 +17,19 @@ import { Box, Button, Text } from 'grommet';
 import { FontAwesomeIcon as BaseFontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import styled from 'styled-components';
 
-import { MediaDeviceErrors } from './helper';
-
 import { getUserMedia } from 'utils/userMedia';
 import {
   saveItem,
   getItem,
   USER_PREFERENCE_AUDIO_ENABLED,
   USER_PREFERENCE_VIDEO_ENABLED,
+  USER_PREFERENCE_BACKGROUND_TYPE,
+  getItemSessionStorage,
+  saveItemSessionStorage,
 } from 'utils/storage';
+
+import { MediaDeviceErrors } from './helper';
+import { addVirtualBackgroundStream } from 'utils/virtualBackground';
 
 const breakpointLarge = 1450;
 
@@ -38,6 +50,7 @@ function MediaControlBar({
   localTracks,
   setLocalTracks,
   setError,
+  camera,
 }: {
   audioInputDeviceId: string | undefined;
   videoInputDeviceId: string | undefined;
@@ -59,7 +72,15 @@ function MediaControlBar({
   setError: Dispatch<
     SetStateAction<{ title: string; body: string } | undefined>
   >;
+  camera: any;
 }) {
+  const videoProcessor = useRef<any>(null);
+
+  const [virtualBackgroundType, setVirtualBackgroundType] = useState<
+    string | undefined
+  >();
+  const router = useRouter();
+
   const handleTrackUpdate = (
     kind: 'audio' | 'video',
     track: MediaStreamTrack | undefined
@@ -140,6 +161,10 @@ function MediaControlBar({
   }, [setError]);
 
   useEffect(() => {
+    if (!router.isReady) {
+      return;
+    }
+
     const isAudioEnabled = getItem(USER_PREFERENCE_AUDIO_ENABLED) || null;
     const isVideoEnabled = getItem(USER_PREFERENCE_VIDEO_ENABLED) || null;
 
@@ -169,7 +194,71 @@ function MediaControlBar({
     }
     // TODO: avoid disable line
     // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [router.isReady]);
+
+  useEffect(() => {
+    saveItemSessionStorage(USER_PREFERENCE_BACKGROUND_TYPE, 'none');
   }, []);
+
+  const handleVirtualBg = async (e: ChangeEvent<HTMLSelectElement>) => {
+    saveItemSessionStorage(USER_PREFERENCE_BACKGROUND_TYPE, e.target.value);
+    setVirtualBackgroundType(e.target.value);
+    getUserMedia({
+      kind: 'video',
+      deviceId: videoInputDeviceId,
+      options: optionalFeatures,
+      callbacks: {
+        onTrackUpdate: async (
+          kind: 'audio' | 'video',
+          track: MediaStreamTrack | undefined
+        ) => {
+          if (kind === 'video' && track) {
+            const videoTrack = await addVirtualBackgroundStream({
+              videoProcessor: videoProcessor,
+              camera: camera,
+              videoElementId: 'video-preview',
+              canvasElementId: 'canvas',
+              track: track,
+              backgroundValue: e.target.value,
+            });
+
+            setLocalTracks((value) => ({
+              ...value,
+              video:
+                !e.target.value || e.target.value === 'none'
+                  ? track
+                  : videoTrack,
+            }));
+          }
+        },
+        onDeviceError: handleDeviceError,
+      },
+    });
+  };
+
+  const renderSelectBackgroungImage = () => {
+    const options = ['retro.webp', 'mansao.webp', 'paradise.jpg'].map(
+      (item, index) => {
+        return (
+          <option key={index} value={item}>
+            {item}
+          </option>
+        );
+      }
+    );
+    return (
+      <select
+        disabled={!isVideoTrackEnabled}
+        name={'images'}
+        onChange={handleVirtualBg}
+        value={virtualBackgroundType}
+      >
+        <option value={'none'}>none</option>
+        <option value={'blur'}>blur</option>
+        {options}
+      </select>
+    );
+  };
 
   return (
     <React.Fragment>
@@ -213,6 +302,9 @@ function MediaControlBar({
           </Text>
         </Box>
       </Button>
+      {optionalFeatures &&
+        optionalFeatures.isVirtualBackgroundFeatureEnabled &&
+        renderSelectBackgroungImage()}
     </React.Fragment>
   );
 }

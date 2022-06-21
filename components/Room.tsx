@@ -1,9 +1,8 @@
-import React, { useState, useContext } from 'react';
-import { Box, Text, Button } from 'grommet';
+import React, { useState, useRef } from 'react';
+import { Box, Text } from 'grommet';
 import { State, Participant } from '@telnyx/video';
 
 import { useRoom } from 'hooks/room';
-import { TelnyxMeetContext } from 'contexts/TelnyxMeetContext';
 
 import Feeds from 'components/Feeds';
 import RoomInfo from 'components/RoomInfo';
@@ -29,7 +28,8 @@ function Room({
   };
   onDisconnected: () => void;
 }) {
-  const { optionalFeatures, setNetworkMetrics } = useContext(TelnyxMeetContext);
+  const [useMixedAudioForOutput, setUseMixedAudioForOutput] =
+    useState<boolean>(true);
   const [isParticipantsListVisible, setIsParticipantsListVisible] =
     useState<boolean>(false);
   const [isInviteParticipantVisible, setIsInviteParticipantVisible] =
@@ -37,6 +37,8 @@ function Room({
   const [invitedParticipants, setInvitedParticipants] = useState<
     Map<string, boolean>
   >(new Map());
+
+  const camera = useRef<any>();
 
   const onParticipantJoined = (
     participantId: Participant['id'],
@@ -121,19 +123,18 @@ function Room({
           )}
 
           {state.status === 'connected' && (
-            <React.Fragment>
-              <Feeds
-                key='feeds'
-                dataTestId='feeds'
-                participants={state.participants}
-                participantsByActivity={room.participantsByActivity}
-                dominantSpeakerId={room.dominantSpeakerId}
-                presenter={room.presenter}
-                streams={room.state.streams}
-                getParticipantStream={room.getParticipantStream}
-                getStatsForParticipantStream={room.getWebRTCStatsForStream}
-              />
-            </React.Fragment>
+            <Feeds
+              key='feeds'
+              dataTestId='feeds'
+              participants={state.participants}
+              participantsByActivity={room.participantsByActivity}
+              dominantSpeakerId={room.dominantSpeakerId}
+              presenter={room.presenter}
+              streams={room.state.streams}
+              getParticipantStream={room.getParticipantStream}
+              getStatsForParticipantStream={room.getWebRTCStatsForStream}
+              camera={camera}
+            />
           )}
         </Box>
 
@@ -163,8 +164,10 @@ function Room({
           <RoomControls
             isParticipantsListVisible={isParticipantsListVisible}
             isInviteParticipantVisible={isInviteParticipantVisible}
+            useMixedAudioForOutput={useMixedAudioForOutput}
             setIsParticipantsListVisible={setIsParticipantsListVisible}
             setIsInviteParticipantVisible={setIsInviteParticipantVisible}
+            setUseMixedAudioForOutput={setUseMixedAudioForOutput}
             participantsByActivity={room.participantsByActivity}
             addStream={room.addStream}
             removeStream={room.removeStream}
@@ -179,9 +182,10 @@ function Room({
             sendMessage={room.sendMessage}
             messages={room.messages}
             getLocalParticipant={room.getLocalParticipant}
+            camera={camera}
           />
           <RoomAudio
-            useMixedAudioForOutput={optionalFeatures.useMixedAudioForOutput}
+            useMixedAudioForOutput={useMixedAudioForOutput}
             participants={state.participants}
             streams={state.streams}
             mixedAudioTrack={state.mixedAudioTrack}

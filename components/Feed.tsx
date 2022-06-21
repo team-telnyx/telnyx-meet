@@ -1,10 +1,4 @@
-import React, {
-  useContext,
-  useEffect,
-  useRef,
-  useState,
-  useCallback,
-} from 'react';
+import React, { useEffect, useState } from 'react';
 import { Box, Text, Spinner } from 'grommet';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
@@ -18,8 +12,9 @@ import { TelnyxRoom } from 'hooks/room';
 
 import VideoTrack from 'components/VideoTrack';
 import { WebRTCStats } from 'components/WebRTCStats';
-import { TelnyxMeetContext } from 'contexts/TelnyxMeetContext';
 import { NetworkMetricsMonitor } from './NetworkMetricsMonitor';
+import { VideoBitrate } from 'components/VideoBitrate';
+import { VirtualBackground } from 'utils/virtualBackground';
 
 const VIDEO_BG_COLOR = '#111';
 
@@ -32,6 +27,7 @@ function Feed({
   mirrorVideo = false,
   getStatsForParticipantStream,
   dataId,
+  virtualBackgroundCamera,
 }: {
   participant: Participant;
   stream?: Stream;
@@ -39,16 +35,13 @@ function Feed({
   getStatsForParticipantStream: TelnyxRoom['getWebRTCStatsForStream'];
   mirrorVideo: boolean;
   dataId?: string;
+  virtualBackgroundCamera: VirtualBackground['camera'];
 }) {
-  const { networkMetrics } = useContext(TelnyxMeetContext);
   const isTelephonyEngineParticipant =
     participant.origin === 'telephony_engine';
   const showAudioActivityIndicator = isSpeaking && stream?.key === 'self';
   const [showStatsOverlay, setShowStatsOverlay] = useState(false);
-  const [stats, setStats] = useState<any>(null);
   const [allowedBrowser, setAllowedBrowser] = useState(false);
-
-  const intervalStatsId = useRef<any>();
 
   const isPresentation = stream?.key === 'presentation';
   const context = participant.context
@@ -60,11 +53,52 @@ function Feed({
     throw new Error(`No context for the participant`);
   }
 
-  useEffect(() => {
-    if (!stream?.isAudioEnabled && !stream?.isVideoEnabled) {
-      resetWebRTCStats();
+  const renderStats = () => {
+    if (!stream || !stream.isConfigured || !allowedBrowser) {
+      return null;
     }
-  }, [stream?.isAudioEnabled, stream?.isVideoEnabled]);
+
+    return (
+      <WebRTCStats
+        participant={participant}
+        stream={stream}
+        getStatsForParticipantStream={getStatsForParticipantStream}
+        showStatsOverlay={showStatsOverlay}
+        setShowStatsOverlay={setShowStatsOverlay}
+      ></WebRTCStats>
+    );
+  };
+
+  const renderNetworkMetricsMonitor = () => {
+    if (
+      !stream ||
+      !stream.isConfigured ||
+      !allowedBrowser ||
+      showStatsOverlay
+    ) {
+      return null;
+    }
+
+    return <NetworkMetricsMonitor participant={participant} />;
+  };
+
+  const renderVideoBitrate = () => {
+    if (participant.origin === 'local') {
+      return null;
+    }
+
+    if (!stream || !stream.isConfigured || !allowedBrowser) {
+      return null;
+    }
+
+    return (
+      <VideoBitrate
+        participant={participant}
+        stream={stream}
+        getStatsForParticipantStream={getStatsForParticipantStream}
+      />
+    );
+  };
 
   useEffect(() => {
     const browser = Bowser.getParser(window.navigator.userAgent);
@@ -72,72 +106,19 @@ function Feed({
     setAllowedBrowser(allowed);
   }, []);
 
-  function resetWebRTCStats() {
-    clearInterval(intervalStatsId.current);
-    intervalStatsId.current = null;
-    setStats(null);
-    setShowStatsOverlay(false);
-  }
-
-  function renderStats() {
-    if (!stream || !allowedBrowser) {
-      return null;
-    }
-
-    if (!showStatsOverlay || !stats) {
-      return (
-        <button
-          style={{ margin: 4 }}
-          onClick={async () => {
-            if (!intervalStatsId.current) {
-              intervalStatsId.current = setInterval(async () => {
-                try {
-                  const stats = await getStatsForParticipantStream(
-                    participant.id,
-                    stream.key
-                  );
-
-                  if (stats) {
-                    setStats(stats);
-                    setShowStatsOverlay(true);
-                  }
-                } catch (error) {
-                  resetWebRTCStats();
-                  throw error;
-                }
-              }, 500);
-            }
-          }}
-          disabled={!stream}
-        >
-          stats
-        </button>
-      );
-    } else {
-      return (
-        <WebRTCStats
-          onClose={() => resetWebRTCStats()}
-          data={stats}
-        ></WebRTCStats>
-      );
-    }
-  }
-
-  const peerMetrics = networkMetrics ? networkMetrics[participant.id] : null;
+  const VIDEO_ELEMENT_ID = `video-feed-${context.username
+    ?.toLowerCase()
+    .replace(' ', '-')}`;
 
   return (
     <div
       // id={stream?.isSpeaking ? 'speaking-box' : ''}
       data-id={dataId}
-      data-testid={`video-feed-${context.username
-        ?.toLowerCase()
-        .replace(' ', '-')}`}
+      data-testid={VIDEO_ELEMENT_ID}
       style={{
         backgroundColor: VIDEO_BG_COLOR,
         position: 'relative',
-        paddingTop: isPresentation
-          ? 'unset'
-          : `${(9 / 16) * 100}%` /* 56.25% - 16:9 Aspect Ratio */,
+        paddingTop: isPresentation ? 'unset' : `${(9 / 16) * 100}%`, // 56.25% - 16:9 Aspect Ratio
         overflow: 'hidden',
         borderWidth: '3px',
         borderStyle: 'solid',
@@ -149,7 +130,7 @@ function Feed({
         style={{
           position: 'absolute',
           top: '0px',
-          zIndex: 1,
+          zIndex: 2,
           width: '100%',
           height: '100%',
         }}
@@ -160,12 +141,9 @@ function Feed({
             justifyContent: 'space-between',
           }}
         >
-          {stream?.isConfigured && renderStats()}
-          {!showStatsOverlay && peerMetrics && (
-            <NetworkMetricsMonitor
-              connectionQuality={peerMetrics.connectionQuality}
-            />
-          )}
+          {renderStats()}
+          {renderNetworkMetricsMonitor()}
+          {renderVideoBitrate()}
         </div>
       </div>
 
@@ -201,12 +179,15 @@ function Feed({
         )}
         {(stream?.videoTrack || stream?.audioTrack) && (
           <VideoTrack
-            dataTestId={`video-feed-${stream.key}-${
+            id={VIDEO_ELEMENT_ID}
+            dataTestId={`video-feed-${stream?.key}-${
               stream?.isVideoEnabled ? 'enabled' : 'notEnabled'
             }`}
+            //@ts-ignore
             stream={stream}
             mirrorVideo={mirrorVideo}
             isPresentation={isPresentation}
+            virtualBackgroundCamera={virtualBackgroundCamera}
           />
         )}
 
@@ -214,7 +195,13 @@ function Feed({
         {!stream?.isVideoEnabled && (
           <>
             <Box
-              style={{ position: 'absolute', top: 0, left: 0 }}
+              style={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                zIndex: 2,
+                backgroundColor: !virtualBackgroundCamera ? VIDEO_BG_COLOR : '',
+              }}
               align='center'
               justify='center'
               fill
@@ -237,7 +224,15 @@ function Feed({
         )}
 
         {/* Small bottom text: */}
-        <Box style={{ position: 'absolute', left: 0, bottom: 0 }}>
+        <Box
+          style={{
+            position: 'absolute',
+            left: 0,
+            bottom: 0,
+            zIndex: 2,
+            backgroundColor: !virtualBackgroundCamera ? VIDEO_BG_COLOR : '',
+          }}
+        >
           <Box
             direction='row'
             align='center'

@@ -19,6 +19,8 @@ const TelnyxMeetContext = React.createContext<{
   networkMetrics: NetworkMetrics | undefined;
   setNetworkMetrics: Dispatch<SetStateAction<NetworkMetrics | undefined>>;
   optionalFeatures: { [key: string]: boolean };
+  isVideoPlaying: boolean;
+  setVideoPlaying: Dispatch<SetStateAction<boolean>>;
 }>({
   audioInputDeviceId: undefined,
   audioOutputDeviceId: undefined,
@@ -44,6 +46,8 @@ const TelnyxMeetContext = React.createContext<{
     value: React.SetStateAction<NetworkMetrics | undefined>
   ) => {},
   optionalFeatures: {},
+  isVideoPlaying: false,
+  setVideoPlaying: (value: React.SetStateAction<boolean>) => {},
 });
 
 export { TelnyxMeetContext };

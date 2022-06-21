@@ -1,4 +1,11 @@
-import { useState, useEffect, useContext, useCallback } from 'react';
+import {
+  useState,
+  useEffect,
+  useContext,
+  useRef,
+  ChangeEvent,
+  MutableRefObject,
+} from 'react';
 import { getDevices, Participant, Room, Stream } from '@telnyx/video';
 import { Box, Button, Menu, Text } from 'grommet';
 import {
@@ -25,6 +32,12 @@ import ErrorDialog from 'components/ErrorDialog';
 import { Chat } from './Chat';
 
 import { getUserMedia } from 'utils/userMedia';
+import {
+  getItemSessionStorage,
+  saveItemSessionStorage,
+  USER_PREFERENCE_BACKGROUND_TYPE,
+} from 'utils/storage';
+import { addVirtualBackgroundStream } from 'utils/virtualBackground';
 
 const breakpointMedium = 1023;
 
@@ -135,8 +148,10 @@ function DeviceSelect({
 export default function RoomControls({
   isParticipantsListVisible,
   isInviteParticipantVisible,
+  useMixedAudioForOutput,
   setIsParticipantsListVisible,
   setIsInviteParticipantVisible,
+  setUseMixedAudioForOutput,
   streams,
   disableScreenshare,
   participantsByActivity,
@@ -147,9 +162,11 @@ export default function RoomControls({
   sendMessage,
   messages,
   getLocalParticipant,
+  camera,
 }: {
   isParticipantsListVisible: boolean;
   isInviteParticipantVisible: boolean;
+  useMixedAudioForOutput: boolean;
   participantsByActivity: TelnyxRoom['participantsByActivity'];
   addStream: TelnyxRoom['addStream'];
   removeStream: TelnyxRoom['removeStream'];
@@ -157,11 +174,13 @@ export default function RoomControls({
   disconnect: TelnyxRoom['disconnect'];
   setIsParticipantsListVisible: React.Dispatch<React.SetStateAction<boolean>>;
   setIsInviteParticipantVisible: React.Dispatch<React.SetStateAction<boolean>>;
+  setUseMixedAudioForOutput: React.Dispatch<React.SetStateAction<boolean>>;
   streams: { [key: string]: Stream };
   disableScreenshare: boolean;
   sendMessage: Room['sendMessage'];
   messages: TelnyxRoom['messages'];
   getLocalParticipant: () => Participant;
+  camera: MutableRefObject<any>;
 }) {
   const {
     audioInputDeviceId,
@@ -176,7 +195,14 @@ export default function RoomControls({
     setIsAudioTrackEnabled,
     setIsVideoTrackEnabled,
     optionalFeatures,
+    isVideoPlaying,
   } = useContext(TelnyxMeetContext);
+
+  const videoProcessor = useRef<any>(null);
+
+  const [virtualBackgroundType, setVirtualBackgroundType] = useState<
+    string | undefined
+  >();
 
   const [devices, setDevices] = useState<any>({});
   const [localTracks, setLocalTracks] = useState<{
@@ -203,6 +229,78 @@ export default function RoomControls({
   const presentationStream = streams.presentation;
   const participantCount = participantsByActivity.size;
   const localParticipant = getLocalParticipant();
+
+  const context = localParticipant.context
+    ? JSON.parse(localParticipant.context)
+    : undefined;
+
+  const VIDEO_ELEMENT_ID = `video-feed-${context.username
+    ?.toLowerCase()
+    .replace(' ', '-')}`;
+
+  const handleVirtualBg = async (e: ChangeEvent<HTMLSelectElement>) => {
+    saveItemSessionStorage(USER_PREFERENCE_BACKGROUND_TYPE, e.target.value);
+    setVirtualBackgroundType(e.target.value);
+    getUserMedia({
+      kind: 'video',
+      deviceId: videoInputDeviceId,
+      callbacks: {
+        onTrackUpdate: async (
+          kind: 'audio' | 'video',
+          track: MediaStreamTrack | undefined
+        ) => {
+          if (kind === 'video' && track) {
+            const videoTrack = await addVirtualBackgroundStream({
+              videoProcessor: videoProcessor,
+              camera: camera,
+              videoElementId: VIDEO_ELEMENT_ID,
+              canvasElementId: 'canvas',
+              track: track,
+              backgroundValue: e.target.value,
+            });
+
+            setVideoInputDeviceId(track.id);
+
+            setLocalTracks((value) => ({
+              ...value,
+              video:
+                !e.target.value || e.target.value === 'none'
+                  ? track
+                  : videoTrack,
+            }));
+          }
+        },
+        onDeviceError: handleDeviceError,
+      },
+    });
+  };
+
+  const renderSelectBackgroungImage = () => {
+    const options = ['retro.webp', 'mansao.webp', 'paradise.jpg'].map(
+      (item, index) => {
+        return (
+          <option key={index} value={item}>
+            {item}
+          </option>
+        );
+      }
+    );
+    return (
+      <select
+        style={{
+          alignSelf: 'center',
+        }}
+        name={'images'}
+        onChange={handleVirtualBg}
+        value={virtualBackgroundType}
+        disabled={!selfStream?.videoTrack}
+      >
+        <option value={'none'}>none</option>
+        <option value={'blur'}>blur</option>
+        {options}
+      </select>
+    );
+  };
 
   const handleTrackUpdate = (
     kind: 'audio' | 'video',
@@ -267,6 +365,12 @@ export default function RoomControls({
       if (selfStream.videoTrack) {
         selfStream.videoTrack.stop();
       }
+
+      if (camera && camera.current) {
+        camera.current?.stop();
+        camera.current = null;
+      }
+
       handleTrackUpdate('video', undefined);
     } else {
       getUserMedia({
@@ -426,6 +530,57 @@ export default function RoomControls({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  useEffect(() => {
+    if (
+      isVideoPlaying &&
+      optionalFeatures &&
+      optionalFeatures.isVirtualBackgroundFeatureEnabled
+    ) {
+      const videoElement = document.getElementById(VIDEO_ELEMENT_ID);
+      if (videoElement) {
+        getUserMedia({
+          kind: 'video',
+          deviceId: undefined,
+          options: optionalFeatures,
+          callbacks: {
+            onTrackUpdate: (
+              kind: 'audio' | 'video',
+              track: MediaStreamTrack | undefined
+            ) => {
+              const backgroundValue = getItemSessionStorage(
+                USER_PREFERENCE_BACKGROUND_TYPE
+              );
+              if (backgroundValue) {
+                if (kind === 'video' && track) {
+                  addVirtualBackgroundStream({
+                    videoProcessor: videoProcessor,
+                    camera: camera,
+                    videoElementId: VIDEO_ELEMENT_ID,
+                    canvasElementId: 'canvas',
+                    track: track,
+                    backgroundValue: backgroundValue,
+                  }).then((videoTrack) => {
+                    setVideoInputDeviceId(track.id);
+                    setLocalTracks((value) => ({
+                      ...value,
+                      video:
+                        !backgroundValue || backgroundValue === 'none'
+                          ? track
+                          : videoTrack,
+                    }));
+                    setVirtualBackgroundType(backgroundValue);
+                  });
+                }
+              }
+            },
+            onDeviceError: handleDeviceError,
+          },
+        });
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isVideoPlaying]);
+
   const hasUnreadMessages = () => {
     if (unreadMessages.current && unreadMessages.current.length > 0) {
       return true;
@@ -544,6 +699,9 @@ export default function RoomControls({
             </Box>
           </Button>
         </Box>
+        {optionalFeatures &&
+          optionalFeatures.isVirtualBackgroundFeatureEnabled &&
+          renderSelectBackgroungImage()}
 
         <ControllerBox width='80px'>
           <Button
@@ -700,6 +858,18 @@ export default function RoomControls({
       </Box>
 
       <RightBoxMenu pad='small' direction='row' gap='large'>
+        <Box>
+          <Button
+            onClick={() => {
+              setUseMixedAudioForOutput(!useMixedAudioForOutput);
+            }}
+          >
+            <Text>{`Toggle Mixed Audio: ${
+              useMixedAudioForOutput ? 'On' : 'Off'
+            }`}</Text>
+          </Button>
+        </Box>
+
         <DeviceSelect
           kind='audio_input'
           devices={devices?.audioinput}
@@ -722,6 +892,7 @@ export default function RoomControls({
             handleDeviceChange={handleDeviceChange}
           />
         )}
+
         <Box>
           <Button
             data-testid='btn-leave-room'
