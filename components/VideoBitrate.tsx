@@ -18,6 +18,10 @@ function VideoBitrate({
   const [previousBytesReceived, setPreviousBytesReceived] = useState(0);
 
   useEffect(() => {
+    if (!stream.isVideoEnabled) {
+      return;
+    }
+
     const interval = setInterval(async () => {
       try {
         const stats = await getStatsForParticipantStream(
@@ -54,18 +58,12 @@ function VideoBitrate({
       return;
     }
 
-    if (previousBytesReceived === 0) {
-      setBitrate(8 * currentBytesReceived);
-      setPreviousBytesReceived(currentBytesReceived);
-      return;
-    }
-
     setBitrate(8 * (currentBytesReceived - previousBytesReceived));
     setPreviousBytesReceived(currentBytesReceived);
   }, [previousBytesReceived, currentBytesReceived]);
 
   return (
-    <Box style={{ position: 'absolute', right: 0, bottom: 0, zIndex: 1 }}>
+    <Box style={{ position: 'absolute', right: 0, bottom: 0 }}>
       <Box
         direction='row'
         align='center'
@@ -76,9 +74,11 @@ function VideoBitrate({
         round='xxsmall'
         width='106px'
       >
-        <Text color='status-disabled' size='xsmall'>Video:</Text>
         <Text color='status-disabled' size='xsmall'>
-          {stream?.isVideoEnabled ? Math.floor(bitrate / 1000) : 0} kbps
+          Video:
+        </Text>
+        <Text color='status-disabled' size='xsmall'>
+          {stream.isVideoEnabled ? Math.floor(bitrate / 1000) : 0} kbps
         </Text>
       </Box>
     </Box>

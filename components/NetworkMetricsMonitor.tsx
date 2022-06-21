@@ -1,10 +1,22 @@
+import React, { useContext } from 'react';
+import { Participant } from '@telnyx/video';
+
+import { TelnyxMeetContext } from 'contexts/TelnyxMeetContext';
+
 export function NetworkMetricsMonitor({
-  connectionQuality,
+  participant,
 }: {
-  connectionQuality: number;
+  participant: Participant;
 }) {
+  const { networkMetrics } = useContext(TelnyxMeetContext);
+  const peerMetrics = networkMetrics ? networkMetrics[participant.id] : null;
+
   const STEP = 3;
   const BARS_ARRAY = [0, 1, 2, 3, 4];
+
+  if (!peerMetrics) {
+    return null;
+  }
 
   return (
     <div
@@ -32,7 +44,7 @@ export function NetworkMetricsMonitor({
               marginRight: '1px',
               height: `${STEP * (level + 1)}px`,
               background:
-                connectionQuality > level
+                peerMetrics.connectionQuality > level
                   ? 'white'
                   : 'rgba(255, 255, 255, 0.2)',
             }}

@@ -6,6 +6,7 @@ import React, {
   ChangeEvent,
   useState,
 } from 'react';
+import { useRouter } from 'next/router';
 import {
   faMicrophone,
   faMicrophoneSlash,
@@ -78,6 +79,7 @@ function MediaControlBar({
   const [virtualBackgroundType, setVirtualBackgroundType] = useState<
     string | undefined
   >();
+  const router = useRouter();
 
   const handleTrackUpdate = (
     kind: 'audio' | 'video',
@@ -159,6 +161,10 @@ function MediaControlBar({
   }, [setError]);
 
   useEffect(() => {
+    if (!router.isReady) {
+      return;
+    }
+
     const isAudioEnabled = getItem(USER_PREFERENCE_AUDIO_ENABLED) || null;
     const isVideoEnabled = getItem(USER_PREFERENCE_VIDEO_ENABLED) || null;
 
@@ -188,7 +194,7 @@ function MediaControlBar({
     }
     // TODO: avoid disable line
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [router.isReady]);
 
   useEffect(() => {
     if (

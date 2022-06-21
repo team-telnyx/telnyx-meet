@@ -148,8 +148,10 @@ function DeviceSelect({
 export default function RoomControls({
   isParticipantsListVisible,
   isInviteParticipantVisible,
+  useMixedAudioForOutput,
   setIsParticipantsListVisible,
   setIsInviteParticipantVisible,
+  setUseMixedAudioForOutput,
   streams,
   disableScreenshare,
   participantsByActivity,
@@ -164,6 +166,7 @@ export default function RoomControls({
 }: {
   isParticipantsListVisible: boolean;
   isInviteParticipantVisible: boolean;
+  useMixedAudioForOutput: boolean;
   participantsByActivity: TelnyxRoom['participantsByActivity'];
   addStream: TelnyxRoom['addStream'];
   removeStream: TelnyxRoom['removeStream'];
@@ -171,6 +174,7 @@ export default function RoomControls({
   disconnect: TelnyxRoom['disconnect'];
   setIsParticipantsListVisible: React.Dispatch<React.SetStateAction<boolean>>;
   setIsInviteParticipantVisible: React.Dispatch<React.SetStateAction<boolean>>;
+  setUseMixedAudioForOutput: React.Dispatch<React.SetStateAction<boolean>>;
   streams: { [key: string]: Stream };
   disableScreenshare: boolean;
   sendMessage: Room['sendMessage'];
@@ -576,7 +580,7 @@ export default function RoomControls({
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isVideoPlaying]);
-  
+
   const hasUnreadMessages = () => {
     if (unreadMessages.current && unreadMessages.current.length > 0) {
       return true;
@@ -854,6 +858,18 @@ export default function RoomControls({
       </Box>
 
       <RightBoxMenu pad='small' direction='row' gap='large'>
+        <Box>
+          <Button
+            onClick={() => {
+              setUseMixedAudioForOutput(!useMixedAudioForOutput);
+            }}
+          >
+            <Text>{`Toggle Mixed Audio: ${
+              useMixedAudioForOutput ? 'On' : 'Off'
+            }`}</Text>
+          </Button>
+        </Box>
+
         <DeviceSelect
           kind='audio_input'
           devices={devices?.audioinput}
@@ -876,6 +892,7 @@ export default function RoomControls({
             handleDeviceChange={handleDeviceChange}
           />
         )}
+
         <Box>
           <Button
             data-testid='btn-leave-room'
