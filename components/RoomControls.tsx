@@ -38,6 +38,7 @@ import {
   USER_PREFERENCE_BACKGROUND_TYPE,
 } from 'utils/storage';
 import { addVirtualBackgroundStream } from 'utils/virtualBackground';
+import { MenuList } from './MenuList';
 
 const breakpointMedium = 1023;
 
@@ -238,9 +239,9 @@ export default function RoomControls({
     ?.toLowerCase()
     .replace(' ', '-')}`;
 
-  const handleVirtualBg = async (e: ChangeEvent<HTMLSelectElement>) => {
-    saveItemSessionStorage(USER_PREFERENCE_BACKGROUND_TYPE, e.target.value);
-    setVirtualBackgroundType(e.target.value);
+  const handleVirtualBg = async (selectedValue: string) => {
+    saveItemSessionStorage(USER_PREFERENCE_BACKGROUND_TYPE, selectedValue);
+    setVirtualBackgroundType(selectedValue);
     getUserMedia({
       kind: 'video',
       deviceId: videoInputDeviceId,
@@ -256,7 +257,7 @@ export default function RoomControls({
               videoElementId: VIDEO_ELEMENT_ID,
               canvasElementId: 'canvas',
               track: track,
-              backgroundValue: e.target.value,
+              backgroundValue: selectedValue,
             });
 
             setVideoInputDeviceId(track.id);
@@ -264,9 +265,7 @@ export default function RoomControls({
             setLocalTracks((value) => ({
               ...value,
               video:
-                !e.target.value || e.target.value === 'none'
-                  ? track
-                  : videoTrack,
+                !selectedValue || selectedValue === 'none' ? track : videoTrack,
             }));
           }
         },
@@ -276,29 +275,37 @@ export default function RoomControls({
   };
 
   const renderSelectBackgroungImage = () => {
-    const options = ['retro.webp', 'mansao.webp', 'paradise.jpg'].map(
-      (item, index) => {
-        return (
-          <option key={index} value={item}>
-            {item}
-          </option>
-        );
-      }
-    );
+    const options = [
+      {
+        label: 'none',
+        value: 'none',
+      },
+      {
+        label: 'blur',
+        value: 'blur',
+      },
+      {
+        label: 'retro',
+        value: 'retro.webp',
+      },
+      {
+        label: 'mansao',
+        value: 'mansao.webp',
+      },
+      {
+        label: 'paradise',
+        value: 'paradise.jpg',
+      },
+    ];
+
     return (
-      <select
-        style={{
-          alignSelf: 'center',
-        }}
-        name={'images'}
-        onChange={handleVirtualBg}
-        value={virtualBackgroundType}
-        disabled={!selfStream?.videoTrack}
-      >
-        <option value={'none'}>none</option>
-        <option value={'blur'}>blur</option>
-        {options}
-      </select>
+      <span style={{ color: '#fff' }}>
+        <MenuList
+          title='Change background'
+          data={options}
+          onChange={(item) => handleVirtualBg(item.value)}
+        ></MenuList>
+      </span>
     );
   };
 
@@ -699,9 +706,6 @@ export default function RoomControls({
             </Box>
           </Button>
         </Box>
-        {optionalFeatures &&
-          optionalFeatures.isVirtualBackgroundFeatureEnabled &&
-          renderSelectBackgroungImage()}
 
         <ControllerBox width='80px'>
           <Button
@@ -858,6 +862,9 @@ export default function RoomControls({
       </Box>
 
       <RightBoxMenu pad='small' direction='row' gap='large'>
+        {optionalFeatures &&
+          optionalFeatures.isVirtualBackgroundFeatureEnabled &&
+          renderSelectBackgroungImage()}
         <Box>
           <Button
             onClick={() => {

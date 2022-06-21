@@ -29,6 +29,7 @@ import {
 
 import { MediaDeviceErrors } from './helper';
 import { addVirtualBackgroundStream } from 'utils/virtualBackground';
+import { MenuList } from 'components/MenuList';
 
 const breakpointLarge = 1450;
 
@@ -199,9 +200,9 @@ function MediaControlBar({
     saveItemSessionStorage(USER_PREFERENCE_BACKGROUND_TYPE, 'none');
   }, []);
 
-  const handleVirtualBg = async (e: ChangeEvent<HTMLSelectElement>) => {
-    saveItemSessionStorage(USER_PREFERENCE_BACKGROUND_TYPE, e.target.value);
-    setVirtualBackgroundType(e.target.value);
+  const handleVirtualBg = async (selectedValue: string) => {
+    saveItemSessionStorage(USER_PREFERENCE_BACKGROUND_TYPE, selectedValue);
+    setVirtualBackgroundType(selectedValue);
     getUserMedia({
       kind: 'video',
       deviceId: videoInputDeviceId,
@@ -218,15 +219,13 @@ function MediaControlBar({
               videoElementId: 'video-preview',
               canvasElementId: 'canvas',
               track: track,
-              backgroundValue: e.target.value,
+              backgroundValue: selectedValue,
             });
 
             setLocalTracks((value) => ({
               ...value,
               video:
-                !e.target.value || e.target.value === 'none'
-                  ? track
-                  : videoTrack,
+                !selectedValue || selectedValue === 'none' ? track : videoTrack,
             }));
           }
         },
@@ -236,26 +235,38 @@ function MediaControlBar({
   };
 
   const renderSelectBackgroungImage = () => {
-    const options = ['retro.webp', 'mansao.webp', 'paradise.jpg'].map(
-      (item, index) => {
-        return (
-          <option key={index} value={item}>
-            {item}
-          </option>
-        );
-      }
-    );
+    const options = [
+      {
+        label: 'none',
+        value: 'none',
+      },
+      {
+        label: 'blur',
+        value: 'blur',
+      },
+      {
+        label: 'retro',
+        value: 'retro.webp',
+      },
+      {
+        label: 'mansao',
+        value: 'mansao.webp',
+      },
+      {
+        label: 'paradise',
+        value: 'paradise.jpg',
+      },
+    ];
+
     return (
-      <select
-        disabled={!isVideoTrackEnabled}
-        name={'images'}
-        onChange={handleVirtualBg}
-        value={virtualBackgroundType}
-      >
-        <option value={'none'}>none</option>
-        <option value={'blur'}>blur</option>
-        {options}
-      </select>
+      <span style={{ color: '#fff' }}>
+        <MenuList
+          size='small'
+          title='Change background'
+          data={options}
+          onChange={(item) => handleVirtualBg(item.value)}
+        ></MenuList>
+      </span>
     );
   };
 
