@@ -4,7 +4,7 @@ import { VideoProcessor, Camera } from '@telnyx/video-processors';
 
 export interface VirtualBackground {
   videoProcessor: MutableRefObject<VideoProcessor>;
-  camera: MutableRefObject<Camera>;
+  camera: MutableRefObject<Camera> | null;
   videoElementId: string;
   canvasElementId: string;
   track: MediaStreamTrack | undefined;

@@ -12,6 +12,7 @@ import { TelnyxRoom } from 'hooks/room';
 import { useWindowSize } from 'hooks/windowSize';
 import Feed from 'components/Feed';
 import { Pagination } from 'components/Pagination';
+import { VirtualBackground } from 'utils/virtualBackground';
 
 const breakpointMedium = 1023;
 
@@ -35,6 +36,8 @@ function NewSideBar({ children }: { children: ReactChild }) {
   );
 }
 
+const NewSideBarMemo = React.memo(NewSideBar);
+
 function ScreenSharingLayout({
   participants,
   // TODO: avoid disable line
@@ -46,7 +49,7 @@ function ScreenSharingLayout({
   getParticipantStream,
   getStatsForParticipantStream,
   dataTestId,
-  hasVirtualBackground,
+  virtualBackgroundCamera,
 }: {
   participants: TelnyxRoom['state']['participants'];
   streams: TelnyxRoom['state']['streams']; // if this is removed, the feeds will not rerender when the streams update
@@ -56,7 +59,7 @@ function ScreenSharingLayout({
   getParticipantStream: TelnyxRoom['getParticipantStream'];
   getStatsForParticipantStream: TelnyxRoom['getWebRTCStatsForStream'];
   dataTestId: string;
-  hasVirtualBackground: boolean;
+  virtualBackgroundCamera: VirtualBackground['camera'];
 }) {
   const USERS_PER_PAGE = 3;
   const NAVIGATION_BUTTONS_HEIGHT = 48;
@@ -101,8 +104,10 @@ function ScreenSharingLayout({
           isSpeaking={dominantSpeakerId === participant.id}
           mirrorVideo={participant.origin === 'local'}
           getStatsForParticipantStream={getStatsForParticipantStream}
-          hasVirtualBackground={
-            hasVirtualBackground && participant.origin === 'local'
+          virtualBackgroundCamera={
+            virtualBackgroundCamera && participant.origin === 'local'
+              ? virtualBackgroundCamera
+              : null
           }
         />
       );
@@ -123,7 +128,7 @@ function ScreenSharingLayout({
       {participantsFeeds.length > 0 ? (
         <Pagination
           viewType='screen-sharing'
-          RenderComponent={NewSideBar}
+          RenderComponent={NewSideBarMemo}
           data={participantsFeeds as ReactElement[]}
           dataLimit={maxParticipantPerPage}
         />
@@ -141,7 +146,7 @@ function ScreenSharingLayout({
           isSpeaking={false}
           getStatsForParticipantStream={getStatsForParticipantStream}
           mirrorVideo={false}
-          hasVirtualBackground={hasVirtualBackground}
+          virtualBackgroundCamera={null}
         />
       </div>
     </div>

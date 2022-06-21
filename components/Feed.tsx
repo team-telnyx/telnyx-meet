@@ -14,6 +14,7 @@ import VideoTrack from 'components/VideoTrack';
 import { WebRTCStats } from 'components/WebRTCStats';
 import { NetworkMetricsMonitor } from './NetworkMetricsMonitor';
 import { VideoBitrate } from 'components/VideoBitrate';
+import { VirtualBackground } from 'utils/virtualBackground';
 
 const VIDEO_BG_COLOR = '#111';
 
@@ -26,7 +27,7 @@ function Feed({
   mirrorVideo = false,
   getStatsForParticipantStream,
   dataId,
-  hasVirtualBackground,
+  virtualBackgroundCamera,
 }: {
   participant: Participant;
   stream?: Stream;
@@ -34,7 +35,7 @@ function Feed({
   getStatsForParticipantStream: TelnyxRoom['getWebRTCStatsForStream'];
   mirrorVideo: boolean;
   dataId?: string;
-  hasVirtualBackground: boolean;
+  virtualBackgroundCamera: VirtualBackground['camera'];
 }) {
   const isTelephonyEngineParticipant =
     participant.origin === 'telephony_engine';
@@ -186,7 +187,7 @@ function Feed({
             stream={stream}
             mirrorVideo={mirrorVideo}
             isPresentation={isPresentation}
-            hasVirtualBackground={hasVirtualBackground}
+            virtualBackgroundCamera={virtualBackgroundCamera}
           />
         )}
 
@@ -199,7 +200,7 @@ function Feed({
                 top: 0,
                 left: 0,
                 zIndex: 2,
-                backgroundColor: !hasVirtualBackground ? VIDEO_BG_COLOR : '',
+                backgroundColor: !virtualBackgroundCamera ? VIDEO_BG_COLOR : '',
               }}
               align='center'
               justify='center'
@@ -229,7 +230,7 @@ function Feed({
             left: 0,
             bottom: 0,
             zIndex: 2,
-            backgroundColor: !hasVirtualBackground ? VIDEO_BG_COLOR : '',
+            backgroundColor: !virtualBackgroundCamera ? VIDEO_BG_COLOR : '',
           }}
         >
           <Box

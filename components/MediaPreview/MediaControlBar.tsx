@@ -197,17 +197,7 @@ function MediaControlBar({
   }, [router.isReady]);
 
   useEffect(() => {
-    if (
-      optionalFeatures &&
-      optionalFeatures.isVirtualBackgroundFeatureEnabled
-    ) {
-      const backgroundValue = getItemSessionStorage(
-        USER_PREFERENCE_BACKGROUND_TYPE
-      );
-      if (backgroundValue) {
-        saveItemSessionStorage(USER_PREFERENCE_BACKGROUND_TYPE, 'none');
-      }
-    }
+    saveItemSessionStorage(USER_PREFERENCE_BACKGROUND_TYPE, 'none');
   }, []);
 
   const handleVirtualBg = async (e: ChangeEvent<HTMLSelectElement>) => {

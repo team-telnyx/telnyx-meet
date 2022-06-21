@@ -1,6 +1,7 @@
 import { Stream } from '@telnyx/video';
 import React, { useRef, useEffect } from 'react';
 import { useState } from 'react';
+import { VirtualBackground } from 'utils/virtualBackground';
 
 export default function VideoTrack({
   id,
@@ -8,14 +9,14 @@ export default function VideoTrack({
   mirrorVideo,
   dataTestId,
   isPresentation,
-  hasVirtualBackground = false,
+  virtualBackgroundCamera = null,
 }: {
   id: string;
   stream: Stream;
   mirrorVideo: boolean;
   dataTestId: string;
   isPresentation: boolean;
-  hasVirtualBackground: boolean;
+  virtualBackgroundCamera: VirtualBackground['camera'];
 }) {
   const [isPortrait, setIsPortrait] = useState(false);
   const videoElRef = useRef<HTMLVideoElement>(null);
@@ -33,6 +34,15 @@ export default function VideoTrack({
     );
 
     videoEl.srcObject = new MediaStream([stream.videoTrack]);
+
+    // When Feed update in DOM we need to start virtual background canvas
+    if (
+      virtualBackgroundCamera &&
+      virtualBackgroundCamera.current &&
+      stream.videoTrack instanceof CanvasCaptureMediaStreamTrack
+    ) {
+      virtualBackgroundCamera.current.start();
+    }
 
     return function cleanup() {
       if (videoEl) {
@@ -55,7 +65,7 @@ export default function VideoTrack({
           width: '100%',
           objectFit: isPortrait || isPresentation ? 'contain' : 'cover',
           position: 'absolute',
-          zIndex: hasVirtualBackground ? 1 : 0,
+          zIndex: virtualBackgroundCamera?.current ? 1 : 0,
         }}
         id='canvas'
         width={250}
@@ -75,7 +85,7 @@ export default function VideoTrack({
           width: '100%',
           objectFit: isPortrait || isPresentation ? 'contain' : 'cover',
           position: 'absolute',
-          zIndex: !hasVirtualBackground ? 1 : 0,
+          zIndex: !virtualBackgroundCamera?.current ? 1 : 0,
         }}
         width={250}
         height={80}

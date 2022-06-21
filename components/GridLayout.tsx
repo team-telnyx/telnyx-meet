@@ -5,6 +5,7 @@ import { TelnyxRoom } from 'hooks/room';
 import { useWindowSize, getWindowSize } from 'hooks/windowSize';
 import Feed from 'components/Feed';
 import { Pagination } from 'components/Pagination';
+import { VirtualBackground } from 'utils/virtualBackground';
 
 function GridView({
   children,
@@ -31,6 +32,8 @@ function GridView({
   );
 }
 
+const GridViewMemo = React.memo(GridView);
+
 function GridLayout({
   participants,
   // TODO: avoid disable line
@@ -41,7 +44,7 @@ function GridLayout({
   getParticipantStream,
   getStatsForParticipantStream,
   dataTestId,
-  hasVirtualBackground,
+  virtualBackgroundCamera,
 }: {
   participants: TelnyxRoom['state']['participants'];
   streams: TelnyxRoom['state']['streams']; // if this is removed, the feeds will not rerender when the streams update
@@ -50,7 +53,7 @@ function GridLayout({
   getParticipantStream: TelnyxRoom['getParticipantStream'];
   getStatsForParticipantStream: TelnyxRoom['getWebRTCStatsForStream'];
   dataTestId: string;
-  hasVirtualBackground: boolean;
+  virtualBackgroundCamera: VirtualBackground['camera'];
 }) {
   const NAVIGATION_BUTTONS_HEIGHT = 96;
   const REPORT_BUTTON_HEIGHT = 32;
@@ -104,8 +107,10 @@ function GridLayout({
           isSpeaking={dominantSpeakerId === participant.id}
           mirrorVideo={participant.origin === 'local'}
           getStatsForParticipantStream={getStatsForParticipantStream}
-          hasVirtualBackground={
-            hasVirtualBackground && participant.origin === 'local'
+          virtualBackgroundCamera={
+            virtualBackgroundCamera && participant.origin === 'local'
+              ? virtualBackgroundCamera
+              : null
           }
         />
       );
@@ -149,7 +154,7 @@ function GridLayout({
           viewType='grid'
           data={feeds as ReactElement[]}
           dataLimit={maxParticipantPerPage}
-          RenderComponent={GridView}
+          RenderComponent={GridViewMemo}
           layoutProps={layoutProps}
         />
       ) : null}
