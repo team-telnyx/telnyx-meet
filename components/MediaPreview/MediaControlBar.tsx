@@ -24,7 +24,6 @@ import {
   USER_PREFERENCE_AUDIO_ENABLED,
   USER_PREFERENCE_VIDEO_ENABLED,
   USER_PREFERENCE_BACKGROUND_TYPE,
-  getItemSessionStorage,
   saveItemSessionStorage,
 } from 'utils/storage';
 
