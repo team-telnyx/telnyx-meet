@@ -166,6 +166,7 @@ function MediaPreview() {
             bottom: 5,
             left: '50%',
             transform: 'translateX(-50%)',
+            display: 'flex',
           }}
         >
           <MediaControlBar
