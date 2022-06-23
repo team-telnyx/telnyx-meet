@@ -32,7 +32,6 @@ export const addVirtualBackgroundStream = async ({
 
   if (!backgroundValue || backgroundValue === 'none') {
     await camera.current?.stop();
-
     if (videoProcessor.current && videoProcessor.current?.segmentation) {
       await videoProcessor.current?.stop();
       videoProcessor.current = null;
@@ -52,10 +51,7 @@ export const addVirtualBackgroundStream = async ({
       await camera.current?.stop();
     }
 
-    const {
-      videoCameraProcessor,
-      canvasStream,
-    }: { videoCameraProcessor: Camera; canvasStream: MediaStream } =
+    const virtualBackground =
       await videoProcessor.current.createVirtualBackgroundStream({
         track,
         videoElementId,
@@ -64,10 +60,10 @@ export const addVirtualBackgroundStream = async ({
         frameRate: 20,
       });
 
-    videoCameraProcessor.start();
-    camera.current = videoCameraProcessor;
+    virtualBackground.camera.start();
+    camera.current = virtualBackground.camera;
 
-    return canvasStream.getVideoTracks()[0];
+    return virtualBackground.canvasStream.getVideoTracks()[0];
   } else {
     if (!videoProcessor.current || !videoProcessor.current?.segmentation) {
       videoProcessor.current = new VideoProcessor();
@@ -77,10 +73,7 @@ export const addVirtualBackgroundStream = async ({
       await camera.current?.stop();
     }
 
-    const {
-      videoCameraProcessor,
-      canvasStream,
-    }: { videoCameraProcessor: Camera; canvasStream: MediaStream } =
+    const gaussianBlur =
       await videoProcessor.current.createGaussianBlurBackgroundStream({
         track,
         videoElementId,
@@ -88,9 +81,9 @@ export const addVirtualBackgroundStream = async ({
         frameRate: 20,
       });
 
-    videoCameraProcessor.start();
-    camera.current = videoCameraProcessor;
+    gaussianBlur.camera.start();
+    camera.current = gaussianBlur.camera;
 
-    return canvasStream.getVideoTracks()[0];
+    return gaussianBlur.canvasStream.getVideoTracks()[0];
   }
 };
