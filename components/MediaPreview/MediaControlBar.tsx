@@ -25,6 +25,7 @@ import {
   USER_PREFERENCE_VIDEO_ENABLED,
   USER_PREFERENCE_BACKGROUND_TYPE,
   saveItemSessionStorage,
+  getItemSessionStorage,
 } from 'utils/storage';
 
 import { MediaDeviceErrors } from './helper';
@@ -238,6 +239,10 @@ function MediaControlBar({
   };
 
   const renderSelectBackgroungImage = () => {
+    const backgroundValue = getItemSessionStorage(
+      USER_PREFERENCE_BACKGROUND_TYPE
+    );
+
     const options = [
       {
         label: 'none',
@@ -264,6 +269,7 @@ function MediaControlBar({
     return (
       <span style={{ color: '#fff' }}>
         <MenuList
+          initialValue={backgroundValue}
           size='small'
           title='Change background'
           data={options}

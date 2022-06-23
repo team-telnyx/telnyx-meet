@@ -278,6 +278,10 @@ export default function RoomControls({
   };
 
   const renderSelectBackgroungImage = () => {
+    const backgroundValue = getItemSessionStorage(
+      USER_PREFERENCE_BACKGROUND_TYPE
+    );
+
     const options = [
       {
         label: 'none',
@@ -304,6 +308,7 @@ export default function RoomControls({
     return (
       <span style={{ color: '#fff' }}>
         <MenuList
+          initialValue={backgroundValue}
           title='Change background'
           data={options}
           onChange={(item) => handleVirtualBg(item.value)}

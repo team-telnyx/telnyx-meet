@@ -17,14 +17,16 @@ export function MenuList({
   onChange,
   disabled = false,
   size = 'medium',
+  initialValue = '',
 }: {
   title: string;
   data: Array<{ label: string; value: string }>;
   onChange: (item: { label: string; value: string }) => void;
   disabled?: boolean;
   size?: string;
+  initialValue?: string;
 }) {
-  const [selectedValue, setSelectedValue] = useState('');
+  const [selectedValue, setSelectedValue] = useState(initialValue || '');
 
   if (!data || data.length < 1) {
     return null;
