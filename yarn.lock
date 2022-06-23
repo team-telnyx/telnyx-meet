@@ -389,16 +389,9 @@
   resolved "https://registry.yarnpkg.com/@rushstack/eslint-patch/-/eslint-patch-1.1.0.tgz#7f698254aadf921e48dda8c0a6b304026b8a9323"
   integrity sha512-JLo+Y592QzIE+q7Dl2pMUtt4q8SKYI5jDrZxrozEQxnGVOyYE+GWK9eLkwTaeN9DDctlaRAQ3TBmzZ1qdLE30A==
 
-"@telnyx/video-processors@./telnyx-video-processors-0.0.0-alpha.1.tgz":
-  version "0.0.0-alpha.1"
-  resolved "./telnyx-video-processors-0.0.0-alpha.1.tgz#25b455ffb1f716cf677198ed98e1379513e1b7e5"
-  dependencies:
-    "@mediapipe/camera_utils" "^0.3.1640029074"
-    "@mediapipe/selfie_segmentation" "^0.1.1632777926"
-
-"@telnyx/video-processors@./telnyx-video-processors-0.0.0-alpha.tgz":
+"@telnyx/video-processors@./telnyx-video-processors-v0.0.0-alpha.tgz":
   version "0.0.0-alpha"
-  resolved "./telnyx-video-processors-0.0.0-alpha.tgz#2f6690df2d783a233d27a52e7402a3ec2b9747bd"
+  resolved "./telnyx-video-processors-v0.0.0-alpha.tgz#979f9f6a34d2960e1ca41785a7acd374ca23e44a"
   dependencies:
     "@mediapipe/camera_utils" "^0.3.1640029074"
     "@mediapipe/selfie_segmentation" "^0.1.1632777926"

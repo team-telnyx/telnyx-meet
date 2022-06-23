@@ -37,7 +37,10 @@ import {
   saveItemSessionStorage,
   USER_PREFERENCE_BACKGROUND_TYPE,
 } from 'utils/storage';
-import { addVirtualBackgroundStream } from 'utils/virtualBackground';
+import {
+  addVirtualBackgroundStream,
+  VirtualBackground,
+} from 'utils/virtualBackground';
 import { MenuList } from './MenuList';
 
 const breakpointMedium = 1023;
@@ -199,7 +202,7 @@ export default function RoomControls({
     isVideoPlaying,
   } = useContext(TelnyxMeetContext);
 
-  const videoProcessor = useRef<any>(null);
+  const videoProcessor = useRef<VirtualBackground['videoProcessor']>(null);
 
   const [virtualBackgroundType, setVirtualBackgroundType] = useState<
     string | undefined

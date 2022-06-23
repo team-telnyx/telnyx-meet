@@ -28,7 +28,10 @@ import {
 } from 'utils/storage';
 
 import { MediaDeviceErrors } from './helper';
-import { addVirtualBackgroundStream } from 'utils/virtualBackground';
+import {
+  addVirtualBackgroundStream,
+  VirtualBackground,
+} from 'utils/virtualBackground';
 import { MenuList } from 'components/MenuList';
 
 const breakpointLarge = 1450;
@@ -72,9 +75,9 @@ function MediaControlBar({
   setError: Dispatch<
     SetStateAction<{ title: string; body: string } | undefined>
   >;
-  camera: any;
+  camera: VirtualBackground['camera'];
 }) {
-  const videoProcessor = useRef<any>(null);
+  const videoProcessor = useRef<VirtualBackground['videoProcessor']>(null);
 
   const [virtualBackgroundType, setVirtualBackgroundType] = useState<
     string | undefined

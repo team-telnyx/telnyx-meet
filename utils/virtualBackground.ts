@@ -32,6 +32,7 @@ export const addVirtualBackgroundStream = async ({
 
   if (!backgroundValue || backgroundValue === 'none') {
     await camera.current?.stop();
+
     if (videoProcessor.current && videoProcessor.current?.segmentation) {
       await videoProcessor.current?.stop();
       videoProcessor.current = null;
