@@ -29,8 +29,7 @@ export default async function handler(
         notify(`${response.status}: Failed to get rooms`);
         transformFetchErrorToBugsnag(requestId, data, response.status);
 
-        const json = await response.json();
-        res.status(response.status).json(json);
+        res.status(response.status).json(data);
       }
     } catch (error) {
       notify(`request_id: ${requestId} - ${error}`);
