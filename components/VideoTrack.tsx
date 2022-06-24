@@ -49,7 +49,7 @@ export default function VideoTrack({
         videoEl.srcObject = null;
       }
     };
-  }, [stream?.videoTrack]);
+  }, [stream?.videoTrack, virtualBackgroundCamera]);
 
   return (
     <div
