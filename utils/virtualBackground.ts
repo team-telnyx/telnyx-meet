@@ -3,11 +3,11 @@ import { MutableRefObject } from 'react';
 import { VideoProcessor, Camera } from '@telnyx/video-processors';
 
 export interface VirtualBackground {
-  videoProcessor: MutableRefObject<VideoProcessor>;
-  camera: MutableRefObject<Camera> | null;
+  videoProcessor: MutableRefObject<VideoProcessor | null>;
+  camera: MutableRefObject<Camera | null>;
   videoElementId: string;
   canvasElementId: string;
-  track: MediaStreamTrack | undefined;
+  stream: MediaStream | undefined;
   backgroundValue: string;
 }
 
@@ -16,13 +16,13 @@ export const addVirtualBackgroundStream = async ({
   camera,
   videoElementId,
   canvasElementId,
-  track,
+  stream,
   backgroundValue,
 }: VirtualBackground): Promise<MediaStreamTrack | undefined> => {
   if (
     !videoElementId ||
     !canvasElementId ||
-    !track ||
+    !stream ||
     !videoProcessor ||
     !camera
   ) {
@@ -32,7 +32,7 @@ export const addVirtualBackgroundStream = async ({
 
   if (!backgroundValue || backgroundValue === 'none') {
     await camera.current?.stop();
-    if (videoProcessor.current && videoProcessor.current?.segmentation) {
+    if (videoProcessor.current) {
       await videoProcessor.current?.stop();
       videoProcessor.current = null;
     }
@@ -43,7 +43,7 @@ export const addVirtualBackgroundStream = async ({
     // We use this image as our virtual background
     const image = new Image(996, 664);
     image.src = `//localhost:3000/${backgroundValue}`;
-    if (!videoProcessor.current || !videoProcessor.current?.segmentation) {
+    if (!videoProcessor.current) {
       videoProcessor.current = new VideoProcessor();
     }
 
@@ -53,19 +53,19 @@ export const addVirtualBackgroundStream = async ({
 
     const virtualBackground =
       await videoProcessor.current.createVirtualBackgroundStream({
-        track,
+        stream,
         videoElementId,
         canvasElementId,
         image,
         frameRate: 20,
       });
 
-    virtualBackground.camera.start();
+    virtualBackground?.camera?.start();
     camera.current = virtualBackground.camera;
 
     return virtualBackground.canvasStream.getVideoTracks()[0];
   } else {
-    if (!videoProcessor.current || !videoProcessor.current?.segmentation) {
+    if (!videoProcessor.current) {
       videoProcessor.current = new VideoProcessor();
     }
 
@@ -75,13 +75,13 @@ export const addVirtualBackgroundStream = async ({
 
     const gaussianBlur =
       await videoProcessor.current.createGaussianBlurBackgroundStream({
-        track,
+        stream,
         videoElementId,
         canvasElementId,
         frameRate: 20,
       });
 
-    gaussianBlur.camera.start();
+    gaussianBlur?.camera?.start();
     camera.current = gaussianBlur.camera;
 
     return gaussianBlur.canvasStream.getVideoTracks()[0];

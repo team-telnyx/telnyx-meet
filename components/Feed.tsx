@@ -35,7 +35,7 @@ function Feed({
   getStatsForParticipantStream: TelnyxRoom['getWebRTCStatsForStream'];
   mirrorVideo: boolean;
   dataId?: string;
-  virtualBackgroundCamera: VirtualBackground['camera'];
+  virtualBackgroundCamera: VirtualBackground['camera'] | null;
 }) {
   const isTelephonyEngineParticipant =
     participant.origin === 'telephony_engine';

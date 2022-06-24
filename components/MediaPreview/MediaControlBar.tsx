@@ -78,7 +78,8 @@ function MediaControlBar({
   >;
   camera: VirtualBackground['camera'];
 }) {
-  const videoProcessor = useRef<VirtualBackground['videoProcessor']>(null);
+  //https://github.com/DefinitelyTyped/DefinitelyTyped/issues/28884#issuecomment-471341041
+  const videoProcessor = useRef() as VirtualBackground['videoProcessor'];
 
   const [virtualBackgroundType, setVirtualBackgroundType] = useState<
     string | undefined
@@ -217,12 +218,14 @@ function MediaControlBar({
           track: MediaStreamTrack | undefined
         ) => {
           if (kind === 'video' && track) {
+            const stream = new MediaStream();
+            stream.addTrack(track);
             const videoTrack = await addVirtualBackgroundStream({
               videoProcessor: videoProcessor,
               camera: camera,
               videoElementId: 'video-preview',
               canvasElementId: 'canvas',
-              track: track,
+              stream,
               backgroundValue: selectedValue,
             });
 

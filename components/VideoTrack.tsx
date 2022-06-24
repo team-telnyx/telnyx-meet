@@ -16,7 +16,7 @@ export default function VideoTrack({
   mirrorVideo: boolean;
   dataTestId: string;
   isPresentation: boolean;
-  virtualBackgroundCamera: VirtualBackground['camera'];
+  virtualBackgroundCamera: VirtualBackground['camera'] | null;
 }) {
   const [isPortrait, setIsPortrait] = useState(false);
   const videoElRef = useRef<HTMLVideoElement>(null);
@@ -39,6 +39,8 @@ export default function VideoTrack({
     if (
       virtualBackgroundCamera &&
       virtualBackgroundCamera.current &&
+      //https://developer.mozilla.org/en-US/docs/Web/API/CanvasCaptureMediaStreamTrack
+      //@ts-ignore
       stream.videoTrack instanceof CanvasCaptureMediaStreamTrack
     ) {
       virtualBackgroundCamera.current.start();
