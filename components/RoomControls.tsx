@@ -311,6 +311,7 @@ export default function RoomControls({
     return (
       <span style={{ color: '#fff' }}>
         <MenuList
+          disabled={!selfStream?.isVideoEnabled}
           initialValue={backgroundValue}
           title='Change background'
           data={options}

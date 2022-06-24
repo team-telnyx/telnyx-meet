@@ -272,6 +272,7 @@ function MediaControlBar({
     return (
       <span style={{ color: '#fff' }}>
         <MenuList
+          disabled={!isVideoTrackEnabled}
           initialValue={backgroundValue}
           size='small'
           title='Change background'
