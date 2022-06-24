@@ -3,7 +3,6 @@ import {
   useEffect,
   useContext,
   useRef,
-  ChangeEvent,
   MutableRefObject,
 } from 'react';
 import { getDevices, Participant, Room, Stream } from '@telnyx/video';
@@ -184,7 +183,7 @@ export default function RoomControls({
   sendMessage: Room['sendMessage'];
   messages: TelnyxRoom['messages'];
   getLocalParticipant: () => Participant;
-  camera: MutableRefObject<any>;
+  camera: VirtualBackground['camera'];
 }) {
   const {
     audioInputDeviceId,
@@ -202,7 +201,8 @@ export default function RoomControls({
     isVideoPlaying,
   } = useContext(TelnyxMeetContext);
 
-  const videoProcessor = useRef<VirtualBackground['videoProcessor']>(null);
+  //https://github.com/DefinitelyTyped/DefinitelyTyped/issues/28884#issuecomment-471341041
+  const videoProcessor = useRef() as VirtualBackground['videoProcessor'];
 
   const [virtualBackgroundType, setVirtualBackgroundType] = useState<
     string | undefined
@@ -254,12 +254,15 @@ export default function RoomControls({
           track: MediaStreamTrack | undefined
         ) => {
           if (kind === 'video' && track) {
+            const stream = new MediaStream();
+            stream.addTrack(track);
+
             const videoTrack = await addVirtualBackgroundStream({
-              videoProcessor: videoProcessor,
-              camera: camera,
+              videoProcessor,
+              camera,
               videoElementId: VIDEO_ELEMENT_ID,
               canvasElementId: 'canvas',
-              track: track,
+              stream,
               backgroundValue: selectedValue,
             });
 
@@ -567,12 +570,15 @@ export default function RoomControls({
               );
               if (backgroundValue) {
                 if (kind === 'video' && track) {
+                  const stream = new MediaStream();
+                  stream.addTrack(track);
+
                   addVirtualBackgroundStream({
                     videoProcessor: videoProcessor,
                     camera: camera,
                     videoElementId: VIDEO_ELEMENT_ID,
                     canvasElementId: 'canvas',
-                    track: track,
+                    stream,
                     backgroundValue: backgroundValue,
                   }).then((videoTrack) => {
                     setVideoInputDeviceId(track.id);
