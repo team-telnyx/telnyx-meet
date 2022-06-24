@@ -27,7 +27,11 @@ export default async function handler(
         res.status(200).json(data);
       } else {
         notify(`${response.status}: Failed to get rooms`);
-        transformFetchErrorToBugsnag(requestId, data, response.status);
+
+        const errorMessage =
+          (data && data.message) || (response && response.statusText);
+
+        transformFetchErrorToBugsnag(requestId, errorMessage, response.status);
 
         res.status(response.status).json(data);
       }
