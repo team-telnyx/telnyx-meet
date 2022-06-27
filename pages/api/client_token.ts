@@ -37,10 +37,16 @@ export default async function handler(
           res.status(200).json(data);
         } else {
           notify(`${response.status}: Failed to generate client token`);
-          transformFetchErrorToBugsnag(requestId, data, response.status);
+          const errorMessage =
+            (data && data.message) || (response && response.statusText);
 
-          const json = await response.json();
-          res.status(response.status).json(json);
+          transformFetchErrorToBugsnag(
+            requestId,
+            errorMessage,
+            response.status
+          );
+
+          res.status(response.status).json(response.statusText);
         }
       } catch (error) {
         notify(`request_id: ${requestId} - ${error}`);
