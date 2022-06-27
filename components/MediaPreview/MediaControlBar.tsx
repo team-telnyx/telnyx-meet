@@ -5,6 +5,7 @@ import React, {
   useRef,
   ChangeEvent,
   useState,
+  MutableRefObject,
 } from 'react';
 import { useRouter } from 'next/router';
 import {
@@ -55,6 +56,7 @@ function MediaControlBar({
   setLocalTracks,
   setError,
   camera,
+  videoRef,
 }: {
   audioInputDeviceId: string | undefined;
   videoInputDeviceId: string | undefined;
@@ -77,6 +79,7 @@ function MediaControlBar({
     SetStateAction<{ title: string; body: string } | undefined>
   >;
   camera: VirtualBackground['camera'];
+  videoRef: MutableRefObject<HTMLVideoElement>;
 }) {
   //https://github.com/DefinitelyTyped/DefinitelyTyped/issues/28884#issuecomment-471341041
   const videoProcessor = useRef() as VirtualBackground['videoProcessor'];
@@ -86,7 +89,7 @@ function MediaControlBar({
   >();
   const router = useRouter();
 
-  const handleTrackUpdate = (
+  const handleTrackUpdate = async (
     kind: 'audio' | 'video',
     track: MediaStreamTrack | undefined
   ) => {
@@ -98,6 +101,7 @@ function MediaControlBar({
       setIsVideoTrackEnabled(track !== undefined ? true : false);
     }
 
+    debugger;
     setLocalTracks((tracks) => ({ ...tracks, [kind]: track }));
   };
 
@@ -131,12 +135,20 @@ function MediaControlBar({
     }
   };
 
-  const handleVideoClick = (isVideoEnabled: boolean) => {
+  const handleVideoClick = async (isVideoEnabled: boolean) => {
     saveItem(USER_PREFERENCE_VIDEO_ENABLED, isVideoEnabled ? 'yes' : 'no');
 
     if (localTracks.video) {
       localTracks.video.stop();
-      handleTrackUpdate('video', undefined);
+      await camera.current?.stop();
+      await videoProcessor.current?.stop();
+      camera.current = null;
+      videoProcessor.current = null;
+      if (videoRef.current) {
+        videoRef.current.srcObject = null;
+      }
+
+      await handleTrackUpdate('video', undefined);
     } else {
       getUserMedia({
         kind: 'video',

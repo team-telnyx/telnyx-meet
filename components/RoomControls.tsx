@@ -333,6 +333,7 @@ export default function RoomControls({
       setIsVideoTrackEnabled(track !== undefined ? true : false);
     }
 
+    debugger;
     setLocalTracks((tracks) => ({ ...tracks, [kind]: track }));
   };
 
@@ -388,6 +389,11 @@ export default function RoomControls({
       if (camera && camera.current) {
         camera.current?.stop();
         camera.current = null;
+      }
+
+      if (videoProcessor && videoProcessor.current) {
+        videoProcessor.current.stop();
+        videoProcessor.current = null;
       }
 
       handleTrackUpdate('video', undefined);
