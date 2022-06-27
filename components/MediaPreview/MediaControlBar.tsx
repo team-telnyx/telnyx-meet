@@ -3,7 +3,6 @@ import React, {
   Dispatch,
   SetStateAction,
   useRef,
-  ChangeEvent,
   useState,
   MutableRefObject,
 } from 'react';
@@ -89,6 +88,14 @@ function MediaControlBar({
   >();
   const router = useRouter();
 
+  useEffect(() => {
+    return function cleanup() {
+      if (videoProcessor && videoProcessor.current) {
+        videoProcessor.current.stop();
+      }
+    };
+  }, []);
+
   const handleTrackUpdate = async (
     kind: 'audio' | 'video',
     track: MediaStreamTrack | undefined
@@ -101,7 +108,6 @@ function MediaControlBar({
       setIsVideoTrackEnabled(track !== undefined ? true : false);
     }
 
-    debugger;
     setLocalTracks((tracks) => ({ ...tracks, [kind]: track }));
   };
 
@@ -140,12 +146,17 @@ function MediaControlBar({
 
     if (localTracks.video) {
       localTracks.video.stop();
-      await camera.current?.stop();
-      await videoProcessor.current?.stop();
-      camera.current = null;
-      videoProcessor.current = null;
-      if (videoRef.current) {
-        videoRef.current.srcObject = null;
+
+      if (videoProcessor || camera) {
+        await camera.current?.stop();
+        await videoProcessor.current?.stop();
+        camera.current = null;
+        videoProcessor.current = null;
+        if (videoRef.current) {
+          videoRef.current.srcObject = null;
+        }
+        saveItemSessionStorage(USER_PREFERENCE_BACKGROUND_TYPE, 'none');
+        setVirtualBackgroundType('none');
       }
 
       await handleTrackUpdate('video', undefined);
@@ -220,37 +231,21 @@ function MediaControlBar({
   const handleVirtualBg = async (selectedValue: string) => {
     saveItemSessionStorage(USER_PREFERENCE_BACKGROUND_TYPE, selectedValue);
     setVirtualBackgroundType(selectedValue);
-    getUserMedia({
-      kind: 'video',
-      deviceId: videoInputDeviceId,
-      options: optionalFeatures,
-      callbacks: {
-        onTrackUpdate: async (
-          kind: 'audio' | 'video',
-          track: MediaStreamTrack | undefined
-        ) => {
-          if (kind === 'video' && track) {
-            const stream = new MediaStream();
-            stream.addTrack(track);
-            const videoTrack = await addVirtualBackgroundStream({
-              videoProcessor: videoProcessor,
-              camera: camera,
-              videoElementId: 'video-preview',
-              canvasElementId: 'canvas',
-              stream,
-              backgroundValue: selectedValue,
-            });
 
-            setLocalTracks((value) => ({
-              ...value,
-              video:
-                !selectedValue || selectedValue === 'none' ? track : videoTrack,
-            }));
-          }
-        },
-        onDeviceError: handleDeviceError,
-      },
+    const videoTrack = await addVirtualBackgroundStream({
+      videoProcessor,
+      camera,
+      videoElementId: 'video-preview',
+      canvasElementId: 'canvas',
+      backgroundValue: selectedValue,
     });
+
+    if (videoTrack) {
+      setLocalTracks((value) => ({
+        ...value,
+        video: videoTrack,
+      }));
+    }
   };
 
   const renderSelectBackgroungImage = () => {
@@ -259,10 +254,6 @@ function MediaControlBar({
     );
 
     const options = [
-      {
-        label: 'none',
-        value: 'none',
-      },
       {
         label: 'blur',
         value: 'blur',

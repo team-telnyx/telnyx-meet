@@ -48,7 +48,6 @@ export default function VideoTrack({
 
     return function cleanup() {
       if (videoEl) {
-        debugger;
         videoEl.srcObject = null;
       }
     };

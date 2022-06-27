@@ -7,7 +7,6 @@ export interface VirtualBackground {
   camera: MutableRefObject<Camera | null>;
   videoElementId: string;
   canvasElementId: string;
-  stream: MediaStream | undefined;
   backgroundValue: string;
 }
 
@@ -16,16 +15,9 @@ export const addVirtualBackgroundStream = async ({
   camera,
   videoElementId,
   canvasElementId,
-  stream,
   backgroundValue,
 }: VirtualBackground): Promise<MediaStreamTrack | undefined> => {
-  if (
-    !videoElementId ||
-    !canvasElementId ||
-    !stream ||
-    !videoProcessor ||
-    !camera
-  ) {
+  if (!videoElementId || !canvasElementId || !videoProcessor || !camera) {
     console.error('Failed to set virtual background');
     return undefined;
   }
@@ -53,7 +45,7 @@ export const addVirtualBackgroundStream = async ({
 
     const virtualBackground =
       await videoProcessor.current.createVirtualBackgroundStream({
-        stream,
+        videoConfiguration: true,
         videoElementId,
         canvasElementId,
         image,
@@ -75,7 +67,7 @@ export const addVirtualBackgroundStream = async ({
 
     const gaussianBlur =
       await videoProcessor.current.createGaussianBlurBackgroundStream({
-        stream,
+        videoConfiguration: true,
         videoElementId,
         canvasElementId,
         frameRate: 20,

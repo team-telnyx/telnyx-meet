@@ -4,6 +4,8 @@ import {
   useContext,
   useRef,
   MutableRefObject,
+  useMemo,
+  useCallback,
 } from 'react';
 import { getDevices, Participant, Room, Stream } from '@telnyx/video';
 import { Box, Button, Menu, Text } from 'grommet';
@@ -242,54 +244,36 @@ export default function RoomControls({
     ?.toLowerCase()
     .replace(' ', '-')}`;
 
-  const handleVirtualBg = async (selectedValue: string) => {
-    saveItemSessionStorage(USER_PREFERENCE_BACKGROUND_TYPE, selectedValue);
-    setVirtualBackgroundType(selectedValue);
-    getUserMedia({
-      kind: 'video',
-      deviceId: videoInputDeviceId,
-      callbacks: {
-        onTrackUpdate: async (
-          kind: 'audio' | 'video',
-          track: MediaStreamTrack | undefined
-        ) => {
-          if (kind === 'video' && track) {
-            const stream = new MediaStream();
-            stream.addTrack(track);
+  const handleVirtualBg = useCallback(
+    async (selectedValue: string) => {
+      saveItemSessionStorage(USER_PREFERENCE_BACKGROUND_TYPE, selectedValue);
+      setVirtualBackgroundType(selectedValue);
 
-            const videoTrack = await addVirtualBackgroundStream({
-              videoProcessor,
-              camera,
-              videoElementId: VIDEO_ELEMENT_ID,
-              canvasElementId: 'canvas',
-              stream,
-              backgroundValue: selectedValue,
-            });
+      const videoTrack = await addVirtualBackgroundStream({
+        videoProcessor,
+        camera,
+        videoElementId: VIDEO_ELEMENT_ID,
+        canvasElementId: 'canvas',
+        backgroundValue: selectedValue,
+      });
+      debugger;
 
-            setVideoInputDeviceId(track.id);
+      if (videoTrack) {
+        setLocalTracks((value) => ({
+          ...value,
+          video: videoTrack,
+        }));
+      }
+    },
+    [VIDEO_ELEMENT_ID, camera]
+  );
 
-            setLocalTracks((value) => ({
-              ...value,
-              video:
-                !selectedValue || selectedValue === 'none' ? track : videoTrack,
-            }));
-          }
-        },
-        onDeviceError: handleDeviceError,
-      },
-    });
-  };
-
-  const renderSelectBackgroungImage = () => {
+  const renderSelectBackgroungImage = useCallback(() => {
     const backgroundValue = getItemSessionStorage(
       USER_PREFERENCE_BACKGROUND_TYPE
     );
 
     const options = [
-      {
-        label: 'none',
-        value: 'none',
-      },
       {
         label: 'blur',
         value: 'blur',
@@ -319,7 +303,7 @@ export default function RoomControls({
         ></MenuList>
       </span>
     );
-  };
+  }, [handleVirtualBg, selfStream?.isVideoEnabled]);
 
   const handleTrackUpdate = (
     kind: 'audio' | 'video',
@@ -379,22 +363,26 @@ export default function RoomControls({
     }
   };
 
-  const handleVideoClick = () => {
+  const handleVideoClick = async () => {
     if (localTracks.video) {
       localTracks.video.stop();
+
       if (selfStream.videoTrack) {
         selfStream.videoTrack.stop();
       }
 
       if (camera && camera.current) {
-        camera.current?.stop();
+        await camera.current?.stop();
         camera.current = null;
       }
 
       if (videoProcessor && videoProcessor.current) {
-        videoProcessor.current.stop();
+        await videoProcessor.current.stop();
         videoProcessor.current = null;
       }
+      debugger;
+      saveItemSessionStorage(USER_PREFERENCE_BACKGROUND_TYPE, 'none');
+      setVirtualBackgroundType('none');
 
       handleTrackUpdate('video', undefined);
     } else {
@@ -562,48 +550,27 @@ export default function RoomControls({
       optionalFeatures.isVirtualBackgroundFeatureEnabled
     ) {
       const videoElement = document.getElementById(VIDEO_ELEMENT_ID);
-      if (videoElement) {
-        getUserMedia({
-          kind: 'video',
-          deviceId: undefined,
-          options: optionalFeatures,
-          callbacks: {
-            onTrackUpdate: (
-              kind: 'audio' | 'video',
-              track: MediaStreamTrack | undefined
-            ) => {
-              const backgroundValue = getItemSessionStorage(
-                USER_PREFERENCE_BACKGROUND_TYPE
-              );
-              if (backgroundValue) {
-                if (kind === 'video' && track) {
-                  const stream = new MediaStream();
-                  stream.addTrack(track);
+      const backgroundValue = getItemSessionStorage(
+        USER_PREFERENCE_BACKGROUND_TYPE
+      );
 
-                  addVirtualBackgroundStream({
-                    videoProcessor: videoProcessor,
-                    camera: camera,
-                    videoElementId: VIDEO_ELEMENT_ID,
-                    canvasElementId: 'canvas',
-                    stream,
-                    backgroundValue: backgroundValue,
-                  }).then((videoTrack) => {
-                    setVideoInputDeviceId(track.id);
-                    setLocalTracks((value) => ({
-                      ...value,
-                      video:
-                        !backgroundValue || backgroundValue === 'none'
-                          ? track
-                          : videoTrack,
-                    }));
-                    setVirtualBackgroundType(backgroundValue);
-                  });
-                }
-              }
-            },
-            onDeviceError: handleDeviceError,
-          },
-        });
+      if (videoElement && backgroundValue && backgroundValue !== 'none') {
+        if (backgroundValue) {
+          addVirtualBackgroundStream({
+            videoProcessor: videoProcessor,
+            camera: camera,
+            videoElementId: VIDEO_ELEMENT_ID,
+            canvasElementId: 'canvas',
+            backgroundValue: backgroundValue,
+          }).then((videoTrack) => {
+            debugger;
+            setLocalTracks((value) => ({
+              ...value,
+              video: videoTrack,
+            }));
+            setVirtualBackgroundType(backgroundValue);
+          });
+        }
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -638,6 +605,11 @@ export default function RoomControls({
   };
 
   const showBubbleNotification = checkBubbleNotification();
+
+  const renderedSelectBackgroungImageMemo = useMemo(
+    () => renderSelectBackgroungImage(),
+    [renderSelectBackgroungImage]
+  );
 
   return (
     <Box
@@ -885,7 +857,7 @@ export default function RoomControls({
       <RightBoxMenu pad='small' direction='row' gap='large'>
         {optionalFeatures &&
           optionalFeatures.isVirtualBackgroundFeatureEnabled &&
-          renderSelectBackgroungImage()}
+          renderedSelectBackgroungImageMemo}
         <Box>
           <Button
             onClick={() => {
