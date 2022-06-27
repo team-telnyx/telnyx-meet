@@ -12,11 +12,11 @@ export const generateUsername = (): string =>
 
 export const transformFetchErrorToBugsnag = (
   requestId: string,
-  data: any,
+  errorMessage: string,
   status: number
 ) => {
   try {
-    const error = (data && data.message) || 'Failed';
+    const error = errorMessage || 'Failed';
     notify(`request-id: ${requestId} - ${status}: ${error}`);
   } catch (error) {
     notify(`request-id: ${requestId} - ${error}`);

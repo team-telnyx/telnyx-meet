@@ -33,10 +33,13 @@ export default async function handler(
         res.status(200).json(data);
       } else {
         notify(`${response.status}: Failed to get room`);
-        transformFetchErrorToBugsnag(requestId, data, response.status);
 
-        const json = await response.json();
-        res.status(response.status).json(json);
+        const errorMessage =
+          (data && data.message) || (response && response.statusText);
+
+        transformFetchErrorToBugsnag(requestId, errorMessage, response.status);
+
+        res.status(response.status).json(data);
       }
     } catch (error) {
       notify(`request_id: ${requestId} - ${error}`);
