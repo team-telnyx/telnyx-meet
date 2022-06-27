@@ -3,7 +3,6 @@ import {
   useEffect,
   useContext,
   useRef,
-  MutableRefObject,
   useMemo,
   useCallback,
 } from 'react';
@@ -371,20 +370,16 @@ export default function RoomControls({
         selfStream.videoTrack.stop();
       }
 
-      if (camera && camera.current) {
+      if (videoProcessor.current || camera.current) {
         await camera.current?.stop();
+        await videoProcessor.current?.stop();
         camera.current = null;
-      }
-
-      if (videoProcessor && videoProcessor.current) {
-        await videoProcessor.current.stop();
         videoProcessor.current = null;
+        saveItemSessionStorage(USER_PREFERENCE_BACKGROUND_TYPE, 'none');
+        setVirtualBackgroundType('none');
       }
-      debugger;
-      saveItemSessionStorage(USER_PREFERENCE_BACKGROUND_TYPE, 'none');
-      setVirtualBackgroundType('none');
 
-      handleTrackUpdate('video', undefined);
+      await handleTrackUpdate('video', undefined);
     } else {
       getUserMedia({
         kind: 'video',
@@ -575,6 +570,14 @@ export default function RoomControls({
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isVideoPlaying]);
+
+  useEffect(() => {
+    return function cleanup() {
+      if (videoProcessor && videoProcessor.current) {
+        videoProcessor.current.stop();
+      }
+    };
+  }, []);
 
   const hasUnreadMessages = () => {
     if (unreadMessages.current && unreadMessages.current.length > 0) {

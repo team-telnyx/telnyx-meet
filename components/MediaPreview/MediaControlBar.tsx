@@ -147,14 +147,11 @@ function MediaControlBar({
     if (localTracks.video) {
       localTracks.video.stop();
 
-      if (videoProcessor || camera) {
+      if (videoProcessor.current || camera.current) {
         await camera.current?.stop();
         await videoProcessor.current?.stop();
         camera.current = null;
         videoProcessor.current = null;
-        if (videoRef.current) {
-          videoRef.current.srcObject = null;
-        }
         saveItemSessionStorage(USER_PREFERENCE_BACKGROUND_TYPE, 'none');
         setVirtualBackgroundType('none');
       }
