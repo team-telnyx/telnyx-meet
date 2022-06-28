@@ -260,6 +260,10 @@ export default function RoomControls({
       saveItemSessionStorage(USER_PREFERENCE_BACKGROUND_TYPE, selectedValue);
       setVirtualBackgroundType(selectedValue);
 
+      if (localTracks.video) {
+        localTracks.video.stop();
+      }
+
       const videoTrack = await addVirtualBackgroundStream({
         videoProcessor,
         camera,
@@ -267,21 +271,15 @@ export default function RoomControls({
         canvasElementId: 'canvas',
         backgroundValue: selectedValue,
       });
-      debugger;
 
       if (videoTrack) {
         setLocalTracks((value) => ({
           ...value,
           video: videoTrack,
         }));
-      } else {
-        setLocalTracks((value) => ({
-          ...value,
-          video: undefined,
-        }));
       }
     },
-    [VIDEO_ELEMENT_ID, camera]
+    [VIDEO_ELEMENT_ID, camera, localTracks]
   );
 
   const renderSelectBackgroungImage = useCallback(() => {
@@ -329,7 +327,6 @@ export default function RoomControls({
       setIsVideoTrackEnabled(track !== undefined ? true : false);
     }
 
-    debugger;
     setLocalTracks((tracks) => ({ ...tracks, [kind]: track }));
   };
 
@@ -378,10 +375,6 @@ export default function RoomControls({
   const handleVideoClick = async () => {
     if (localTracks.video) {
       localTracks.video.stop();
-
-      if (selfStream.videoTrack) {
-        selfStream.videoTrack.stop();
-      }
 
       if (videoProcessor.current || camera.current) {
         await camera.current?.stop();
@@ -564,6 +557,10 @@ export default function RoomControls({
 
       if (videoElement && backgroundValue && backgroundValue !== 'none') {
         if (backgroundValue) {
+          if (localTracks.video) {
+            localTracks.video.stop();
+          }
+
           addVirtualBackgroundStream({
             videoProcessor: videoProcessor,
             camera: camera,
@@ -571,7 +568,6 @@ export default function RoomControls({
             canvasElementId: 'canvas',
             backgroundValue: backgroundValue,
           }).then((videoTrack) => {
-            debugger;
             setLocalTracks((value) => ({
               ...value,
               video: videoTrack,

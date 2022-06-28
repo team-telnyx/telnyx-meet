@@ -88,6 +88,10 @@ function MediaControlBar({
 
   useEffect(() => {
     return function cleanup() {
+      if (localTracks.video) {
+        localTracks.video.stop();
+      }
+
       if (videoProcessor && videoProcessor.current) {
         videoProcessor.current.stop();
       }
@@ -239,6 +243,10 @@ function MediaControlBar({
     saveItemSessionStorage(USER_PREFERENCE_BACKGROUND_TYPE, selectedValue);
     setVirtualBackgroundType(selectedValue);
 
+    if (localTracks.video) {
+      localTracks.video.stop();
+    }
+
     const videoTrack = await addVirtualBackgroundStream({
       videoProcessor,
       camera,
@@ -247,6 +255,7 @@ function MediaControlBar({
       backgroundValue: selectedValue,
     });
 
+    debugger;
     if (videoTrack) {
       setLocalTracks((value) => ({
         ...value,

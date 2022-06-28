@@ -84,6 +84,9 @@ function MediaPreview() {
     return () => {
       if (localTracks.video) {
         localTracks?.video?.stop();
+        if (videoElRef.current) {
+          videoElRef.current.srcObject = null;
+        }
       }
     };
   }, [localTracks?.video]);
