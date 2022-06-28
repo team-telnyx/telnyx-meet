@@ -182,8 +182,6 @@ function MediaPreview() {
             setLocalTracks={setLocalTracks}
             setError={setError}
             camera={camera}
-            //@ts-ignore
-            videoRef={videoElRef}
           />
         </div>
       </VideoPreview>

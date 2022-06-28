@@ -55,7 +55,6 @@ function MediaControlBar({
   setLocalTracks,
   setError,
   camera,
-  videoRef,
 }: {
   audioInputDeviceId: string | undefined;
   videoInputDeviceId: string | undefined;
@@ -78,7 +77,6 @@ function MediaControlBar({
     SetStateAction<{ title: string; body: string } | undefined>
   >;
   camera: VirtualBackground['camera'];
-  videoRef: MutableRefObject<HTMLVideoElement>;
 }) {
   //https://github.com/DefinitelyTyped/DefinitelyTyped/issues/28884#issuecomment-471341041
   const videoProcessor = useRef() as VirtualBackground['videoProcessor'];
