@@ -249,14 +249,12 @@ function MediaControlBar({
             track: MediaStreamTrack | undefined
           ) => {
             if (kind === 'video' && track) {
-              const stream = new MediaStream([track]);
-
-              const videoTrack = await addVirtualBackgroundStream({
+              const canvasVideoTrack = await addVirtualBackgroundStream({
                 videoProcessor: videoProcessor,
                 camera: camera,
                 videoElementId: 'video-preview',
                 canvasElementId: 'canvas',
-                stream,
+                videoTrack: track,
                 backgroundValue: selectedValue,
               });
 
@@ -264,7 +262,7 @@ function MediaControlBar({
                 ...value,
                 video:
                   selectedValue && selectedValue !== 'none'
-                    ? videoTrack
+                    ? canvasVideoTrack
                     : track,
               }));
             }

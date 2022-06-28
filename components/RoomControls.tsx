@@ -262,14 +262,12 @@ export default function RoomControls({
             track: MediaStreamTrack | undefined
           ) => {
             if (kind === 'video' && track) {
-              const stream = new MediaStream([track]);
-
-              const videoTrack = await addVirtualBackgroundStream({
+              const canvasVideoTrack = await addVirtualBackgroundStream({
                 videoProcessor,
                 camera,
                 videoElementId: VIDEO_ELEMENT_ID,
                 canvasElementId: 'canvas',
-                stream,
+                videoTrack: track,
                 backgroundValue: selectedValue,
               });
 
@@ -277,7 +275,7 @@ export default function RoomControls({
 
               setLocalTracks((value) => ({
                 ...value,
-                video: videoTrack,
+                video: canvasVideoTrack,
               }));
             }
           },
@@ -589,14 +587,12 @@ export default function RoomControls({
                   videoProcessor.current = null;
                 }
 
-                const stream = new MediaStream([track]);
-
                 addVirtualBackgroundStream({
                   videoProcessor: videoProcessor,
                   camera: camera,
                   videoElementId: VIDEO_ELEMENT_ID,
                   canvasElementId: 'canvas',
-                  stream,
+                  videoTrack: track,
                   backgroundValue: backgroundValue,
                 }).then((videoTrack) => {
                   setVideoInputDeviceId(track.id);
