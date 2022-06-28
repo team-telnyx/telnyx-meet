@@ -38,6 +38,7 @@ import {
 } from 'utils/storage';
 import {
   addVirtualBackgroundStream,
+  imagesOptions,
   VirtualBackground,
 } from 'utils/virtualBackground';
 import { MenuList } from './MenuList';
@@ -242,6 +243,147 @@ export default function RoomControls({
     ?.toLowerCase()
     .replace(' ', '-')}`;
 
+  useEffect(() => {
+    // get devices if permissions are already granted
+    getAndSetDevices();
+    navigator?.mediaDevices?.addEventListener('devicechange', getAndSetDevices);
+
+    return () => {
+      navigator?.mediaDevices?.removeEventListener(
+        'devicechange',
+        getAndSetDevices
+      );
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!selfStream) {
+      addStream('self', {
+        audio: localTracks.audio,
+        video: {
+          track: localTracks.video,
+          options: { enableSimulcast: optionalFeatures.isSimulcastEnabled },
+        },
+      });
+
+      return;
+    }
+
+    if (
+      selfStream.isConfigured &&
+      (selfStream.audioTrack !== localTracks.audio ||
+        selfStream.videoTrack !== localTracks.video)
+    ) {
+      updateStream('self', localTracks);
+    }
+    // TODO: avoid disable line
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selfStream, localTracks]);
+
+  useEffect(() => {
+    if (presentationTracks.video) {
+      if (!presentationStream) {
+        addStream('presentation', {
+          audio: presentationTracks.audio,
+          video: {
+            track: presentationTracks.video,
+            options: { enableSimulcast: optionalFeatures.isSimulcastEnabled },
+          },
+        });
+      }
+
+      presentationTracks.video.onended = () => {
+        removeStream('presentation');
+        setPresentationTracks({ audio: undefined, video: undefined });
+      };
+    }
+    // TODO: avoid disable line
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [presentationStream, presentationTracks]);
+
+  useEffect(() => {
+    if (isAudioTrackEnabled) {
+      getUserMedia({
+        kind: 'audio',
+        deviceId: audioInputDeviceId,
+        callbacks: {
+          onTrackUpdate: handleTrackUpdate,
+          onDeviceError: handleDeviceError,
+        },
+      });
+    }
+
+    if (isVideoTrackEnabled) {
+      getUserMedia({
+        kind: 'video',
+        deviceId: videoInputDeviceId,
+        options: optionalFeatures,
+        callbacks: {
+          onTrackUpdate: handleTrackUpdate,
+          onDeviceError: handleDeviceError,
+        },
+      });
+    }
+    // TODO: avoid disable line
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    if (
+      isVideoPlaying &&
+      optionalFeatures &&
+      optionalFeatures.isVirtualBackgroundFeatureEnabled
+    ) {
+      const videoElement = document.getElementById(VIDEO_ELEMENT_ID);
+
+      const backgroundValue = getItemSessionStorage(
+        USER_PREFERENCE_BACKGROUND_TYPE
+      );
+
+      if (videoElement && backgroundValue && backgroundValue !== 'none') {
+        getUserMedia({
+          kind: 'video',
+          deviceId: undefined,
+          options: optionalFeatures,
+          callbacks: {
+            onTrackUpdate: async (
+              kind: 'audio' | 'video',
+              track: MediaStreamTrack | undefined
+            ) => {
+              if (kind === 'video' && track) {
+                if (localTracks.video) {
+                  localTracks.video?.stop();
+                  await videoProcessor.current?.stop();
+                  videoProcessor.current = null;
+                }
+
+                addVirtualBackgroundStream({
+                  videoProcessor: videoProcessor,
+                  camera: camera,
+                  videoElementId: VIDEO_ELEMENT_ID,
+                  canvasElementId: 'canvas',
+                  videoTrack: track,
+                  backgroundValue: backgroundValue,
+                }).then((videoTrack) => {
+                  setVideoInputDeviceId(track.id);
+
+                  setLocalTracks((value) => ({
+                    ...value,
+                    video: videoTrack,
+                  }));
+
+                  setVirtualBackgroundType(backgroundValue);
+                });
+              }
+            },
+            onDeviceError: handleDeviceError,
+          },
+        });
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isVideoPlaying]);
+
   const handleVirtualBg = async (selectedValue: string) => {
     saveItemSessionStorage(USER_PREFERENCE_BACKGROUND_TYPE, selectedValue);
     setVirtualBackgroundType(selectedValue);
@@ -286,36 +428,13 @@ export default function RoomControls({
   };
 
   const renderSelectBackgroungImage = () => {
-    const options = [
-      {
-        label: 'none',
-        value: 'none',
-      },
-      {
-        label: 'blur',
-        value: 'blur',
-      },
-      {
-        label: 'retro',
-        value: 'retro.webp',
-      },
-      {
-        label: 'mansao',
-        value: 'mansao.webp',
-      },
-      {
-        label: 'paradise',
-        value: 'paradise.jpg',
-      },
-    ];
-
     return (
       <span style={{ color: '#fff' }}>
         <MenuList
           disabled={!selfStream?.isVideoEnabled}
           selectedValue={virtualBackgroundType}
           title='Change background'
-          data={options}
+          data={imagesOptions}
           onChange={(item) => handleVirtualBg(item.value)}
         ></MenuList>
       </span>
@@ -472,147 +591,6 @@ export default function RoomControls({
     presentationTracks?.video?.stop();
     disconnect();
   };
-
-  useEffect(() => {
-    // get devices if permissions are already granted
-    getAndSetDevices();
-    navigator?.mediaDevices?.addEventListener('devicechange', getAndSetDevices);
-
-    return () => {
-      navigator?.mediaDevices?.removeEventListener(
-        'devicechange',
-        getAndSetDevices
-      );
-    };
-  }, []);
-
-  useEffect(() => {
-    if (!selfStream) {
-      addStream('self', {
-        audio: localTracks.audio,
-        video: {
-          track: localTracks.video,
-          options: { enableSimulcast: optionalFeatures.isSimulcastEnabled },
-        },
-      });
-
-      return;
-    }
-
-    if (
-      selfStream.isConfigured &&
-      (selfStream.audioTrack !== localTracks.audio ||
-        selfStream.videoTrack !== localTracks.video)
-    ) {
-      updateStream('self', localTracks);
-    }
-    // TODO: avoid disable line
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selfStream, localTracks]);
-
-  useEffect(() => {
-    if (presentationTracks.video) {
-      if (!presentationStream) {
-        addStream('presentation', {
-          audio: presentationTracks.audio,
-          video: {
-            track: presentationTracks.video,
-            options: { enableSimulcast: optionalFeatures.isSimulcastEnabled },
-          },
-        });
-      }
-
-      presentationTracks.video.onended = () => {
-        removeStream('presentation');
-        setPresentationTracks({ audio: undefined, video: undefined });
-      };
-    }
-    // TODO: avoid disable line
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [presentationStream, presentationTracks]);
-
-  useEffect(() => {
-    if (isAudioTrackEnabled) {
-      getUserMedia({
-        kind: 'audio',
-        deviceId: audioInputDeviceId,
-        callbacks: {
-          onTrackUpdate: handleTrackUpdate,
-          onDeviceError: handleDeviceError,
-        },
-      });
-    }
-
-    if (isVideoTrackEnabled) {
-      getUserMedia({
-        kind: 'video',
-        deviceId: videoInputDeviceId,
-        options: optionalFeatures,
-        callbacks: {
-          onTrackUpdate: handleTrackUpdate,
-          onDeviceError: handleDeviceError,
-        },
-      });
-    }
-    // TODO: avoid disable line
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  useEffect(() => {
-    if (
-      isVideoPlaying &&
-      optionalFeatures &&
-      optionalFeatures.isVirtualBackgroundFeatureEnabled
-    ) {
-      const videoElement = document.getElementById(VIDEO_ELEMENT_ID);
-
-      const backgroundValue = getItemSessionStorage(
-        USER_PREFERENCE_BACKGROUND_TYPE
-      );
-
-      if (videoElement && backgroundValue && backgroundValue !== 'none') {
-        getUserMedia({
-          kind: 'video',
-          deviceId: undefined,
-          options: optionalFeatures,
-          callbacks: {
-            onTrackUpdate: async (
-              kind: 'audio' | 'video',
-              track: MediaStreamTrack | undefined
-            ) => {
-              if (kind === 'video' && track) {
-                if (localTracks.video) {
-                  localTracks.video?.stop();
-                  await videoProcessor.current?.stop();
-                  videoProcessor.current = null;
-                }
-
-                addVirtualBackgroundStream({
-                  videoProcessor: videoProcessor,
-                  camera: camera,
-                  videoElementId: VIDEO_ELEMENT_ID,
-                  canvasElementId: 'canvas',
-                  videoTrack: track,
-                  backgroundValue: backgroundValue,
-                }).then((videoTrack) => {
-                  setVideoInputDeviceId(track.id);
-
-                  setLocalTracks((value) => ({
-                    ...value,
-                    video: videoTrack,
-                  }));
-
-                  setVirtualBackgroundType(backgroundValue);
-                });
-              }
-            },
-            onDeviceError: handleDeviceError,
-          },
-        });
-      }
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isVideoPlaying]);
 
   const hasUnreadMessages = () => {
     if (unreadMessages.current && unreadMessages.current.length > 0) {

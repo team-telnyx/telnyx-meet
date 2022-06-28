@@ -32,6 +32,7 @@ import {
 import { MediaDeviceErrors } from './helper';
 import {
   addVirtualBackgroundStream,
+  imagesOptions,
   VirtualBackground,
 } from 'utils/virtualBackground';
 import { MenuList } from 'components/MenuList';
@@ -276,29 +277,6 @@ function MediaControlBar({
   };
 
   const renderSelectBackgroungImage = () => {
-    const options = [
-      {
-        label: 'none',
-        value: 'none',
-      },
-      {
-        label: 'blur',
-        value: 'blur',
-      },
-      {
-        label: 'retro',
-        value: 'retro.webp',
-      },
-      {
-        label: 'mansao',
-        value: 'mansao.webp',
-      },
-      {
-        label: 'paradise',
-        value: 'paradise.jpg',
-      },
-    ];
-
     return (
       <span style={{ color: '#fff' }}>
         <MenuList
@@ -306,7 +284,7 @@ function MediaControlBar({
           selectedValue={virtualBackgroundType}
           size='small'
           title='Change background'
-          data={options}
+          data={imagesOptions}
           onChange={(item) => handleVirtualBg(item.value)}
         ></MenuList>
       </span>

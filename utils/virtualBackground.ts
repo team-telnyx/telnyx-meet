@@ -11,6 +11,29 @@ export interface VirtualBackground {
   backgroundValue: string;
 }
 
+export const imagesOptions = [
+  {
+    label: 'none',
+    value: 'none',
+  },
+  {
+    label: 'blur',
+    value: 'blur',
+  },
+  {
+    label: 'retro',
+    value: 'retro.webp',
+  },
+  {
+    label: 'mansao',
+    value: 'mansao.webp',
+  },
+  {
+    label: 'paradise',
+    value: 'paradise.jpg',
+  },
+];
+
 export const addVirtualBackgroundStream = async ({
   videoProcessor,
   camera,
@@ -42,7 +65,9 @@ export const addVirtualBackgroundStream = async ({
   } else if (backgroundValue !== 'blur') {
     // We use this image as our virtual background
     const image = new Image(996, 664);
-    image.src = `//localhost:3000/${backgroundValue}`;
+    image.src = `https://telnyx-meet-git-init-3119-telnyx.vercel.app/${backgroundValue}`;
+    //image.src = backgroundValue;
+
     if (!videoProcessor.current) {
       videoProcessor.current = new VideoProcessor();
     }
