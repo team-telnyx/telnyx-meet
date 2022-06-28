@@ -90,6 +90,18 @@ function MediaPreview() {
     };
   }, [localTracks?.video]);
 
+  useEffect(() => {
+    return function cleanup() {
+      if (localTracks.video) {
+        localTracks.video?.stop();
+        camera.current?.stop();
+        videoProcessor.current?.stop();
+        videoProcessor.current = null;
+        camera.current = null;
+      }
+    };
+  }, [localTracks?.video, videoProcessor, camera]);
+
   return (
     <div
       style={{
