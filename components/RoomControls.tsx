@@ -245,46 +245,47 @@ export default function RoomControls({
   const handleVirtualBg = async (selectedValue: string) => {
     saveItemSessionStorage(USER_PREFERENCE_BACKGROUND_TYPE, selectedValue);
     setVirtualBackgroundType(selectedValue);
-    getUserMedia({
-      kind: 'video',
-      deviceId: videoInputDeviceId,
-      callbacks: {
-        onTrackUpdate: async (
-          kind: 'audio' | 'video',
-          track: MediaStreamTrack | undefined
-        ) => {
-          if (kind === 'video' && track) {
-            const stream = new MediaStream();
-            stream.addTrack(track);
 
-            const videoTrack = await addVirtualBackgroundStream({
-              videoProcessor,
-              camera,
-              videoElementId: VIDEO_ELEMENT_ID,
-              canvasElementId: 'canvas',
-              stream,
-              backgroundValue: selectedValue,
-            });
+    if (selectedValue && selectedValue !== 'none') {
+      if (localTracks.video) {
+        localTracks.video?.stop();
+        await videoProcessor.current?.stop();
+        videoProcessor.current = null;
+      }
 
-            setVideoInputDeviceId(track.id);
+      getUserMedia({
+        kind: 'video',
+        deviceId: undefined,
+        callbacks: {
+          onTrackUpdate: async (
+            kind: 'audio' | 'video',
+            track: MediaStreamTrack | undefined
+          ) => {
+            if (kind === 'video' && track) {
+              const canvasVideoTrack = await addVirtualBackgroundStream({
+                videoProcessor,
+                camera,
+                videoElementId: VIDEO_ELEMENT_ID,
+                canvasElementId: 'canvas',
+                videoTrack: track,
+                backgroundValue: selectedValue,
+              });
 
-            setLocalTracks((value) => ({
-              ...value,
-              video:
-                !selectedValue || selectedValue === 'none' ? track : videoTrack,
-            }));
-          }
+              setVideoInputDeviceId(track.id);
+
+              setLocalTracks((value) => ({
+                ...value,
+                video: canvasVideoTrack,
+              }));
+            }
+          },
+          onDeviceError: handleDeviceError,
         },
-        onDeviceError: handleDeviceError,
-      },
-    });
+      });
+    }
   };
 
   const renderSelectBackgroungImage = () => {
-    const backgroundValue = getItemSessionStorage(
-      USER_PREFERENCE_BACKGROUND_TYPE
-    );
-
     const options = [
       {
         label: 'none',
@@ -312,7 +313,7 @@ export default function RoomControls({
       <span style={{ color: '#fff' }}>
         <MenuList
           disabled={!selfStream?.isVideoEnabled}
-          initialValue={backgroundValue}
+          selectedValue={virtualBackgroundType}
           title='Change background'
           data={options}
           onChange={(item) => handleVirtualBg(item.value)}
@@ -389,6 +390,14 @@ export default function RoomControls({
         camera.current?.stop();
         camera.current = null;
       }
+
+      if (videoProcessor && videoProcessor.current) {
+        videoProcessor.current.stop();
+        videoProcessor.current = null;
+      }
+
+      saveItemSessionStorage(USER_PREFERENCE_BACKGROUND_TYPE, 'none');
+      setVirtualBackgroundType('none');
 
       handleTrackUpdate('video', undefined);
     } else {
@@ -556,43 +565,45 @@ export default function RoomControls({
       optionalFeatures.isVirtualBackgroundFeatureEnabled
     ) {
       const videoElement = document.getElementById(VIDEO_ELEMENT_ID);
-      if (videoElement) {
+
+      const backgroundValue = getItemSessionStorage(
+        USER_PREFERENCE_BACKGROUND_TYPE
+      );
+
+      if (videoElement && backgroundValue && backgroundValue !== 'none') {
         getUserMedia({
           kind: 'video',
           deviceId: undefined,
           options: optionalFeatures,
           callbacks: {
-            onTrackUpdate: (
+            onTrackUpdate: async (
               kind: 'audio' | 'video',
               track: MediaStreamTrack | undefined
             ) => {
-              const backgroundValue = getItemSessionStorage(
-                USER_PREFERENCE_BACKGROUND_TYPE
-              );
-              if (backgroundValue) {
-                if (kind === 'video' && track) {
-                  const stream = new MediaStream();
-                  stream.addTrack(track);
-
-                  addVirtualBackgroundStream({
-                    videoProcessor: videoProcessor,
-                    camera: camera,
-                    videoElementId: VIDEO_ELEMENT_ID,
-                    canvasElementId: 'canvas',
-                    stream,
-                    backgroundValue: backgroundValue,
-                  }).then((videoTrack) => {
-                    setVideoInputDeviceId(track.id);
-                    setLocalTracks((value) => ({
-                      ...value,
-                      video:
-                        !backgroundValue || backgroundValue === 'none'
-                          ? track
-                          : videoTrack,
-                    }));
-                    setVirtualBackgroundType(backgroundValue);
-                  });
+              if (kind === 'video' && track) {
+                if (localTracks.video) {
+                  localTracks.video?.stop();
+                  await videoProcessor.current?.stop();
+                  videoProcessor.current = null;
                 }
+
+                addVirtualBackgroundStream({
+                  videoProcessor: videoProcessor,
+                  camera: camera,
+                  videoElementId: VIDEO_ELEMENT_ID,
+                  canvasElementId: 'canvas',
+                  videoTrack: track,
+                  backgroundValue: backgroundValue,
+                }).then((videoTrack) => {
+                  setVideoInputDeviceId(track.id);
+
+                  setLocalTracks((value) => ({
+                    ...value,
+                    video: videoTrack,
+                  }));
+
+                  setVirtualBackgroundType(backgroundValue);
+                });
               }
             },
             onDeviceError: handleDeviceError,

@@ -7,6 +7,7 @@ import { TelnyxMeetContext } from 'contexts/TelnyxMeetContext';
 import ErrorDialog from 'components/ErrorDialog';
 
 import { MediaControlBar } from './MediaControlBar';
+import { VirtualBackground } from 'utils/virtualBackground';
 
 const breakpointSmall = 400;
 const breakpointMedium = 530;
@@ -61,7 +62,9 @@ function MediaPreview() {
   >(undefined);
 
   const videoElRef = useRef<HTMLVideoElement>(null);
-  const camera = useRef<any>(null);
+  const camera = useRef() as VirtualBackground['camera'];
+  //https://github.com/DefinitelyTyped/DefinitelyTyped/issues/28884#issuecomment-471341041
+  const videoProcessor = useRef() as VirtualBackground['videoProcessor'];
 
   useEffect(() => {
     return () => {
@@ -80,12 +83,24 @@ function MediaPreview() {
       videoElRef.current.srcObject = new MediaStream([localTracks.video]);
     }
 
-    return () => {
+    return function cleanup() {
       if (localTracks.video) {
-        localTracks?.video?.stop();
+        localTracks.video?.stop();
       }
     };
   }, [localTracks?.video]);
+
+  useEffect(() => {
+    return function cleanup() {
+      if (localTracks.video) {
+        localTracks.video?.stop();
+        camera.current?.stop();
+        videoProcessor.current?.stop();
+        videoProcessor.current = null;
+        camera.current = null;
+      }
+    };
+  }, [localTracks?.video, videoProcessor, camera]);
 
   return (
     <div
@@ -181,6 +196,9 @@ function MediaPreview() {
             setLocalTracks={setLocalTracks}
             setError={setError}
             camera={camera}
+            videoProcessor={videoProcessor}
+            //@ts-ignore
+            videoRef={videoElRef}
           />
         </div>
       </VideoPreview>

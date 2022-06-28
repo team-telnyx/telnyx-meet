@@ -7,7 +7,7 @@ export interface VirtualBackground {
   camera: MutableRefObject<Camera | null>;
   videoElementId: string;
   canvasElementId: string;
-  stream: MediaStream | undefined;
+  videoTrack: MediaStreamTrack | undefined;
   backgroundValue: string;
 }
 
@@ -16,13 +16,13 @@ export const addVirtualBackgroundStream = async ({
   camera,
   videoElementId,
   canvasElementId,
-  stream,
+  videoTrack,
   backgroundValue,
 }: VirtualBackground): Promise<MediaStreamTrack | undefined> => {
   if (
     !videoElementId ||
     !canvasElementId ||
-    !stream ||
+    !videoTrack ||
     !videoProcessor ||
     !camera
   ) {
@@ -53,7 +53,7 @@ export const addVirtualBackgroundStream = async ({
 
     const virtualBackground =
       await videoProcessor.current.createVirtualBackgroundStream({
-        stream,
+        videoTrack,
         videoElementId,
         canvasElementId,
         image,
@@ -63,7 +63,7 @@ export const addVirtualBackgroundStream = async ({
     virtualBackground?.camera?.start();
     camera.current = virtualBackground.camera;
 
-    return virtualBackground.canvasStream.getVideoTracks()[0];
+    return virtualBackground.canvasVideoTrack;
   } else {
     if (!videoProcessor.current) {
       videoProcessor.current = new VideoProcessor();
@@ -75,7 +75,7 @@ export const addVirtualBackgroundStream = async ({
 
     const gaussianBlur =
       await videoProcessor.current.createGaussianBlurBackgroundStream({
-        stream,
+        videoTrack,
         videoElementId,
         canvasElementId,
         frameRate: 20,
@@ -84,6 +84,6 @@ export const addVirtualBackgroundStream = async ({
     gaussianBlur?.camera?.start();
     camera.current = gaussianBlur.camera;
 
-    return gaussianBlur.canvasStream.getVideoTracks()[0];
+    return gaussianBlur.canvasVideoTrack;
   }
 };

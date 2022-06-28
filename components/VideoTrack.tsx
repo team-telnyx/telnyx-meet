@@ -43,7 +43,7 @@ export default function VideoTrack({
       //@ts-ignore
       stream.videoTrack instanceof CanvasCaptureMediaStreamTrack
     ) {
-      virtualBackgroundCamera.current.start();
+      virtualBackgroundCamera.current?.start();
     }
 
     return function cleanup() {

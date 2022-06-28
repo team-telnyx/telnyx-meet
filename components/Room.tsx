@@ -10,6 +10,7 @@ import RoomControls from 'components/RoomControls';
 import ParticipantsList from 'components/ParticipantsList';
 import InviteParticipant from 'components/InviteParticipant';
 import RoomAudio from 'components/RoomAudio';
+import { VirtualBackground } from 'utils/virtualBackground';
 
 function Room({
   roomId,
@@ -38,7 +39,7 @@ function Room({
     Map<string, boolean>
   >(new Map());
 
-  const camera = useRef<any>();
+  const camera = useRef() as VirtualBackground['camera'];
 
   const onParticipantJoined = (
     participantId: Participant['id'],
