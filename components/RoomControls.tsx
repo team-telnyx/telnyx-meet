@@ -243,6 +243,18 @@ export default function RoomControls({
     ?.toLowerCase()
     .replace(' ', '-')}`;
 
+  useEffect(() => {
+    const backgroundValue = getItemSessionStorage(
+      USER_PREFERENCE_BACKGROUND_TYPE
+    );
+    setVirtualBackgroundType(backgroundValue);
+    return function cleanup() {
+      if (videoProcessor && videoProcessor.current) {
+        videoProcessor.current.stop();
+      }
+    };
+  }, []);
+
   const handleVirtualBg = useCallback(
     async (selectedValue: string) => {
       saveItemSessionStorage(USER_PREFERENCE_BACKGROUND_TYPE, selectedValue);
@@ -262,16 +274,17 @@ export default function RoomControls({
           ...value,
           video: videoTrack,
         }));
+      } else {
+        setLocalTracks((value) => ({
+          ...value,
+          video: undefined,
+        }));
       }
     },
     [VIDEO_ELEMENT_ID, camera]
   );
 
   const renderSelectBackgroungImage = useCallback(() => {
-    const backgroundValue = getItemSessionStorage(
-      USER_PREFERENCE_BACKGROUND_TYPE
-    );
-
     const options = [
       {
         label: 'blur',
@@ -295,14 +308,14 @@ export default function RoomControls({
       <span style={{ color: '#fff' }}>
         <MenuList
           disabled={!selfStream?.isVideoEnabled}
-          initialValue={backgroundValue}
+          selectedValue={virtualBackgroundType}
           title='Change background'
           data={options}
           onChange={(item) => handleVirtualBg(item.value)}
         ></MenuList>
       </span>
     );
-  }, [handleVirtualBg, selfStream?.isVideoEnabled]);
+  }, [handleVirtualBg, selfStream?.isVideoEnabled, virtualBackgroundType]);
 
   const handleTrackUpdate = (
     kind: 'audio' | 'video',

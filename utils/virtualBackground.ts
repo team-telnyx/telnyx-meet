@@ -55,7 +55,7 @@ export const addVirtualBackgroundStream = async ({
     virtualBackground?.camera?.start();
     camera.current = virtualBackground.camera;
 
-    return virtualBackground.canvasStream.getVideoTracks()[0];
+    return virtualBackground.canvasVideoTrack;
   } else {
     if (!videoProcessor.current) {
       videoProcessor.current = new VideoProcessor();
@@ -76,6 +76,6 @@ export const addVirtualBackgroundStream = async ({
     gaussianBlur?.camera?.start();
     camera.current = gaussianBlur.camera;
 
-    return gaussianBlur.canvasStream.getVideoTracks()[0];
+    return gaussianBlur.canvasVideoTrack;
   }
 };

@@ -184,6 +184,18 @@ function MediaControlBar({
   }, [setError]);
 
   useEffect(() => {
+    const backgroundValue = getItemSessionStorage(
+      USER_PREFERENCE_BACKGROUND_TYPE
+    );
+    setVirtualBackgroundType(backgroundValue);
+    return function cleanup() {
+      if (videoProcessor && videoProcessor.current) {
+        videoProcessor.current.stop();
+      }
+    };
+  }, []);
+
+  useEffect(() => {
     if (!router.isReady) {
       return;
     }
@@ -244,10 +256,6 @@ function MediaControlBar({
   };
 
   const renderSelectBackgroungImage = () => {
-    const backgroundValue = getItemSessionStorage(
-      USER_PREFERENCE_BACKGROUND_TYPE
-    );
-
     const options = [
       {
         label: 'blur',
@@ -271,7 +279,7 @@ function MediaControlBar({
       <span style={{ color: '#fff' }}>
         <MenuList
           disabled={!isVideoTrackEnabled}
-          initialValue={backgroundValue}
+          selectedValue={virtualBackgroundType}
           size='small'
           title='Change background'
           data={options}

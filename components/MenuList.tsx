@@ -17,17 +17,15 @@ export function MenuList({
   onChange,
   disabled = false,
   size = 'medium',
-  initialValue = '',
+  selectedValue = '',
 }: {
   title: string;
   data: Array<{ label: string; value: string }>;
   onChange: (item: { label: string; value: string }) => void;
   disabled?: boolean;
   size?: string;
-  initialValue?: string;
+  selectedValue?: string;
 }) {
-  const [selectedValue, setSelectedValue] = useState(initialValue || '');
-
   if (!data || data.length < 1) {
     return null;
   }
@@ -49,7 +47,6 @@ export function MenuList({
         ),
         // TODO give some sort UI feedback that device was successfully changed
         onClick: () => {
-          setSelectedValue(item.value);
           onChange(item);
         },
       }))}
