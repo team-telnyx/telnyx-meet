@@ -63,6 +63,8 @@ function MediaPreview() {
 
   const videoElRef = useRef<HTMLVideoElement>(null);
   const camera = useRef() as VirtualBackground['camera'];
+  //https://github.com/DefinitelyTyped/DefinitelyTyped/issues/28884#issuecomment-471341041
+  const videoProcessor = useRef() as VirtualBackground['videoProcessor'];
 
   useEffect(() => {
     return () => {
@@ -81,9 +83,9 @@ function MediaPreview() {
       videoElRef.current.srcObject = new MediaStream([localTracks.video]);
     }
 
-    return () => {
+    return function cleanup() {
       if (localTracks.video) {
-        localTracks?.video?.stop();
+        localTracks.video?.stop();
       }
     };
   }, [localTracks?.video]);
@@ -182,6 +184,7 @@ function MediaPreview() {
             setLocalTracks={setLocalTracks}
             setError={setError}
             camera={camera}
+            videoProcessor={videoProcessor}
             //@ts-ignore
             videoRef={videoElRef}
           />

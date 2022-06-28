@@ -57,6 +57,7 @@ function MediaControlBar({
   setError,
   camera,
   videoRef,
+  videoProcessor,
 }: {
   audioInputDeviceId: string | undefined;
   videoInputDeviceId: string | undefined;
@@ -80,87 +81,12 @@ function MediaControlBar({
   >;
   camera: VirtualBackground['camera'];
   videoRef: MutableRefObject<HTMLVideoElement>;
+  videoProcessor: VirtualBackground['videoProcessor'];
 }) {
-  //https://github.com/DefinitelyTyped/DefinitelyTyped/issues/28884#issuecomment-471341041
-  const videoProcessor = useRef() as VirtualBackground['videoProcessor'];
-
   const [virtualBackgroundType, setVirtualBackgroundType] = useState<
     string | undefined
   >();
   const router = useRouter();
-
-  const handleTrackUpdate = async (
-    kind: 'audio' | 'video',
-    track: MediaStreamTrack | undefined
-  ) => {
-    if (kind === 'audio') {
-      setIsAudioTrackEnabled(track !== undefined ? true : false);
-    }
-
-    if (kind === 'video') {
-      setIsVideoTrackEnabled(track !== undefined ? true : false);
-    }
-
-    debugger;
-    setLocalTracks((tracks) => ({ ...tracks, [kind]: track }));
-  };
-
-  const handleDeviceError = (kind: 'audio' | 'video') => {
-    if (kind === 'audio') {
-      saveItem(USER_PREFERENCE_AUDIO_ENABLED, 'no');
-    }
-
-    if (kind === 'video') {
-      saveItem(USER_PREFERENCE_VIDEO_ENABLED, 'no');
-    }
-
-    setError(MediaDeviceErrors.mediaBlocked);
-  };
-
-  const handleAudioClick = (isAudioEnabled: boolean) => {
-    saveItem(USER_PREFERENCE_AUDIO_ENABLED, isAudioEnabled ? 'yes' : 'no');
-
-    if (localTracks.audio) {
-      localTracks.audio.stop();
-      handleTrackUpdate('audio', undefined);
-    } else {
-      getUserMedia({
-        kind: 'audio',
-        deviceId: audioInputDeviceId,
-        callbacks: {
-          onTrackUpdate: handleTrackUpdate,
-          onDeviceError: handleDeviceError,
-        },
-      });
-    }
-  };
-
-  const handleVideoClick = async (isVideoEnabled: boolean) => {
-    saveItem(USER_PREFERENCE_VIDEO_ENABLED, isVideoEnabled ? 'yes' : 'no');
-
-    if (localTracks.video) {
-      localTracks.video.stop();
-      await camera.current?.stop();
-      await videoProcessor.current?.stop();
-      camera.current = null;
-      videoProcessor.current = null;
-      if (videoRef.current) {
-        videoRef.current.srcObject = null;
-      }
-
-      await handleTrackUpdate('video', undefined);
-    } else {
-      getUserMedia({
-        kind: 'video',
-        deviceId: videoInputDeviceId,
-        options: optionalFeatures,
-        callbacks: {
-          onTrackUpdate: handleTrackUpdate,
-          onDeviceError: handleDeviceError,
-        },
-      });
-    }
-  };
 
   useEffect(() => {
     navigator.mediaDevices.enumerateDevices().then((devices) => {
@@ -217,47 +143,139 @@ function MediaControlBar({
     saveItemSessionStorage(USER_PREFERENCE_BACKGROUND_TYPE, 'none');
   }, []);
 
+  useEffect(() => {
+    return function cleanup() {
+      if (localTracks.video) {
+        localTracks.video?.stop();
+        videoProcessor.current?.stop();
+        videoProcessor.current = null;
+      }
+    };
+  }, [localTracks?.video, videoProcessor]);
+
+  const handleTrackUpdate = async (
+    kind: 'audio' | 'video',
+    track: MediaStreamTrack | undefined
+  ) => {
+    if (kind === 'audio') {
+      setIsAudioTrackEnabled(track !== undefined ? true : false);
+    }
+
+    if (kind === 'video') {
+      setIsVideoTrackEnabled(track !== undefined ? true : false);
+    }
+
+    setLocalTracks((tracks) => ({ ...tracks, [kind]: track }));
+  };
+
+  const handleDeviceError = (kind: 'audio' | 'video') => {
+    if (kind === 'audio') {
+      saveItem(USER_PREFERENCE_AUDIO_ENABLED, 'no');
+    }
+
+    if (kind === 'video') {
+      saveItem(USER_PREFERENCE_VIDEO_ENABLED, 'no');
+    }
+
+    setError(MediaDeviceErrors.mediaBlocked);
+  };
+
+  const handleAudioClick = (isAudioEnabled: boolean) => {
+    saveItem(USER_PREFERENCE_AUDIO_ENABLED, isAudioEnabled ? 'yes' : 'no');
+
+    if (localTracks.audio) {
+      localTracks.audio.stop();
+      handleTrackUpdate('audio', undefined);
+    } else {
+      getUserMedia({
+        kind: 'audio',
+        deviceId: audioInputDeviceId,
+        callbacks: {
+          onTrackUpdate: handleTrackUpdate,
+          onDeviceError: handleDeviceError,
+        },
+      });
+    }
+  };
+
+  const handleVideoClick = async (isVideoEnabled: boolean) => {
+    saveItem(USER_PREFERENCE_VIDEO_ENABLED, isVideoEnabled ? 'yes' : 'no');
+
+    if (localTracks.video) {
+      localTracks.video.stop();
+      await camera.current?.stop();
+      await videoProcessor.current?.stop();
+      camera.current = null;
+      videoProcessor.current = null;
+      if (videoRef.current) {
+        videoRef.current.srcObject = null;
+      }
+      saveItemSessionStorage(USER_PREFERENCE_BACKGROUND_TYPE, 'none');
+      setVirtualBackgroundType('none');
+      await handleTrackUpdate('video', undefined);
+    } else {
+      getUserMedia({
+        kind: 'video',
+        deviceId: videoInputDeviceId,
+        options: optionalFeatures,
+        callbacks: {
+          onTrackUpdate: handleTrackUpdate,
+          onDeviceError: handleDeviceError,
+        },
+      });
+    }
+  };
+
   const handleVirtualBg = async (selectedValue: string) => {
     saveItemSessionStorage(USER_PREFERENCE_BACKGROUND_TYPE, selectedValue);
     setVirtualBackgroundType(selectedValue);
-    getUserMedia({
-      kind: 'video',
-      deviceId: videoInputDeviceId,
-      options: optionalFeatures,
-      callbacks: {
-        onTrackUpdate: async (
-          kind: 'audio' | 'video',
-          track: MediaStreamTrack | undefined
-        ) => {
-          if (kind === 'video' && track) {
-            const stream = new MediaStream();
-            stream.addTrack(track);
-            const videoTrack = await addVirtualBackgroundStream({
-              videoProcessor: videoProcessor,
-              camera: camera,
-              videoElementId: 'video-preview',
-              canvasElementId: 'canvas',
-              stream,
-              backgroundValue: selectedValue,
-            });
 
-            setLocalTracks((value) => ({
-              ...value,
-              video:
-                !selectedValue || selectedValue === 'none' ? track : videoTrack,
-            }));
-          }
+    if (localTracks.video) {
+      localTracks.video?.stop();
+      await videoProcessor.current?.stop();
+      videoProcessor.current = null;
+      setLocalTracks((value) => ({
+        ...value,
+        video: undefined,
+      }));
+
+      getUserMedia({
+        kind: 'video',
+        deviceId: undefined,
+        options: optionalFeatures,
+        callbacks: {
+          onTrackUpdate: async (
+            kind: 'audio' | 'video',
+            track: MediaStreamTrack | undefined
+          ) => {
+            if (kind === 'video' && track) {
+              const stream = new MediaStream([track]);
+
+              const videoTrack = await addVirtualBackgroundStream({
+                videoProcessor: videoProcessor,
+                camera: camera,
+                videoElementId: 'video-preview',
+                canvasElementId: 'canvas',
+                stream,
+                backgroundValue: selectedValue,
+              });
+
+              setLocalTracks((value) => ({
+                ...value,
+                video:
+                  selectedValue && selectedValue !== 'none'
+                    ? videoTrack
+                    : track,
+              }));
+            }
+          },
+          onDeviceError: handleDeviceError,
         },
-        onDeviceError: handleDeviceError,
-      },
-    });
+      });
+    }
   };
 
   const renderSelectBackgroungImage = () => {
-    const backgroundValue = getItemSessionStorage(
-      USER_PREFERENCE_BACKGROUND_TYPE
-    );
-
     const options = [
       {
         label: 'none',
@@ -285,7 +303,7 @@ function MediaControlBar({
       <span style={{ color: '#fff' }}>
         <MenuList
           disabled={!isVideoTrackEnabled}
-          initialValue={backgroundValue}
+          selectedValue={virtualBackgroundType}
           size='small'
           title='Change background'
           data={options}
