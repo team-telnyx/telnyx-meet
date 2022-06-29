@@ -61,14 +61,17 @@ export const addVirtualBackgroundStream = async ({
     }
     camera.current = null;
 
-    return undefined;
+    return videoTrack;
   } else if (backgroundValue !== 'blur') {
     // We use this image as our virtual background
     const image = new Image(996, 664);
-    image.src = `https://telnyx-meet-git-init-3119-telnyx.vercel.app/${backgroundValue}`;
+    image.src = `//localhost:3000/${backgroundValue}`;
     //image.src = backgroundValue;
 
-    if (!videoProcessor.current) {
+    if (
+      !videoProcessor.current ||
+      !videoProcessor.current.getVideoProcessorActive()
+    ) {
       videoProcessor.current = new VideoProcessor();
     }
 
@@ -78,7 +81,6 @@ export const addVirtualBackgroundStream = async ({
 
     const virtualBackground =
       await videoProcessor.current.createVirtualBackgroundStream({
-        videoTrack,
         videoElementId,
         canvasElementId,
         image,
@@ -88,9 +90,15 @@ export const addVirtualBackgroundStream = async ({
     virtualBackground?.camera?.start();
     camera.current = virtualBackground.camera;
 
-    return virtualBackground.canvasVideoTrack;
+    if (virtualBackground.canvasVideoTrack) {
+      return virtualBackground.canvasVideoTrack;
+    }
+    return videoTrack;
   } else {
-    if (!videoProcessor.current) {
+    if (
+      !videoProcessor.current ||
+      !videoProcessor.current.getVideoProcessorActive()
+    ) {
       videoProcessor.current = new VideoProcessor();
     }
 
@@ -100,15 +108,18 @@ export const addVirtualBackgroundStream = async ({
 
     const gaussianBlur =
       await videoProcessor.current.createGaussianBlurBackgroundStream({
-        videoTrack,
         videoElementId,
         canvasElementId,
         frameRate: 20,
+        blurAmount: 20,
       });
 
     gaussianBlur?.camera?.start();
     camera.current = gaussianBlur.camera;
 
-    return gaussianBlur.canvasVideoTrack;
+    if (gaussianBlur.canvasVideoTrack) {
+      return gaussianBlur.canvasVideoTrack;
+    }
+    return videoTrack;
   }
 };
