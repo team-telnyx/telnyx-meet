@@ -704,17 +704,19 @@ export default function RoomControls({
       </Box>
 
       <RightBoxMenu pad='small' direction='row' gap='large'>
-        <Box>
-          <Button
-            onClick={() => {
-              setUseMixedAudioForOutput(!useMixedAudioForOutput);
-            }}
-          >
-            <Text>{`Toggle Mixed Audio: ${
-              useMixedAudioForOutput ? 'On' : 'Off'
-            }`}</Text>
-          </Button>
-        </Box>
+        {optionalFeatures && optionalFeatures.isAudioControlEnabled && (
+          <Box>
+            <Button
+              onClick={() => {
+                setUseMixedAudioForOutput(!useMixedAudioForOutput);
+              }}
+            >
+              <Text>{`Toggle Mixed Audio: ${
+                useMixedAudioForOutput ? 'On' : 'Off'
+              }`}</Text>
+            </Button>
+          </Box>
+        )}
 
         <DeviceSelect
           kind='audio_input'
