@@ -388,12 +388,10 @@ export default function RoomControls({
     saveItemSessionStorage(USER_PREFERENCE_BACKGROUND_TYPE, selectedValue);
     setVirtualBackgroundType(selectedValue);
 
-    if (selectedValue && selectedValue !== 'none') {
-      if (localTracks.video) {
-        localTracks.video?.stop();
-        await videoProcessor.current?.stop();
-        videoProcessor.current = null;
-      }
+    if (localTracks.video) {
+      localTracks.video?.stop();
+      await videoProcessor.current?.stop();
+      videoProcessor.current = null;
 
       getUserMedia({
         kind: 'video',
@@ -417,7 +415,10 @@ export default function RoomControls({
 
               setLocalTracks((value) => ({
                 ...value,
-                video: canvasVideoTrack,
+                video:
+                  selectedValue && selectedValue !== 'none'
+                    ? canvasVideoTrack
+                    : track,
               }));
             }
           },
