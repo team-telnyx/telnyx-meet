@@ -70,7 +70,7 @@ export const addVirtualBackgroundStream = async ({
 
     if (
       !videoProcessor.current ||
-      !videoProcessor.current.getVideoProcessorActive()
+      !videoProcessor.current.isVideoProcessorActived()
     ) {
       videoProcessor.current = new VideoProcessor();
     }
@@ -97,7 +97,7 @@ export const addVirtualBackgroundStream = async ({
   } else {
     if (
       !videoProcessor.current ||
-      !videoProcessor.current.getVideoProcessorActive()
+      !videoProcessor.current.isVideoProcessorActived()
     ) {
       videoProcessor.current = new VideoProcessor();
     }
