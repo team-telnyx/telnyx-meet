@@ -50,12 +50,14 @@ export default function Rooms({
 }) {
   const router = useRouter();
   const queryParameters = router.query as {
+    audio_control: string;
     dial_out: string;
     network_metrics: string;
     simulcast: string;
     virtual_background: string;
   };
   const optionalFeatures = {
+    isAudioControlEnabled: queryParameters.audio_control === 'true',
     isDialOutEnabled: queryParameters.dial_out === 'true',
     isNetworkMetricsEnabled: queryParameters.network_metrics === 'true',
     isSimulcastEnabled: queryParameters.simulcast === 'true',
