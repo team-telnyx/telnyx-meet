@@ -29,8 +29,8 @@ export const imagesOptions = [
     value: 'mansao.webp',
   },
   {
-    label: 'paradise',
-    value: 'paradise.jpg',
+    label: 'nature',
+    value: 'nature.webp',
   },
 ];
 
