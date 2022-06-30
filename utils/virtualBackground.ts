@@ -65,8 +65,13 @@ export const addVirtualBackgroundStream = async ({
   } else if (backgroundValue !== 'blur') {
     // We use this image as our virtual background
     const image = new Image(996, 664);
-    image.src = `//localhost:3000/${backgroundValue}`;
-    //image.src = backgroundValue;
+
+    /*
+      The image should be hosted in the same domain as your telnyx-meet application otherwise you will get this issue 
+      https://www.w3.org/TR/mediacapture-fromelement/#html-canvas-element-media-capture-extensions
+      https://developer.mozilla.org/en-US/docs/Web/HTML/CORS_enabled_image
+    */
+    image.src = `/${backgroundValue}`;
 
     if (
       !videoProcessor.current ||
@@ -111,7 +116,7 @@ export const addVirtualBackgroundStream = async ({
         videoElementId,
         canvasElementId,
         frameRate: 20,
-        blurAmount: 20,
+        blurAmount: 10,
       });
 
     gaussianBlur?.camera?.start();

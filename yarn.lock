@@ -389,10 +389,10 @@
   resolved "https://registry.yarnpkg.com/@rushstack/eslint-patch/-/eslint-patch-1.1.0.tgz#7f698254aadf921e48dda8c0a6b304026b8a9323"
   integrity sha512-JLo+Y592QzIE+q7Dl2pMUtt4q8SKYI5jDrZxrozEQxnGVOyYE+GWK9eLkwTaeN9DDctlaRAQ3TBmzZ1qdLE30A==
 
-"@telnyx/video-processors@^0.0.0-alpha.2":
-  version "0.0.0-alpha.2"
-  resolved "https://registry.yarnpkg.com/@telnyx/video-processors/-/video-processors-0.0.0-alpha.2.tgz#4aeec1884c4d2e2cce7e102ea42e783bfb43be57"
-  integrity sha512-Q7gMCq+ueLlI0rOuiudIVOTrlfX1vhM21JsIIo0GB3GWfFK1W7PGICYYGjq1jwIu1CfEbO4rySjD1DQUek9eUQ==
+"@telnyx/video-processors@^0.0.0-alpha.3":
+  version "0.0.0-alpha.3"
+  resolved "https://registry.yarnpkg.com/@telnyx/video-processors/-/video-processors-0.0.0-alpha.3.tgz#ad9f225f7e38028c82e19339a04c9819a671ed2c"
+  integrity sha512-cJEwGCLrZsRE2lUytsKGso/kFdfeq5N/V7p8qdGc64MRASsYw1+Vi9c7NwEmVpTH/4cWHkTqCY8cjGTGbWE/yw==
   dependencies:
     "@mediapipe/camera_utils" "^0.3.1640029074"
     "@mediapipe/selfie_segmentation" "^0.1.1632777926"
