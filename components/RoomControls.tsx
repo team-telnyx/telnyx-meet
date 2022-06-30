@@ -392,10 +392,6 @@ export default function RoomControls({
       localTracks.video?.stop();
       await videoProcessor.current?.stop();
       videoProcessor.current = null;
-      setLocalTracks((value) => ({
-        ...value,
-        video: undefined,
-      }));
 
       getUserMedia({
         kind: 'video',

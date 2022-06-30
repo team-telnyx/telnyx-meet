@@ -29,8 +29,8 @@ export const imagesOptions = [
     value: 'mansao.webp',
   },
   {
-    label: 'paradise',
-    value: 'paradise.jpg',
+    label: 'nature',
+    value: 'nature.webp',
   },
 ];
 
@@ -61,14 +61,22 @@ export const addVirtualBackgroundStream = async ({
     }
     camera.current = null;
 
-    return undefined;
+    return videoTrack;
   } else if (backgroundValue !== 'blur') {
     // We use this image as our virtual background
     const image = new Image(996, 664);
-    image.src = `https://telnyx-meet-git-init-3119-telnyx.vercel.app/${backgroundValue}`;
-    //image.src = backgroundValue;
 
-    if (!videoProcessor.current) {
+    /*
+      The image should be hosted in the same domain as your telnyx-meet application otherwise you will get this issue 
+      https://www.w3.org/TR/mediacapture-fromelement/#html-canvas-element-media-capture-extensions
+      https://developer.mozilla.org/en-US/docs/Web/HTML/CORS_enabled_image
+    */
+    image.src = `/${backgroundValue}`;
+
+    if (
+      !videoProcessor.current ||
+      !videoProcessor.current.isVideoProcessorActived()
+    ) {
       videoProcessor.current = new VideoProcessor();
     }
 
@@ -78,7 +86,6 @@ export const addVirtualBackgroundStream = async ({
 
     const virtualBackground =
       await videoProcessor.current.createVirtualBackgroundStream({
-        videoTrack,
         videoElementId,
         canvasElementId,
         image,
@@ -88,9 +95,15 @@ export const addVirtualBackgroundStream = async ({
     virtualBackground?.camera?.start();
     camera.current = virtualBackground.camera;
 
-    return virtualBackground.canvasVideoTrack;
+    if (virtualBackground.canvasVideoTrack) {
+      return virtualBackground.canvasVideoTrack;
+    }
+    return videoTrack;
   } else {
-    if (!videoProcessor.current) {
+    if (
+      !videoProcessor.current ||
+      !videoProcessor.current.isVideoProcessorActived()
+    ) {
       videoProcessor.current = new VideoProcessor();
     }
 
@@ -100,15 +113,18 @@ export const addVirtualBackgroundStream = async ({
 
     const gaussianBlur =
       await videoProcessor.current.createGaussianBlurBackgroundStream({
-        videoTrack,
         videoElementId,
         canvasElementId,
         frameRate: 20,
+        blurAmount: 10,
       });
 
     gaussianBlur?.camera?.start();
     camera.current = gaussianBlur.camera;
 
-    return gaussianBlur.canvasVideoTrack;
+    if (gaussianBlur.canvasVideoTrack) {
+      return gaussianBlur.canvasVideoTrack;
+    }
+    return videoTrack;
   }
 };
