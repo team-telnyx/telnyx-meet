@@ -3,7 +3,7 @@ import { Button, TextInput } from 'grommet';
 import { Send } from 'grommet-icons';
 import { TelnyxRoom } from 'hooks/room';
 
-import React, { MouseEventHandler } from 'react';
+import React, { MouseEventHandler, useEffect } from 'react';
 import Draggable from 'react-draggable';
 import styled from 'styled-components';
 
@@ -57,6 +57,7 @@ export const Chat = ({
   localParticipant: Participant;
 }) => {
   const [value, setValue] = React.useState('');
+  const contentMessageRef = React.useRef<HTMLDivElement>(null);
 
   const handleSendMessage = async () => {
     if (value && value.length > 0) {
@@ -67,6 +68,13 @@ export const Chat = ({
       setValue('');
     }
   };
+
+  useEffect(() => {
+    if (contentMessageRef.current && messages.length > 0) {
+      contentMessageRef.current.scrollTop =
+        contentMessageRef.current.scrollHeight;
+    }
+  }, [messages.length]);
 
   return (
     <Draggable bounds='body' handle='#chat-header'>
@@ -115,6 +123,8 @@ export const Chat = ({
             wordWrap: 'break-word',
             overflowY: 'auto',
           }}
+          id='messages'
+          ref={contentMessageRef}
         >
           {messages && messages?.length > 0
             ? messages.map(({ from, fromUsername, message }, key) => {
