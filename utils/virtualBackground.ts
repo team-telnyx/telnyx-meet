@@ -32,6 +32,10 @@ export const imagesOptions = [
     label: 'nature',
     value: 'nature.webp',
   },
+  {
+    label: 'external source',
+    value: 'https://images.pexels.com/photos/1525041/pexels-photo-1525041.jpeg',
+  },
 ];
 
 export const addVirtualBackgroundStream = async ({
@@ -72,6 +76,10 @@ export const addVirtualBackgroundStream = async ({
       https://developer.mozilla.org/en-US/docs/Web/HTML/CORS_enabled_image
     */
     image.src = `/${backgroundValue}`;
+
+    if (backgroundValue.includes('https://images.pexels')) {
+      image.src = backgroundValue;
+    }
 
     if (
       !videoProcessor.current ||
