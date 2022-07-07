@@ -1,6 +1,6 @@
 import { useState, useEffect, useContext, useRef } from 'react';
 import { getDevices, Participant, Room, Stream } from '@telnyx/video';
-import { Box, Button, Menu, Text } from 'grommet';
+import { Box, Button, Text } from 'grommet';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
 import {
@@ -8,6 +8,7 @@ import {
   Chat as ChatIcon,
   UserAdd as InviteIcon,
 } from 'grommet-icons';
+
 import {
   faMicrophone,
   faMicrophoneSlash,
@@ -51,6 +52,26 @@ const isSinkIdSupported = (): boolean => {
   return typeof audio?.setSinkId === 'function';
 };
 
+type RoomControlsProps = {
+  isParticipantsListVisible: boolean;
+  isInviteParticipantVisible: boolean;
+  useMixedAudioForOutput: boolean;
+  participantsByActivity: TelnyxRoom['participantsByActivity'];
+  addStream: TelnyxRoom['addStream'];
+  removeStream: TelnyxRoom['removeStream'];
+  updateStream: TelnyxRoom['updateStream'];
+  disconnect: TelnyxRoom['disconnect'];
+  setIsParticipantsListVisible: React.Dispatch<React.SetStateAction<boolean>>;
+  setIsInviteParticipantVisible: React.Dispatch<React.SetStateAction<boolean>>;
+  setUseMixedAudioForOutput: React.Dispatch<React.SetStateAction<boolean>>;
+  streams: { [key: string]: Stream };
+  disableScreenshare: boolean;
+  sendMessage: Room['sendMessage'];
+  messages: TelnyxRoom['messages'];
+  getLocalParticipant: () => Participant;
+  camera: VirtualBackground['camera'];
+};
+
 export default function RoomControls({
   isParticipantsListVisible,
   isInviteParticipantVisible,
@@ -69,25 +90,7 @@ export default function RoomControls({
   messages,
   getLocalParticipant,
   camera,
-}: {
-  isParticipantsListVisible: boolean;
-  isInviteParticipantVisible: boolean;
-  useMixedAudioForOutput: boolean;
-  participantsByActivity: TelnyxRoom['participantsByActivity'];
-  addStream: TelnyxRoom['addStream'];
-  removeStream: TelnyxRoom['removeStream'];
-  updateStream: TelnyxRoom['updateStream'];
-  disconnect: TelnyxRoom['disconnect'];
-  setIsParticipantsListVisible: React.Dispatch<React.SetStateAction<boolean>>;
-  setIsInviteParticipantVisible: React.Dispatch<React.SetStateAction<boolean>>;
-  setUseMixedAudioForOutput: React.Dispatch<React.SetStateAction<boolean>>;
-  streams: { [key: string]: Stream };
-  disableScreenshare: boolean;
-  sendMessage: Room['sendMessage'];
-  messages: TelnyxRoom['messages'];
-  getLocalParticipant: () => Participant;
-  camera: VirtualBackground['camera'];
-}) {
+}: RoomControlsProps) {
   const {
     audioInputDeviceId,
     audioOutputDeviceId,
@@ -530,6 +533,15 @@ export default function RoomControls({
 
   const showBubbleNotification = checkBubbleNotification();
 
+  const renderedLeaveButton = (
+    <LeaveButton
+      data-testid='btn-leave-room'
+      label='Leave'
+      onClick={handleLeaveRoom}
+      color='status-error'
+    />
+  );
+
   return (
     <Box
       gridArea='controls'
@@ -825,22 +837,10 @@ export default function RoomControls({
           />
         )}
 
-        <Box>
-          <Button
-            data-testid='btn-leave-room'
-            label='Leave'
-            onClick={handleLeaveRoom}
-            color='status-error'
-          />
-        </Box>
+        <Box>{renderedLeaveButton}</Box>
       </RightBoxMenu>
 
-      <LeaveButton
-        data-testid='btn-leave-room'
-        label='Leave'
-        onClick={handleLeaveRoom}
-        color='status-error'
-      />
+      {renderedLeaveButton}
     </Box>
   );
 }
