@@ -3,7 +3,7 @@ import { Box, Button, ButtonProps, Text } from 'grommet';
 import { FontAwesomeIconStyled } from './styles';
 import { IconProp } from '@fortawesome/fontawesome-svg-core';
 
-type ButtonControlProps = {
+type ControlButtonProps = {
   dataTestId: string;
   disabled: boolean;
   showEnabledIcon: boolean;
@@ -19,7 +19,7 @@ type ButtonControlProps = {
     MouseEventHandler<HTMLButtonElement>;
 } & Pick<ButtonProps, 'size'>;
 
-export function ButtonControl({
+export function ControlButton({
   dataTestId,
   size,
   disabled,
@@ -28,7 +28,7 @@ export function ButtonControl({
   disabledIcon,
   showEnabledIcon,
   ...props
-}: ButtonControlProps) {
+}: ControlButtonProps) {
   return (
     <Button
       data-testid={dataTestId}

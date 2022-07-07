@@ -36,7 +36,7 @@ import { Chat } from '../Chat';
 import { ControllerBox, LeaveButton, RightBoxMenu } from './styles';
 import { MenuListDevices } from './MenuListDevices';
 import { ChatButton } from './ChatButton';
-import { ButtonControl } from './ButtonControl';
+import { ControlButton } from './ControlButton';
 
 const isSinkIdSupported = (): boolean => {
   const audio = document.createElement('audio');
@@ -591,7 +591,7 @@ export default function RoomControls({
 
       <Box pad='small' direction='row' gap='medium'>
         <Box width='80px'>
-          <ButtonControl
+          <ControlButton
             dataTestId='btn-toggle-audio'
             size='large'
             onClick={handleAudioClick}
@@ -608,7 +608,7 @@ export default function RoomControls({
           />
         </Box>
         <Box width='80px'>
-          <ButtonControl
+          <ControlButton
             dataTestId='btn-toggle-video'
             size='large'
             onClick={handleVideoClick}
@@ -626,7 +626,7 @@ export default function RoomControls({
           />
         </Box>
         <ControllerBox width='80px'>
-          <ButtonControl
+          <ControlButton
             dataTestId='btn-toggle-screen-sharing'
             size='large'
             disabled={disableScreenshare}
