@@ -9,6 +9,7 @@ import React, {
 } from 'react';
 import { useRouter } from 'next/router';
 import {
+  faAngleDown,
   faMicrophone,
   faMicrophoneSlash,
   faVideo,
@@ -26,7 +27,6 @@ import {
   USER_PREFERENCE_VIDEO_ENABLED,
   USER_PREFERENCE_BACKGROUND_TYPE,
   saveItemSessionStorage,
-  getItemSessionStorage,
 } from 'utils/storage';
 
 import { MediaDeviceErrors } from './helper';
@@ -286,6 +286,11 @@ function MediaControlBar({
           title='Change background'
           data={imagesOptions}
           onChange={(item) => handleVirtualBg(item.value)}
+          icon={<FontAwesomeIcon icon={faAngleDown} fixedWidth />}
+          itemsIconOptions={{
+            gap: 'small', // gap between icon and text
+            reverse: true, // icon on right
+          }}
         ></MenuList>
       </span>
     );

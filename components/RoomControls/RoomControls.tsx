@@ -1,34 +1,25 @@
-import {
-  useState,
-  useEffect,
-  useContext,
-  useRef,
-  MutableRefObject,
-} from 'react';
+import { useState, useEffect, useContext, useRef } from 'react';
 import { getDevices, Participant, Room, Stream } from '@telnyx/video';
 import { Box, Button, Menu, Text } from 'grommet';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+
 import {
   Group as GroupIcon,
   Chat as ChatIcon,
   UserAdd as InviteIcon,
 } from 'grommet-icons';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   faMicrophone,
   faMicrophoneSlash,
   faVideo,
   faVideoSlash,
   faLaptop,
-  faCheck,
+  faAngleDown,
 } from '@fortawesome/free-solid-svg-icons';
-import styled from 'styled-components';
 
-import { TelnyxMeetContext } from 'contexts/TelnyxMeetContext';
 import { TelnyxRoom } from 'hooks/room';
-
+import { TelnyxMeetContext } from 'contexts/TelnyxMeetContext';
 import ErrorDialog from 'components/ErrorDialog';
-
-import { Chat } from './Chat';
 
 import { getUserMedia } from 'utils/userMedia';
 import {
@@ -36,118 +27,29 @@ import {
   saveItemSessionStorage,
   USER_PREFERENCE_BACKGROUND_TYPE,
 } from 'utils/storage';
+
 import {
   addVirtualBackgroundStream,
   imagesOptions,
   VirtualBackground,
 } from 'utils/virtualBackground';
-import { MenuList } from './MenuList';
 
-const breakpointMedium = 1023;
-
-const RightBoxMenu = styled(Box)`
-  @media (max-width: ${breakpointMedium}px) {
-    display: none;
-  }
-  align-items: center;
-  justify-content: center;
-`;
-
-const ControllerBox = styled(Box)`
-  @media (max-width: ${breakpointMedium}px) {
-    display: none;
-  }
-`;
-
-const LeaveButton = styled(Button)`
-  @media (min-width: ${breakpointMedium}px) {
-    display: none;
-  }
-  margin-right: 6px;
-`;
-
-const FontAwesomeIconStyled = styled(FontAwesomeIcon)`
-  @media (max-width: ${breakpointMedium}px) {
-    font-size: 25px;
-  }
-`;
-
-const Bubble = styled.div`
-  background-color: #8ab4f8;
-  border-color: #202124;
-  right: -3px;
-  position: absolute;
-  top: -4px;
-  border-radius: 50%;
-  border: 2px solid white;
-  height: 18px;
-  width: 18px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-`;
+import { MenuList } from '../MenuList';
+import { Chat } from '../Chat';
+import {
+  Bubble,
+  ControllerBox,
+  FontAwesomeIconStyled,
+  LeaveButton,
+  RightBoxMenu,
+} from './styles';
+import { MenuListDevices } from './MenuListDevices';
 
 const isSinkIdSupported = (): boolean => {
   const audio = document.createElement('audio');
   // @ts-expect-error
   return typeof audio?.setSinkId === 'function';
 };
-
-function DeviceSelect({
-  kind,
-  devices = [],
-  selectedDeviceId,
-  handleDeviceChange,
-}: {
-  kind: 'audio_input' | 'video_input' | 'audio_output';
-  devices: Array<{ id: string; label: string }>;
-  selectedDeviceId?: string;
-  handleDeviceChange: (
-    kind: 'audio_input' | 'video_input' | 'audio_output',
-    deviceId: string
-  ) => void;
-}) {
-  const currentDeviceId = selectedDeviceId;
-
-  let label = '';
-  switch (kind) {
-    case 'audio_input':
-      label = 'mic';
-      break;
-    case 'audio_output':
-      label = 'output';
-      break;
-    case 'video_input':
-      label = 'camera';
-      break;
-    default:
-      throw new Error('Unknown device type!');
-  }
-
-  return (
-    <Menu
-      label={`Change ${label}`}
-      items={devices.map((device) => ({
-        label: device.label,
-        icon: (
-          <Box>
-            {device.id === currentDeviceId && (
-              <Text color='accent-1'>
-                <FontAwesomeIconStyled icon={faCheck} fixedWidth />
-              </Text>
-            )}
-          </Box>
-        ),
-        gap: 'small', // gap between icon and text
-        reverse: true, // icon on right
-        // TODO give some sort UI feedback that device was successfully changed
-        onClick: () => handleDeviceChange(kind, device.id),
-      }))}
-      disabled={devices.length < 2}
-      icon={false}
-    ></Menu>
-  );
-}
 
 export default function RoomControls({
   isParticipantsListVisible,
@@ -437,6 +339,11 @@ export default function RoomControls({
           title='Change background'
           data={imagesOptions}
           onChange={(item) => handleVirtualBg(item.value)}
+          icon={<FontAwesomeIcon icon={faAngleDown} fixedWidth />}
+          itemsIconOptions={{
+            gap: 'small', // gap between icon and text
+            reverse: true, // icon on right
+          }}
         ></MenuList>
       </span>
     );
@@ -895,14 +802,14 @@ export default function RoomControls({
           </Box>
         )}
 
-        <DeviceSelect
+        <MenuListDevices
           kind='audio_input'
           devices={devices?.audioinput}
           selectedDeviceId={audioInputDeviceId}
           handleDeviceChange={handleDeviceChange}
         />
 
-        <DeviceSelect
+        <MenuListDevices
           kind='video_input'
           devices={devices?.videoinput}
           selectedDeviceId={videoInputDeviceId}
@@ -910,7 +817,7 @@ export default function RoomControls({
         />
 
         {isSinkIdSupported() && (
-          <DeviceSelect
+          <MenuListDevices
             kind='audio_output'
             devices={devices?.audiooutput}
             selectedDeviceId={audioOutputDeviceId}
