@@ -334,6 +334,7 @@ export const useRoom = ({
 
         roomRef.current.on('audio_activity', (participantId, key) => {
           if (
+            key &&
             key !== 'presentation' &&
             participantId !== roomRef.current!.getLocalParticipant().id
           ) {
