@@ -38,13 +38,13 @@ import {
 import { MenuList } from '../MenuList';
 import { Chat } from '../Chat';
 import {
-  Bubble,
   ControllerBox,
   FontAwesomeIconStyled,
   LeaveButton,
   RightBoxMenu,
 } from './styles';
 import { MenuListDevices } from './MenuListDevices';
+import { ChatButton } from './ChatButton';
 
 const isSinkIdSupported = (): boolean => {
   const audio = document.createElement('audio');
@@ -601,7 +601,6 @@ export default function RoomControls({
             </Box>
           </Button>
         </Box>
-
         <Box width='80px'>
           <Button
             data-testid='btn-toggle-video'
@@ -630,7 +629,6 @@ export default function RoomControls({
             </Box>
           </Button>
         </Box>
-
         <ControllerBox width='80px'>
           <Button
             data-testid='btn-toggle-screen-sharing'
@@ -685,7 +683,6 @@ export default function RoomControls({
             </Box>
           </Button>
         </ControllerBox>
-
         <ControllerBox width='80px'>
           <Button
             data-testid='btn-toggle-participant-list'
@@ -720,7 +717,6 @@ export default function RoomControls({
             </Box>
           </Button>
         </ControllerBox>
-
         {optionalFeatures.isDialOutEnabled && (
           <ControllerBox width='80px'>
             <Button
@@ -748,39 +744,16 @@ export default function RoomControls({
 
         {localParticipant.canReceiveMessages && (
           <ControllerBox>
-            <Button
-              data-testid='btn-toggle-chat'
-              size='large'
+            <ChatButton
               onClick={() => {
                 setShowChatBox((value) => !value);
                 unreadMessages.current = [];
               }}
-            >
-              <Box align='center' gap='xsmall'>
-                <Box style={{ position: 'relative' }}>
-                  {showBubbleNotification && (
-                    <Bubble>
-                      <span
-                        style={{
-                          fontSize: '10px',
-                          textAlign: 'center',
-                          fontWeight: 'bold',
-                        }}
-                      >
-                        {getTotalUnreadMessages()}
-                      </span>
-                    </Bubble>
-                  )}
-                  <ChatIcon
-                    size='large'
-                    color={showChatBox ? 'accent-1' : 'light-5'}
-                  />
-                </Box>
-                <Text size='xsmall' color='light-6'>
-                  Chat
-                </Text>
-              </Box>
-            </Button>
+              totalUnreadMessages={
+                showBubbleNotification ? getTotalUnreadMessages() : 0
+              }
+              isChatBoxOpened={showChatBox}
+            />
           </ControllerBox>
         )}
       </Box>
