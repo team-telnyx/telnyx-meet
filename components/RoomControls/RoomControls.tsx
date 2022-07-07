@@ -444,6 +444,34 @@ export default function RoomControls({
     }
   };
 
+  const handleShareScreenClick = () => {
+    if (presentationTracks.audio || presentationTracks.video) {
+      presentationTracks.audio?.stop();
+      presentationTracks.video?.stop();
+      if (presentationStream) {
+        removeStream('presentation');
+      }
+      setPresentationTracks({ audio: undefined, video: undefined });
+    } else {
+      navigator?.mediaDevices
+        ?.getDisplayMedia({ audio: true, video: true })
+        .then((stream) => {
+          setPresentationTracks({
+            audio: stream?.getAudioTracks()[0],
+            video: stream?.getVideoTracks()[0],
+          });
+        })
+        .catch((error) => {
+          if (
+            error instanceof DOMException &&
+            error.name === 'NotAllowedError'
+          ) {
+            handleDeviceError('screenshare');
+          }
+        });
+    }
+  };
+
   const handleDeviceChange = (
     kind: 'audio_input' | 'video_input' | 'audio_output',
     deviceId: string
@@ -589,86 +617,39 @@ export default function RoomControls({
           />
         </Box>
         <Box width='80px'>
-          <Button
-            data-testid='btn-toggle-video'
+          <ButtonControl
+            dataTestId='btn-toggle-video'
             size='large'
             onClick={handleVideoClick}
             disabled={!selfStream?.isConfigured}
             data-e2e='toggle video'
-          >
-            <Box align='center' gap='xsmall'>
-              <Box>
-                <Text
-                  size='40.3px' // kinda hacky, make fa icon 48px
-                  color={
-                    selfStream?.isVideoEnabled ? 'accent-1' : 'status-error'
-                  }
-                >
-                  <FontAwesomeIconStyled
-                    icon={selfStream?.isVideoEnabled ? faVideo : faVideoSlash}
-                    fixedWidth
-                  />
-                </Text>
-              </Box>
-              <Text size='xsmall' color='light-6'>
-                {selfStream?.isVideoEnabled ? 'Stop video' : 'Start video'}
-              </Text>
-            </Box>
-          </Button>
+            enabledIcon={{
+              icon: faVideo,
+              label: 'Stop video',
+            }}
+            disabledIcon={{
+              icon: faVideoSlash,
+              label: 'Start video',
+            }}
+            showEnabledIcon={selfStream?.isVideoEnabled}
+          />
         </Box>
         <ControllerBox width='80px'>
-          <Button
-            data-testid='btn-toggle-screen-sharing'
+          <ButtonControl
+            dataTestId='btn-toggle-screen-sharing'
             size='large'
             disabled={disableScreenshare}
-            onClick={() => {
-              if (presentationTracks.audio || presentationTracks.video) {
-                presentationTracks.audio?.stop();
-                presentationTracks.video?.stop();
-                if (presentationStream) {
-                  removeStream('presentation');
-                }
-                setPresentationTracks({ audio: undefined, video: undefined });
-              } else {
-                navigator?.mediaDevices
-                  ?.getDisplayMedia({ audio: true, video: true })
-                  .then((stream) => {
-                    setPresentationTracks({
-                      audio: stream?.getAudioTracks()[0],
-                      video: stream?.getVideoTracks()[0],
-                    });
-                  })
-                  .catch((error) => {
-                    if (
-                      error instanceof DOMException &&
-                      error.name === 'NotAllowedError'
-                    ) {
-                      handleDeviceError('screenshare');
-                    }
-                  });
-              }
+            enabledIcon={{
+              icon: faLaptop,
+              label: 'Stop share',
             }}
-          >
-            <Box align='center' gap='xsmall'>
-              <Box>
-                <Text
-                  size='40.3px' // kinda hacky, make fa icon 48px
-                  color={
-                    presentationStream?.isVideoEnabled
-                      ? 'accent-1'
-                      : 'status-error'
-                  }
-                >
-                  <FontAwesomeIconStyled icon={faLaptop} fixedWidth />
-                </Text>
-              </Box>
-              <Text size='xsmall' color='light-6'>
-                {presentationStream?.isVideoEnabled
-                  ? 'Stop share'
-                  : 'Start share'}
-              </Text>
-            </Box>
-          </Button>
+            disabledIcon={{
+              icon: faLaptop,
+              label: 'Start share',
+            }}
+            showEnabledIcon={presentationStream?.isVideoEnabled}
+            onClick={handleShareScreenClick}
+          />
         </ControllerBox>
         <ControllerBox width='80px'>
           <Button
