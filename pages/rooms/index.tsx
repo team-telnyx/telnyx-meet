@@ -104,7 +104,7 @@ export default function Rooms({
   };
   const [networkMetrics, setNetworkMetrics] = useState<NetworkMetrics>();
 
-  const [isVideoPlaying, setVideoPlaying] = useState<boolean>(false);
+  const [isVideoPlaying, setIsVideoPlaying] = useState<boolean>(false);
 
   useEffect(() => {
     setUsername(getUserName());
@@ -154,7 +154,7 @@ export default function Rooms({
             unreadMessages,
             optionalFeatures,
             isVideoPlaying,
-            setVideoPlaying,
+            setIsVideoPlaying,
           }}
         >
           {roomId && isReady ? (
