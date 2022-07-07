@@ -45,6 +45,7 @@ import {
 } from './styles';
 import { MenuListDevices } from './MenuListDevices';
 import { ChatButton } from './ChatButton';
+import { ButtonControl } from './ButtonControl';
 
 const isSinkIdSupported = (): boolean => {
   const audio = document.createElement('audio');
@@ -571,35 +572,21 @@ export default function RoomControls({
 
       <Box pad='small' direction='row' gap='medium'>
         <Box width='80px'>
-          <Button
-            data-testid='btn-toggle-audio'
+          <ButtonControl
+            dataTestId='btn-toggle-audio'
             size='large'
             onClick={handleAudioClick}
             disabled={!selfStream?.isConfigured}
-          >
-            <Box align='center' gap='xsmall'>
-              <Box>
-                <Text
-                  size='40.3px' // kinda hacky, make fa icon 48px
-                  color={
-                    selfStream?.isAudioEnabled ? 'accent-1' : 'status-error'
-                  }
-                >
-                  <FontAwesomeIconStyled
-                    icon={
-                      selfStream?.isAudioEnabled
-                        ? faMicrophone
-                        : faMicrophoneSlash
-                    }
-                    fixedWidth
-                  />
-                </Text>
-              </Box>
-              <Text size='xsmall' color='light-6'>
-                {selfStream?.isAudioEnabled ? 'Mute mic' : 'Unmute mic'}
-              </Text>
-            </Box>
-          </Button>
+            enabledIcon={{
+              icon: faMicrophone,
+              label: 'Mute mic',
+            }}
+            disabledIcon={{
+              icon: faMicrophoneSlash,
+              label: 'Unmute mic',
+            }}
+            showEnabledIcon={selfStream?.isAudioEnabled}
+          />
         </Box>
         <Box width='80px'>
           <Button
