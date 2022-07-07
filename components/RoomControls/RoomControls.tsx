@@ -3,11 +3,7 @@ import { getDevices, Participant, Room, Stream } from '@telnyx/video';
 import { Box, Button, Text } from 'grommet';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
-import {
-  Group as GroupIcon,
-  Chat as ChatIcon,
-  UserAdd as InviteIcon,
-} from 'grommet-icons';
+import { Group as GroupIcon, UserAdd as InviteIcon } from 'grommet-icons';
 
 import {
   faMicrophone,
@@ -37,12 +33,7 @@ import {
 
 import { MenuList } from '../MenuList';
 import { Chat } from '../Chat';
-import {
-  ControllerBox,
-  FontAwesomeIconStyled,
-  LeaveButton,
-  RightBoxMenu,
-} from './styles';
+import { ControllerBox, LeaveButton, RightBoxMenu } from './styles';
 import { MenuListDevices } from './MenuListDevices';
 import { ChatButton } from './ChatButton';
 import { ButtonControl } from './ButtonControl';
