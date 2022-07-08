@@ -34,7 +34,7 @@ import {
 import { MenuList } from '../MenuList';
 import { Chat } from '../Chat';
 import { ControllerBox, LeaveButton, RightBoxMenu } from './styles';
-import { MenuListDevices } from './MenuListDevices';
+import { DeviceMenuList } from './DeviceMenuList';
 import { ChatButton } from './ChatButton';
 import { ControlButton } from './ControlButton';
 
@@ -325,25 +325,6 @@ export default function RoomControls({
     }
   };
 
-  const renderSelectBackgroungImage = () => {
-    return (
-      <span style={{ color: '#fff' }}>
-        <MenuList
-          disabled={!selfStream?.isVideoEnabled}
-          selectedValue={virtualBackgroundType}
-          title='Change background'
-          data={imagesOptions}
-          onChange={(item) => handleVirtualBg(item.value)}
-          icon={<FontAwesomeIcon icon={faAngleDown} fixedWidth />}
-          itemsIconOptions={{
-            gap: 'small', // gap between icon and text
-            reverse: true, // icon on right
-          }}
-        ></MenuList>
-      </span>
-    );
-  };
-
   const handleTrackUpdate = (
     kind: 'audio' | 'video',
     track: MediaStreamTrack | undefined
@@ -610,10 +591,10 @@ export default function RoomControls({
         <Box width='80px'>
           <ControlButton
             dataTestId='btn-toggle-video'
+            data-e2e='toggle video'
             size='large'
             onClick={handleVideoClick}
             disabled={!selfStream?.isConfigured}
-            data-e2e='toggle video'
             enabledIcon={{
               icon: faVideo,
               label: 'Stop video',
@@ -719,8 +700,22 @@ export default function RoomControls({
 
       <RightBoxMenu pad='small' direction='row' gap='large'>
         {optionalFeatures &&
-          optionalFeatures.isVirtualBackgroundFeatureEnabled &&
-          renderSelectBackgroungImage()}
+          optionalFeatures.isVirtualBackgroundFeatureEnabled && (
+            <span style={{ color: '#fff' }}>
+              <MenuList
+                disabled={!selfStream?.isVideoEnabled}
+                selectedValue={virtualBackgroundType}
+                title='Change background'
+                data={imagesOptions}
+                onChange={(item) => handleVirtualBg(item.value)}
+                icon={<FontAwesomeIcon icon={faAngleDown} fixedWidth />}
+                itemsIconOptions={{
+                  gap: 'small', // gap between icon and text
+                  reverse: true, // icon on right
+                }}
+              ></MenuList>
+            </span>
+          )}
         <Box>
           <Button
             onClick={() => {
@@ -746,14 +741,14 @@ export default function RoomControls({
           </Box>
         )}
 
-        <MenuListDevices
+        <DeviceMenuList
           kind='audio_input'
           devices={devices?.audioinput}
           selectedDeviceId={audioInputDeviceId}
           handleDeviceChange={handleDeviceChange}
         />
 
-        <MenuListDevices
+        <DeviceMenuList
           kind='video_input'
           devices={devices?.videoinput}
           selectedDeviceId={videoInputDeviceId}
@@ -761,7 +756,7 @@ export default function RoomControls({
         />
 
         {isSinkIdSupported() && (
-          <MenuListDevices
+          <DeviceMenuList
             kind='audio_output'
             devices={devices?.audiooutput}
             selectedDeviceId={audioOutputDeviceId}

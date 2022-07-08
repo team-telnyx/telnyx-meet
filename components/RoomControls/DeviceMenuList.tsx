@@ -1,11 +1,6 @@
 import { MenuList } from 'components/MenuList';
 
-export function MenuListDevices({
-  kind,
-  devices = [],
-  selectedDeviceId,
-  handleDeviceChange,
-}: {
+type DeviceMenuListProps = {
   kind: 'audio_input' | 'video_input' | 'audio_output';
   devices: Array<{ id: string; label: string }>;
   selectedDeviceId?: string;
@@ -13,7 +8,14 @@ export function MenuListDevices({
     kind: 'audio_input' | 'video_input' | 'audio_output',
     deviceId: string
   ) => void;
-}) {
+};
+
+export function DeviceMenuList({
+  kind,
+  devices = [],
+  selectedDeviceId,
+  handleDeviceChange,
+}: DeviceMenuListProps) {
   const currentDeviceId = selectedDeviceId;
 
   let label = '';

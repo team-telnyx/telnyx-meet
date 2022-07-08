@@ -21,7 +21,7 @@ type ControlButtonProps = {
 
 export function ControlButton({
   dataTestId,
-  size,
+  size = 'medium',
   disabled,
   onClick,
   enabledIcon,
