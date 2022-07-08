@@ -68,6 +68,7 @@ export const useRoom = ({
     setNetworkMetrics,
     unreadMessages,
     optionalFeatures,
+    setIsVideoPlaying,
   } = useContext(TelnyxMeetContext);
   const roomRef = useRef<Room>();
   const [state, setState] = useState<State>();
@@ -270,11 +271,19 @@ export const useRoom = ({
 
         roomRef.current.on(
           'track_enabled',
-          (participantId, key, kind, state) => {}
+          (participantId, key, kind, state) => {
+            if (kind === 'video') {
+              setIsVideoPlaying(true);
+            }
+          }
         );
         roomRef.current.on(
           'track_disabled',
-          (participantId, key, kind, state) => {}
+          (participantId, key, kind, state) => {
+            if (kind === 'video') {
+              setIsVideoPlaying(false);
+            }
+          }
         );
 
         roomRef.current.on(

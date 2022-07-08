@@ -54,12 +54,15 @@ export default function Rooms({
     dial_out: string;
     network_metrics: string;
     simulcast: string;
+    virtual_background: string;
   };
   const optionalFeatures = {
     isAudioControlEnabled: queryParameters.audio_control === 'true',
     isDialOutEnabled: queryParameters.dial_out === 'true',
     isNetworkMetricsEnabled: queryParameters.network_metrics === 'true',
     isSimulcastEnabled: queryParameters.simulcast === 'true',
+    isVirtualBackgroundFeatureEnabled:
+      queryParameters.virtual_background === 'true',
   };
 
   const [roomId, setRoomId] = useState<string>();
@@ -100,6 +103,8 @@ export default function Rooms({
     });
   };
   const [networkMetrics, setNetworkMetrics] = useState<NetworkMetrics>();
+
+  const [isVideoPlaying, setIsVideoPlaying] = useState<boolean>(false);
 
   useEffect(() => {
     setUsername(getUserName());
@@ -148,6 +153,8 @@ export default function Rooms({
             setNetworkMetrics,
             unreadMessages,
             optionalFeatures,
+            isVideoPlaying,
+            setIsVideoPlaying,
           }}
         >
           {roomId && isReady ? (

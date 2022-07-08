@@ -7,6 +7,7 @@ import { TelnyxMeetContext } from 'contexts/TelnyxMeetContext';
 import ErrorDialog from 'components/ErrorDialog';
 
 import { MediaControlBar } from './MediaControlBar';
+import { VirtualBackground } from 'utils/virtualBackground';
 
 const breakpointSmall = 400;
 const breakpointMedium = 530;
@@ -61,6 +62,9 @@ function MediaPreview() {
   >(undefined);
 
   const videoElRef = useRef<HTMLVideoElement>(null);
+  const camera = useRef() as VirtualBackground['camera'];
+  //https://github.com/DefinitelyTyped/DefinitelyTyped/issues/28884#issuecomment-471341041
+  const videoProcessor = useRef() as VirtualBackground['videoProcessor'];
 
   useEffect(() => {
     return () => {
@@ -79,12 +83,24 @@ function MediaPreview() {
       videoElRef.current.srcObject = new MediaStream([localTracks.video]);
     }
 
-    return () => {
+    return function cleanup() {
       if (localTracks.video) {
-        localTracks?.video?.stop();
+        localTracks.video?.stop();
       }
     };
   }, [localTracks?.video]);
+
+  useEffect(() => {
+    return function cleanup() {
+      if (localTracks.video) {
+        localTracks.video?.stop();
+        camera.current?.stop();
+        videoProcessor.current?.stop();
+        videoProcessor.current = null;
+        camera.current = null;
+      }
+    };
+  }, [localTracks?.video, videoProcessor, camera]);
 
   return (
     <div
@@ -102,12 +118,7 @@ function MediaPreview() {
 
       <VideoPreview id='preview-video'>
         {isVideoTrackEnabled ? (
-          <video
-            id='video-preview'
-            ref={videoElRef}
-            playsInline={true}
-            autoPlay={true}
-            muted={true}
+          <div
             style={{
               position: 'absolute',
               left: 0,
@@ -118,7 +129,39 @@ function MediaPreview() {
               transform: 'scaleX(-1)',
               objectFit: 'cover',
             }}
-          ></video>
+          >
+            <canvas
+              style={{
+                position: 'absolute',
+                left: 0,
+                top: 0,
+                height: '100%',
+                width: '100%',
+                borderRadius: '8px',
+                objectFit: 'cover',
+                zIndex: camera.current ? 1 : 0,
+              }}
+              id='canvas'
+              className='hide'
+            ></canvas>
+            <video
+              style={{
+                position: 'absolute',
+                left: 0,
+                top: 0,
+                height: '100%',
+                width: '100%',
+                borderRadius: '8px',
+                objectFit: 'cover',
+                zIndex: !camera.current ? 1 : 0,
+              }}
+              id='video-preview'
+              ref={videoElRef}
+              playsInline={true}
+              autoPlay={true}
+              muted={true}
+            ></video>
+          </div>
         ) : (
           <Text
             style={{
@@ -132,13 +175,13 @@ function MediaPreview() {
             Camera is off
           </Text>
         )}
-
         <div
           style={{
             position: 'absolute',
             bottom: 5,
             left: '50%',
             transform: 'translateX(-50%)',
+            display: 'flex',
           }}
         >
           <MediaControlBar
@@ -152,6 +195,10 @@ function MediaPreview() {
             localTracks={localTracks}
             setLocalTracks={setLocalTracks}
             setError={setError}
+            camera={camera}
+            videoProcessor={videoProcessor}
+            //@ts-ignore
+            videoRef={videoElRef}
           />
         </div>
       </VideoPreview>

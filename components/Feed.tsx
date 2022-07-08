@@ -14,6 +14,7 @@ import VideoTrack from 'components/VideoTrack';
 import { WebRTCStats } from 'components/WebRTCStats';
 import { NetworkMetricsMonitor } from './NetworkMetricsMonitor';
 import { VideoBitrate } from 'components/VideoBitrate';
+import { VirtualBackground } from 'utils/virtualBackground';
 
 const VIDEO_BG_COLOR = '#111';
 
@@ -26,6 +27,7 @@ function Feed({
   mirrorVideo = false,
   getStatsForParticipantStream,
   dataId,
+  virtualBackgroundCamera,
 }: {
   participant: Participant;
   stream?: Stream;
@@ -33,6 +35,7 @@ function Feed({
   getStatsForParticipantStream: TelnyxRoom['getWebRTCStatsForStream'];
   mirrorVideo: boolean;
   dataId?: string;
+  virtualBackgroundCamera: VirtualBackground['camera'] | null;
 }) {
   const isTelephonyEngineParticipant =
     participant.origin === 'telephony_engine';
@@ -103,13 +106,15 @@ function Feed({
     setAllowedBrowser(allowed);
   }, []);
 
+  const VIDEO_ELEMENT_ID = `video-feed-${context.username
+    ?.toLowerCase()
+    .replace(' ', '-')}`;
+
   return (
     <div
       // id={stream?.isSpeaking ? 'speaking-box' : ''}
       data-id={dataId}
-      data-testid={`video-feed-${context.username
-        ?.toLowerCase()
-        .replace(' ', '-')}`}
+      data-testid={VIDEO_ELEMENT_ID}
       style={{
         backgroundColor: VIDEO_BG_COLOR,
         position: 'relative',
@@ -125,7 +130,7 @@ function Feed({
         style={{
           position: 'absolute',
           top: '0px',
-          zIndex: 1,
+          zIndex: 2,
           width: '100%',
           height: '100%',
         }}
@@ -174,12 +179,15 @@ function Feed({
         )}
         {(stream?.videoTrack || stream?.audioTrack) && (
           <VideoTrack
-            dataTestId={`video-feed-${stream.key}-${
+            id={VIDEO_ELEMENT_ID}
+            dataTestId={`video-feed-${stream?.key}-${
               stream?.isVideoEnabled ? 'enabled' : 'notEnabled'
             }`}
+            //@ts-ignore
             stream={stream}
             mirrorVideo={mirrorVideo}
             isPresentation={isPresentation}
+            virtualBackgroundCamera={virtualBackgroundCamera}
           />
         )}
 
@@ -187,7 +195,13 @@ function Feed({
         {!stream?.isVideoEnabled && (
           <>
             <Box
-              style={{ position: 'absolute', top: 0, left: 0 }}
+              style={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                zIndex: 2,
+                backgroundColor: !virtualBackgroundCamera ? VIDEO_BG_COLOR : '',
+              }}
               align='center'
               justify='center'
               fill
@@ -210,7 +224,15 @@ function Feed({
         )}
 
         {/* Small bottom text: */}
-        <Box style={{ position: 'absolute', left: 0, bottom: 0 }}>
+        <Box
+          style={{
+            position: 'absolute',
+            left: 0,
+            bottom: 0,
+            zIndex: 2,
+            backgroundColor: !virtualBackgroundCamera ? VIDEO_BG_COLOR : '',
+          }}
+        >
           <Box
             direction='row'
             align='center'

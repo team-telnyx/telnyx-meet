@@ -1,4 +1,10 @@
-import { useState, useEffect, useContext } from 'react';
+import {
+  useState,
+  useEffect,
+  useContext,
+  useRef,
+  MutableRefObject,
+} from 'react';
 import { getDevices, Participant, Room, Stream } from '@telnyx/video';
 import { Box, Button, Menu, Text } from 'grommet';
 import {
@@ -25,6 +31,17 @@ import ErrorDialog from 'components/ErrorDialog';
 import { Chat } from './Chat';
 
 import { getUserMedia } from 'utils/userMedia';
+import {
+  getItemSessionStorage,
+  saveItemSessionStorage,
+  USER_PREFERENCE_BACKGROUND_TYPE,
+} from 'utils/storage';
+import {
+  addVirtualBackgroundStream,
+  imagesOptions,
+  VirtualBackground,
+} from 'utils/virtualBackground';
+import { MenuList } from './MenuList';
 
 const breakpointMedium = 1023;
 
@@ -149,6 +166,7 @@ export default function RoomControls({
   sendMessage,
   messages,
   getLocalParticipant,
+  camera,
 }: {
   isParticipantsListVisible: boolean;
   isInviteParticipantVisible: boolean;
@@ -166,6 +184,7 @@ export default function RoomControls({
   sendMessage: Room['sendMessage'];
   messages: TelnyxRoom['messages'];
   getLocalParticipant: () => Participant;
+  camera: VirtualBackground['camera'];
 }) {
   const {
     audioInputDeviceId,
@@ -180,7 +199,15 @@ export default function RoomControls({
     setIsAudioTrackEnabled,
     setIsVideoTrackEnabled,
     optionalFeatures,
+    isVideoPlaying,
   } = useContext(TelnyxMeetContext);
+
+  //https://github.com/DefinitelyTyped/DefinitelyTyped/issues/28884#issuecomment-471341041
+  const videoProcessor = useRef() as VirtualBackground['videoProcessor'];
+
+  const [virtualBackgroundType, setVirtualBackgroundType] = useState<
+    string | undefined
+  >();
 
   const [devices, setDevices] = useState<any>({});
   const [localTracks, setLocalTracks] = useState<{
@@ -208,142 +235,13 @@ export default function RoomControls({
   const participantCount = participantsByActivity.size;
   const localParticipant = getLocalParticipant();
 
-  const handleTrackUpdate = (
-    kind: 'audio' | 'video',
-    track: MediaStreamTrack | undefined
-  ) => {
-    if (kind === 'audio') {
-      setIsAudioTrackEnabled(track !== undefined ? true : false);
-    }
+  const context = localParticipant.context
+    ? JSON.parse(localParticipant.context)
+    : undefined;
 
-    if (kind === 'video') {
-      setIsVideoTrackEnabled(track !== undefined ? true : false);
-    }
-
-    setLocalTracks((tracks) => ({ ...tracks, [kind]: track }));
-  };
-
-  const handleDeviceError = (kind: 'audio' | 'video' | 'screenshare') => {
-    if (kind === 'audio') {
-      setError({
-        title: 'Microphone unavailable',
-        body: 'Please check browser media permission settings.',
-      });
-    }
-
-    if (kind === 'video') {
-      setError({
-        title: 'Camera unavailable',
-        body: 'Please check browser media permission settings.',
-      });
-    }
-
-    if (kind === 'screenshare') {
-      setError({
-        title: 'Screen share unavailable',
-        body: 'Failed to share your screen.',
-      });
-    }
-  };
-
-  const handleAudioClick = () => {
-    if (localTracks.audio) {
-      localTracks.audio.stop();
-      if (selfStream.audioTrack) {
-        selfStream.audioTrack.stop();
-      }
-      handleTrackUpdate('audio', undefined);
-    } else {
-      getUserMedia({
-        kind: 'audio',
-        deviceId: audioInputDeviceId,
-        callbacks: {
-          onTrackUpdate: handleTrackUpdate,
-          onDeviceError: handleDeviceError,
-        },
-      });
-    }
-  };
-
-  const handleVideoClick = () => {
-    if (localTracks.video) {
-      localTracks.video.stop();
-      if (selfStream.videoTrack) {
-        selfStream.videoTrack.stop();
-      }
-      handleTrackUpdate('video', undefined);
-    } else {
-      getUserMedia({
-        kind: 'video',
-        deviceId: videoInputDeviceId,
-        options: optionalFeatures,
-        callbacks: {
-          onTrackUpdate: handleTrackUpdate,
-          onDeviceError: handleDeviceError,
-        },
-      });
-    }
-  };
-
-  const handleDeviceChange = (
-    kind: 'audio_input' | 'video_input' | 'audio_output',
-    deviceId: string
-  ) => {
-    console.debug('[video-meet] Device changed: ', kind, ' id: ', deviceId);
-
-    if (kind === 'audio_input') {
-      setAudioInputDeviceId(deviceId);
-
-      if (localTracks.audio) {
-        localTracks.audio.stop();
-        getUserMedia({
-          kind: 'audio',
-          deviceId: deviceId,
-          callbacks: {
-            onTrackUpdate: handleTrackUpdate,
-            onDeviceError: handleDeviceError,
-          },
-        });
-      }
-    }
-
-    if (kind === 'video_input') {
-      setVideoInputDeviceId(deviceId);
-
-      if (localTracks.video) {
-        localTracks.video.stop();
-        getUserMedia({
-          kind: 'video',
-          deviceId: deviceId,
-          options: optionalFeatures,
-          callbacks: {
-            onTrackUpdate: handleTrackUpdate,
-            onDeviceError: handleDeviceError,
-          },
-        });
-      }
-    }
-
-    if (kind === 'audio_output') {
-      setAudioOutputDeviceId(deviceId);
-    }
-  };
-
-  const getAndSetDevices = () => {
-    getDevices()
-      .then(setDevices)
-      .catch(() => {
-        setDevices({});
-      });
-  };
-
-  const handleLeaveRoom = () => {
-    localTracks?.audio?.stop();
-    localTracks?.video?.stop();
-    presentationTracks?.audio?.stop();
-    presentationTracks?.video?.stop();
-    disconnect();
-  };
+  const VIDEO_ELEMENT_ID = `video-feed-${context.username
+    ?.toLowerCase()
+    .replace(' ', '-')}`;
 
   useEffect(() => {
     // get devices if permissions are already granted
@@ -429,6 +327,271 @@ export default function RoomControls({
     // TODO: avoid disable line
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useEffect(() => {
+    if (
+      isVideoPlaying &&
+      optionalFeatures &&
+      optionalFeatures.isVirtualBackgroundFeatureEnabled
+    ) {
+      const videoElement = document.getElementById(VIDEO_ELEMENT_ID);
+
+      const backgroundValue = getItemSessionStorage(
+        USER_PREFERENCE_BACKGROUND_TYPE
+      );
+
+      if (videoElement && backgroundValue && backgroundValue !== 'none') {
+        getUserMedia({
+          kind: 'video',
+          deviceId: undefined,
+          options: optionalFeatures,
+          callbacks: {
+            onTrackUpdate: async (
+              kind: 'audio' | 'video',
+              track: MediaStreamTrack | undefined
+            ) => {
+              if (kind === 'video' && track) {
+                if (localTracks.video) {
+                  localTracks.video?.stop();
+                  await videoProcessor.current?.stop();
+                  videoProcessor.current = null;
+                }
+
+                addVirtualBackgroundStream({
+                  videoProcessor: videoProcessor,
+                  camera: camera,
+                  videoElementId: VIDEO_ELEMENT_ID,
+                  canvasElementId: 'canvas',
+                  videoTrack: track,
+                  backgroundValue: backgroundValue,
+                }).then((videoTrack) => {
+                  setVideoInputDeviceId(track.id);
+
+                  setLocalTracks((value) => ({
+                    ...value,
+                    video: videoTrack,
+                  }));
+
+                  setVirtualBackgroundType(backgroundValue);
+                });
+              }
+            },
+            onDeviceError: handleDeviceError,
+          },
+        });
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isVideoPlaying]);
+
+  const handleVirtualBg = async (selectedValue: string) => {
+    saveItemSessionStorage(USER_PREFERENCE_BACKGROUND_TYPE, selectedValue);
+    setVirtualBackgroundType(selectedValue);
+
+    if (localTracks.video) {
+      localTracks.video?.stop();
+      await videoProcessor.current?.stop();
+      videoProcessor.current = null;
+
+      getUserMedia({
+        kind: 'video',
+        deviceId: undefined,
+        callbacks: {
+          onTrackUpdate: async (
+            kind: 'audio' | 'video',
+            track: MediaStreamTrack | undefined
+          ) => {
+            if (kind === 'video' && track) {
+              const canvasVideoTrack = await addVirtualBackgroundStream({
+                videoProcessor,
+                camera,
+                videoElementId: VIDEO_ELEMENT_ID,
+                canvasElementId: 'canvas',
+                videoTrack: track,
+                backgroundValue: selectedValue,
+              });
+
+              setVideoInputDeviceId(track.id);
+
+              setLocalTracks((value) => ({
+                ...value,
+                video:
+                  selectedValue && selectedValue !== 'none'
+                    ? canvasVideoTrack
+                    : track,
+              }));
+            }
+          },
+          onDeviceError: handleDeviceError,
+        },
+      });
+    }
+  };
+
+  const renderSelectBackgroungImage = () => {
+    return (
+      <span style={{ color: '#fff' }}>
+        <MenuList
+          disabled={!selfStream?.isVideoEnabled}
+          selectedValue={virtualBackgroundType}
+          title='Change background'
+          data={imagesOptions}
+          onChange={(item) => handleVirtualBg(item.value)}
+        ></MenuList>
+      </span>
+    );
+  };
+
+  const handleTrackUpdate = (
+    kind: 'audio' | 'video',
+    track: MediaStreamTrack | undefined
+  ) => {
+    if (kind === 'audio') {
+      setIsAudioTrackEnabled(track !== undefined ? true : false);
+    }
+
+    if (kind === 'video') {
+      setIsVideoTrackEnabled(track !== undefined ? true : false);
+    }
+
+    setLocalTracks((tracks) => ({ ...tracks, [kind]: track }));
+  };
+
+  const handleDeviceError = (kind: 'audio' | 'video' | 'screenshare') => {
+    if (kind === 'audio') {
+      setError({
+        title: 'Microphone unavailable',
+        body: 'Please check browser media permission settings.',
+      });
+    }
+
+    if (kind === 'video') {
+      setError({
+        title: 'Camera unavailable',
+        body: 'Please check browser media permission settings.',
+      });
+    }
+
+    if (kind === 'screenshare') {
+      setError({
+        title: 'Screen share unavailable',
+        body: 'Failed to share your screen.',
+      });
+    }
+  };
+
+  const handleAudioClick = () => {
+    if (localTracks.audio) {
+      localTracks.audio.stop();
+      if (selfStream.audioTrack) {
+        selfStream.audioTrack.stop();
+      }
+      handleTrackUpdate('audio', undefined);
+    } else {
+      getUserMedia({
+        kind: 'audio',
+        deviceId: audioInputDeviceId,
+        callbacks: {
+          onTrackUpdate: handleTrackUpdate,
+          onDeviceError: handleDeviceError,
+        },
+      });
+    }
+  };
+
+  const handleVideoClick = () => {
+    if (localTracks.video) {
+      localTracks.video.stop();
+      if (selfStream.videoTrack) {
+        selfStream.videoTrack.stop();
+      }
+
+      if (camera && camera.current) {
+        camera.current?.stop();
+        camera.current = null;
+      }
+
+      if (videoProcessor && videoProcessor.current) {
+        videoProcessor.current.stop();
+        videoProcessor.current = null;
+      }
+
+      saveItemSessionStorage(USER_PREFERENCE_BACKGROUND_TYPE, 'none');
+      setVirtualBackgroundType('none');
+
+      handleTrackUpdate('video', undefined);
+    } else {
+      getUserMedia({
+        kind: 'video',
+        deviceId: videoInputDeviceId,
+        options: optionalFeatures,
+        callbacks: {
+          onTrackUpdate: handleTrackUpdate,
+          onDeviceError: handleDeviceError,
+        },
+      });
+    }
+  };
+
+  const handleDeviceChange = (
+    kind: 'audio_input' | 'video_input' | 'audio_output',
+    deviceId: string
+  ) => {
+    console.debug('[video-meet] Device changed: ', kind, ' id: ', deviceId);
+
+    if (kind === 'audio_input') {
+      setAudioInputDeviceId(deviceId);
+
+      if (localTracks.audio) {
+        localTracks.audio.stop();
+        getUserMedia({
+          kind: 'audio',
+          deviceId: deviceId,
+          callbacks: {
+            onTrackUpdate: handleTrackUpdate,
+            onDeviceError: handleDeviceError,
+          },
+        });
+      }
+    }
+
+    if (kind === 'video_input') {
+      setVideoInputDeviceId(deviceId);
+
+      if (localTracks.video) {
+        localTracks.video.stop();
+        getUserMedia({
+          kind: 'video',
+          deviceId: deviceId,
+          options: optionalFeatures,
+          callbacks: {
+            onTrackUpdate: handleTrackUpdate,
+            onDeviceError: handleDeviceError,
+          },
+        });
+      }
+    }
+
+    if (kind === 'audio_output') {
+      setAudioOutputDeviceId(deviceId);
+    }
+  };
+
+  const getAndSetDevices = () => {
+    getDevices()
+      .then(setDevices)
+      .catch(() => {
+        setDevices({});
+      });
+  };
+
+  const handleLeaveRoom = () => {
+    localTracks?.audio?.stop();
+    localTracks?.video?.stop();
+    presentationTracks?.audio?.stop();
+    presentationTracks?.video?.stop();
+    disconnect();
+  };
 
   const hasUnreadMessages = () => {
     if (unreadMessages.current && unreadMessages.current.length > 0) {
@@ -704,6 +867,20 @@ export default function RoomControls({
       </Box>
 
       <RightBoxMenu pad='small' direction='row' gap='large'>
+        {optionalFeatures &&
+          optionalFeatures.isVirtualBackgroundFeatureEnabled &&
+          renderSelectBackgroungImage()}
+        <Box>
+          <Button
+            onClick={() => {
+              setUseMixedAudioForOutput(!useMixedAudioForOutput);
+            }}
+          >
+            <Text>{`Toggle Mixed Audio: ${
+              useMixedAudioForOutput ? 'On' : 'Off'
+            }`}</Text>
+          </Button>
+        </Box>
         {optionalFeatures && optionalFeatures.isAudioControlEnabled && (
           <Box>
             <Button

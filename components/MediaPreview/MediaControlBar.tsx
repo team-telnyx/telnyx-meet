@@ -1,4 +1,12 @@
-import React, { useEffect, Dispatch, SetStateAction } from 'react';
+import React, {
+  useEffect,
+  Dispatch,
+  SetStateAction,
+  useRef,
+  ChangeEvent,
+  useState,
+  MutableRefObject,
+} from 'react';
 import { useRouter } from 'next/router';
 import {
   faMicrophone,
@@ -10,15 +18,24 @@ import { Box, Button, Text } from 'grommet';
 import { FontAwesomeIcon as BaseFontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import styled from 'styled-components';
 
-import { MediaDeviceErrors } from './helper';
-
 import { getUserMedia } from 'utils/userMedia';
 import {
   saveItem,
   getItem,
   USER_PREFERENCE_AUDIO_ENABLED,
   USER_PREFERENCE_VIDEO_ENABLED,
+  USER_PREFERENCE_BACKGROUND_TYPE,
+  saveItemSessionStorage,
+  getItemSessionStorage,
 } from 'utils/storage';
+
+import { MediaDeviceErrors } from './helper';
+import {
+  addVirtualBackgroundStream,
+  imagesOptions,
+  VirtualBackground,
+} from 'utils/virtualBackground';
+import { MenuList } from 'components/MenuList';
 
 const breakpointLarge = 1450;
 
@@ -39,6 +56,9 @@ function MediaControlBar({
   localTracks,
   setLocalTracks,
   setError,
+  camera,
+  videoRef,
+  videoProcessor,
 }: {
   audioInputDeviceId: string | undefined;
   videoInputDeviceId: string | undefined;
@@ -60,72 +80,14 @@ function MediaControlBar({
   setError: Dispatch<
     SetStateAction<{ title: string; body: string } | undefined>
   >;
+  camera: VirtualBackground['camera'];
+  videoRef: MutableRefObject<HTMLVideoElement>;
+  videoProcessor: VirtualBackground['videoProcessor'];
 }) {
+  const [virtualBackgroundType, setVirtualBackgroundType] = useState<
+    string | undefined
+  >();
   const router = useRouter();
-
-  const handleTrackUpdate = (
-    kind: 'audio' | 'video',
-    track: MediaStreamTrack | undefined
-  ) => {
-    if (kind === 'audio') {
-      setIsAudioTrackEnabled(track !== undefined ? true : false);
-    }
-
-    if (kind === 'video') {
-      setIsVideoTrackEnabled(track !== undefined ? true : false);
-    }
-
-    setLocalTracks((tracks) => ({ ...tracks, [kind]: track }));
-  };
-
-  const handleDeviceError = (kind: 'audio' | 'video') => {
-    if (kind === 'audio') {
-      saveItem(USER_PREFERENCE_AUDIO_ENABLED, 'no');
-    }
-
-    if (kind === 'video') {
-      saveItem(USER_PREFERENCE_VIDEO_ENABLED, 'no');
-    }
-
-    setError(MediaDeviceErrors.mediaBlocked);
-  };
-
-  const handleAudioClick = (isAudioEnabled: boolean) => {
-    saveItem(USER_PREFERENCE_AUDIO_ENABLED, isAudioEnabled ? 'yes' : 'no');
-
-    if (localTracks.audio) {
-      localTracks.audio.stop();
-      handleTrackUpdate('audio', undefined);
-    } else {
-      getUserMedia({
-        kind: 'audio',
-        deviceId: audioInputDeviceId,
-        callbacks: {
-          onTrackUpdate: handleTrackUpdate,
-          onDeviceError: handleDeviceError,
-        },
-      });
-    }
-  };
-
-  const handleVideoClick = (isVideoEnabled: boolean) => {
-    saveItem(USER_PREFERENCE_VIDEO_ENABLED, isVideoEnabled ? 'yes' : 'no');
-
-    if (localTracks.video) {
-      localTracks.video.stop();
-      handleTrackUpdate('video', undefined);
-    } else {
-      getUserMedia({
-        kind: 'video',
-        deviceId: videoInputDeviceId,
-        options: optionalFeatures,
-        callbacks: {
-          onTrackUpdate: handleTrackUpdate,
-          onDeviceError: handleDeviceError,
-        },
-      });
-    }
-  };
 
   useEffect(() => {
     navigator.mediaDevices.enumerateDevices().then((devices) => {
@@ -178,6 +140,157 @@ function MediaControlBar({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [router.isReady]);
 
+  useEffect(() => {
+    saveItemSessionStorage(USER_PREFERENCE_BACKGROUND_TYPE, 'none');
+  }, []);
+
+  useEffect(() => {
+    return function cleanup() {
+      if (localTracks.video) {
+        localTracks.video?.stop();
+        camera.current?.stop();
+        videoProcessor.current?.stop();
+        videoProcessor.current = null;
+        camera.current = null;
+      }
+    };
+  }, [localTracks?.video, videoProcessor, camera]);
+
+  const handleTrackUpdate = async (
+    kind: 'audio' | 'video',
+    track: MediaStreamTrack | undefined
+  ) => {
+    if (kind === 'audio') {
+      setIsAudioTrackEnabled(track !== undefined ? true : false);
+    }
+
+    if (kind === 'video') {
+      setIsVideoTrackEnabled(track !== undefined ? true : false);
+    }
+
+    setLocalTracks((tracks) => ({ ...tracks, [kind]: track }));
+  };
+
+  const handleDeviceError = (kind: 'audio' | 'video') => {
+    if (kind === 'audio') {
+      saveItem(USER_PREFERENCE_AUDIO_ENABLED, 'no');
+    }
+
+    if (kind === 'video') {
+      saveItem(USER_PREFERENCE_VIDEO_ENABLED, 'no');
+    }
+
+    setError(MediaDeviceErrors.mediaBlocked);
+  };
+
+  const handleAudioClick = (isAudioEnabled: boolean) => {
+    saveItem(USER_PREFERENCE_AUDIO_ENABLED, isAudioEnabled ? 'yes' : 'no');
+
+    if (localTracks.audio) {
+      localTracks.audio.stop();
+      handleTrackUpdate('audio', undefined);
+    } else {
+      getUserMedia({
+        kind: 'audio',
+        deviceId: audioInputDeviceId,
+        callbacks: {
+          onTrackUpdate: handleTrackUpdate,
+          onDeviceError: handleDeviceError,
+        },
+      });
+    }
+  };
+
+  const handleVideoClick = async (isVideoEnabled: boolean) => {
+    saveItem(USER_PREFERENCE_VIDEO_ENABLED, isVideoEnabled ? 'yes' : 'no');
+
+    if (localTracks.video) {
+      localTracks.video.stop();
+      await camera.current?.stop();
+      await videoProcessor.current?.stop();
+      camera.current = null;
+      videoProcessor.current = null;
+      if (videoRef.current) {
+        videoRef.current.srcObject = null;
+      }
+      saveItemSessionStorage(USER_PREFERENCE_BACKGROUND_TYPE, 'none');
+      setVirtualBackgroundType('none');
+      await handleTrackUpdate('video', undefined);
+    } else {
+      getUserMedia({
+        kind: 'video',
+        deviceId: videoInputDeviceId,
+        options: optionalFeatures,
+        callbacks: {
+          onTrackUpdate: handleTrackUpdate,
+          onDeviceError: handleDeviceError,
+        },
+      });
+    }
+  };
+
+  const handleVirtualBg = async (selectedValue: string) => {
+    saveItemSessionStorage(USER_PREFERENCE_BACKGROUND_TYPE, selectedValue);
+    setVirtualBackgroundType(selectedValue);
+
+    if (localTracks.video) {
+      localTracks.video?.stop();
+      await videoProcessor.current?.stop();
+      videoProcessor.current = null;
+      setLocalTracks((value) => ({
+        ...value,
+        video: undefined,
+      }));
+
+      getUserMedia({
+        kind: 'video',
+        deviceId: undefined,
+        options: optionalFeatures,
+        callbacks: {
+          onTrackUpdate: async (
+            kind: 'audio' | 'video',
+            track: MediaStreamTrack | undefined
+          ) => {
+            if (kind === 'video' && track) {
+              const canvasVideoTrack = await addVirtualBackgroundStream({
+                videoProcessor: videoProcessor,
+                camera: camera,
+                videoElementId: 'video-preview',
+                canvasElementId: 'canvas',
+                videoTrack: track,
+                backgroundValue: selectedValue,
+              });
+
+              setLocalTracks((value) => ({
+                ...value,
+                video:
+                  selectedValue && selectedValue !== 'none'
+                    ? canvasVideoTrack
+                    : track,
+              }));
+            }
+          },
+          onDeviceError: handleDeviceError,
+        },
+      });
+    }
+  };
+
+  const renderSelectBackgroungImage = () => {
+    return (
+      <span style={{ color: '#fff' }}>
+        <MenuList
+          disabled={!isVideoTrackEnabled}
+          selectedValue={virtualBackgroundType}
+          size='small'
+          title='Change background'
+          data={imagesOptions}
+          onChange={(item) => handleVirtualBg(item.value)}
+        ></MenuList>
+      </span>
+    );
+  };
+
   return (
     <React.Fragment>
       <Button
@@ -220,6 +333,9 @@ function MediaControlBar({
           </Text>
         </Box>
       </Button>
+      {optionalFeatures &&
+        optionalFeatures.isVirtualBackgroundFeatureEnabled &&
+        renderSelectBackgroungImage()}
     </React.Fragment>
   );
 }
