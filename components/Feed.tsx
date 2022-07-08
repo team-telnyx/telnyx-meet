@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { Box, Text, Spinner } from 'grommet';
+import styled, { css } from 'styled-components';
+import { Box, Text, Spinner, BoxExtendedProps } from 'grommet';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   faMicrophone,
@@ -20,6 +21,80 @@ const VIDEO_BG_COLOR = '#111';
 
 const allowedBrowsers = ['Chrome', 'Safari'];
 
+const FeedContainer = styled.div<{
+  isPresentation: boolean;
+  showAudioActivityIndicator: boolean;
+}>`
+  ${({ isPresentation, showAudioActivityIndicator }) => css`
+    position: relative;
+    overflow: hidden;
+    height: ${isPresentation ? '100%' : 'unset'};
+    padding-top: ${isPresentation
+      ? 'unset'
+      : `${(9 / 16) * 100}%`}; // 56.25% - 16:9 Aspect Ratio
+    background-color: ${VIDEO_BG_COLOR};
+    border-width: 3px;
+    border-style: solid;
+    border-color: ${showAudioActivityIndicator ? 'yellow' : '#1b1b1b'};
+  `}
+`;
+
+const FeedHeader = styled.div<{ showBlackBackgroundColor: boolean }>`
+  ${({ showBlackBackgroundColor }) => css`
+    position: absolute;
+    top: 0px;
+    z-index: 2;
+    width: 100%;
+    height: 100%;
+    background-color: ${showBlackBackgroundColor ? VIDEO_BG_COLOR : ''};
+  `}
+`;
+
+const VideoContainer = styled.div`
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+`;
+
+const FeedFooter = styled.div`
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  z-index: 2;
+`;
+
+const FeedParticipantNameCenter = styled(Box)<
+  BoxExtendedProps & {
+    showBlackBackgroundColor: boolean;
+  }
+>`
+  ${({ showBlackBackgroundColor }) => css`
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 2;
+    background-color: ${showBlackBackgroundColor ? VIDEO_BG_COLOR : ''};
+  `}
+`;
+
+const FeedSpinner = styled.div`
+  position: absolute;
+  top: 5px;
+  right: 5px;
+`;
+
+type FeedProps = {
+  participant: Participant;
+  stream?: Stream;
+  isSpeaking: boolean;
+  getStatsForParticipantStream: TelnyxRoom['getWebRTCStatsForStream'];
+  mirrorVideo: boolean;
+  dataId?: string;
+  virtualBackgroundCamera: VirtualBackground['camera'] | null;
+};
+
 function Feed({
   participant,
   stream,
@@ -28,15 +103,7 @@ function Feed({
   getStatsForParticipantStream,
   dataId,
   virtualBackgroundCamera,
-}: {
-  participant: Participant;
-  stream?: Stream;
-  isSpeaking: boolean;
-  getStatsForParticipantStream: TelnyxRoom['getWebRTCStatsForStream'];
-  mirrorVideo: boolean;
-  dataId?: string;
-  virtualBackgroundCamera: VirtualBackground['camera'] | null;
-}) {
+}: FeedProps) {
   const isTelephonyEngineParticipant =
     participant.origin === 'telephony_engine';
   const showAudioActivityIndicator = isSpeaking && stream?.key === 'self';
@@ -110,31 +177,17 @@ function Feed({
     ?.toLowerCase()
     .replace(' ', '-')}`;
 
+  const showBlackBackgroundColor =
+    !virtualBackgroundCamera?.current && !stream?.isVideoEnabled;
+
   return (
-    <div
-      // id={stream?.isSpeaking ? 'speaking-box' : ''}
+    <FeedContainer
       data-id={dataId}
       data-testid={VIDEO_ELEMENT_ID}
-      style={{
-        backgroundColor: VIDEO_BG_COLOR,
-        position: 'relative',
-        paddingTop: isPresentation ? 'unset' : `${(9 / 16) * 100}%`, // 56.25% - 16:9 Aspect Ratio
-        overflow: 'hidden',
-        borderWidth: '3px',
-        borderStyle: 'solid',
-        borderColor: showAudioActivityIndicator ? 'yellow' : '#1b1b1b',
-        height: isPresentation ? '100%' : 'unset',
-      }}
+      isPresentation={isPresentation}
+      showAudioActivityIndicator={showAudioActivityIndicator}
     >
-      <div
-        style={{
-          position: 'absolute',
-          top: '0px',
-          zIndex: 2,
-          width: '100%',
-          height: '100%',
-        }}
-      >
+      <FeedHeader showBlackBackgroundColor={showBlackBackgroundColor}>
         <div
           style={{
             display: 'flex',
@@ -145,26 +198,11 @@ function Feed({
           {renderNetworkMetricsMonitor()}
           {renderVideoBitrate()}
         </div>
-      </div>
+      </FeedHeader>
 
-      <div
-        style={{
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          width: '100%',
-          height: '100%',
-        }}
-      >
+      <VideoContainer>
         {showSpinner && (
-          <div
-            data-testid='spinner-status'
-            style={{
-              position: 'absolute',
-              top: '5px',
-              right: '5px',
-            }}
-          >
+          <FeedSpinner data-testid='spinner-status'>
             <Spinner
               border={[
                 {
@@ -175,7 +213,7 @@ function Feed({
                 },
               ]}
             />
-          </div>
+          </FeedSpinner>
         )}
         {(stream?.videoTrack || stream?.audioTrack) && (
           <VideoTrack
@@ -190,49 +228,30 @@ function Feed({
             virtualBackgroundCamera={virtualBackgroundCamera}
           />
         )}
-
         {/* Large center text: */}
         {!stream?.isVideoEnabled && (
-          <>
+          <FeedParticipantNameCenter
+            align='center'
+            justify='center'
+            fill
+            showBlackBackgroundColor={showBlackBackgroundColor}
+          >
             <Box
-              style={{
-                position: 'absolute',
-                top: 0,
-                left: 0,
-                zIndex: 2,
-                backgroundColor: !virtualBackgroundCamera ? VIDEO_BG_COLOR : '',
+              background={{
+                color: participant.origin !== 'local' ? 'dark-1' : 'brand',
+                opacity: 'medium',
               }}
-              align='center'
-              justify='center'
-              fill
+              pad='xsmall'
+              round='xsmall'
             >
-              <Box
-                background={{
-                  color: participant.origin !== 'local' ? 'dark-1' : 'brand',
-                  opacity: 'medium',
-                }}
-                pad='xsmall'
-                round='xsmall'
-              >
-                <Text size='large'>
-                  {context?.username}
-                  {participant.origin === 'local' && <strong> (me)</strong>}
-                </Text>
-              </Box>
+              <Text size='large'>
+                {context?.username}
+                {participant.origin === 'local' && <strong> (me)</strong>}
+              </Text>
             </Box>
-          </>
+          </FeedParticipantNameCenter>
         )}
-
-        {/* Small bottom text: */}
-        <Box
-          style={{
-            position: 'absolute',
-            left: 0,
-            bottom: 0,
-            zIndex: 2,
-            backgroundColor: !virtualBackgroundCamera ? VIDEO_BG_COLOR : '',
-          }}
-        >
+        <FeedFooter>
           <Box
             direction='row'
             align='center'
@@ -273,9 +292,9 @@ function Feed({
               </Text>
             )}
           </Box>
-        </Box>
-      </div>
-    </div>
+        </FeedFooter>
+      </VideoContainer>
+    </FeedContainer>
   );
 }
 
