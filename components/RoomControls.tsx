@@ -36,7 +36,7 @@ import {
   VirtualBackground,
 } from 'utils/virtualBackground';
 import { MenuList } from './MenuList';
-import { getBrowserName } from 'utils/helpers';
+import { getBrowserName, getPlatform } from 'utils/helpers';
 
 const breakpointMedium = 1023;
 
@@ -865,6 +865,7 @@ export default function RoomControls({
         {optionalFeatures &&
           optionalFeatures.isVirtualBackgroundFeatureEnabled &&
           getBrowserName() === 'chrome' &&
+          getPlatform()?.type === 'desktop' &&
           renderSelectBackgroungImage()}
         <Box>
           <Button

@@ -1,7 +1,7 @@
 import { Stream } from '@telnyx/video';
 import React, { useRef, useEffect } from 'react';
 import { useState } from 'react';
-import { getBrowserName } from 'utils/helpers';
+import { getBrowserName, getPlatform } from 'utils/helpers';
 import { VirtualBackground } from 'utils/virtualBackground';
 
 export default function VideoTrack({
@@ -41,6 +41,7 @@ export default function VideoTrack({
       virtualBackgroundCamera &&
       virtualBackgroundCamera.current &&
       getBrowserName() === 'chrome' &&
+      getPlatform()?.type === 'desktop' &&
       //https://developer.mozilla.org/en-US/docs/Web/API/CanvasCaptureMediaStreamTrack
       //@ts-ignore
       stream.videoTrack instanceof CanvasCaptureMediaStreamTrack

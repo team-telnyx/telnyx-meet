@@ -34,3 +34,14 @@ export const getBrowserName = () => {
 
   return browserName;
 };
+
+export const getPlatform = () => {
+  if (!Bowser || !window) {
+    return undefined;
+  }
+
+  const browser = Bowser.getParser(window.navigator.userAgent);
+  const platform = browser.getPlatform();
+
+  return platform;
+};
