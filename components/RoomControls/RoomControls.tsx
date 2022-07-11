@@ -37,6 +37,7 @@ import { ControllerBox, LeaveButton, RightBoxMenu } from './styles';
 import { DeviceMenuList } from './DeviceMenuList';
 import { ChatButton } from './ChatButton';
 import { ControlButton } from './ControlButton';
+import { getBrowserName, getPlatform } from 'utils/helpers';
 
 const isSinkIdSupported = (): boolean => {
   const audio = document.createElement('audio');
@@ -700,7 +701,9 @@ export default function RoomControls({
 
       <RightBoxMenu pad='small' direction='row' gap='large'>
         {optionalFeatures &&
-          optionalFeatures.isVirtualBackgroundFeatureEnabled && (
+          optionalFeatures.isVirtualBackgroundFeatureEnabled &&
+          getBrowserName() === 'chrome' &&
+          getPlatform()?.type === 'desktop' && (
             <span style={{ color: '#fff' }}>
               <MenuList
                 disabled={!selfStream?.isVideoEnabled}

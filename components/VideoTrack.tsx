@@ -1,34 +1,8 @@
 import { Stream } from '@telnyx/video';
 import React, { useRef, useEffect } from 'react';
 import { useState } from 'react';
+import { getBrowserName, getPlatform } from 'utils/helpers';
 import { VirtualBackground } from 'utils/virtualBackground';
-
-function startVirtualCamera({
-  stream,
-  virtualBackgroundCamera,
-}: {
-  stream: Stream;
-  virtualBackgroundCamera: VirtualBackground['camera'] | null;
-}) {
-  const haveSupportToCanvasCaptureMediaStreamTrack =
-    window.CanvasCaptureMediaStreamTrack;
-
-  if (haveSupportToCanvasCaptureMediaStreamTrack) {
-    if (
-      virtualBackgroundCamera &&
-      virtualBackgroundCamera.current &&
-      //https://developer.mozilla.org/en-US/docs/Web/API/CanvasCaptureMediaStreamTrack
-      stream.videoTrack instanceof CanvasCaptureMediaStreamTrack
-    ) {
-      virtualBackgroundCamera.current?.start();
-    }
-  } else {
-    if (virtualBackgroundCamera && virtualBackgroundCamera.current) {
-      virtualBackgroundCamera.current?.start();
-    }
-    return;
-  }
-}
 
 export default function VideoTrack({
   id,
@@ -63,10 +37,17 @@ export default function VideoTrack({
     videoEl.srcObject = new MediaStream([stream.videoTrack]);
 
     // When Feed update in DOM we need to start virtual background canvas
-    startVirtualCamera({
-      stream,
-      virtualBackgroundCamera,
-    });
+    if (
+      virtualBackgroundCamera &&
+      virtualBackgroundCamera.current &&
+      getBrowserName() === 'chrome' &&
+      getPlatform()?.type === 'desktop' &&
+      //https://developer.mozilla.org/en-US/docs/Web/API/CanvasCaptureMediaStreamTrack
+      //@ts-ignore
+      stream.videoTrack instanceof CanvasCaptureMediaStreamTrack
+    ) {
+      virtualBackgroundCamera.current?.start();
+    }
 
     return function cleanup() {
       if (videoEl) {

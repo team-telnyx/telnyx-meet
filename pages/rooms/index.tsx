@@ -11,7 +11,7 @@ import Room from 'components/Room';
 import JoinRoom from 'components/JoinRoom';
 import MediaPreview from 'components/MediaPreview';
 
-import { generateUsername, generateId } from 'utils/helpers';
+import { generateUsername, generateId, getPlatform } from 'utils/helpers';
 import { TelnyxMeetContext } from 'contexts/TelnyxMeetContext';
 
 import { TelnyxRoom } from 'hooks/room';
