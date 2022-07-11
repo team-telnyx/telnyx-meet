@@ -1,5 +1,6 @@
 import { uniqueNamesGenerator, colors, animals } from 'unique-names-generator';
 import { notify } from 'lib/bugsnag';
+import Bowser from 'bowser';
 
 export const generateId = (): number => Math.ceil(Math.random() * 1000000);
 
@@ -21,4 +22,26 @@ export const transformFetchErrorToBugsnag = (
   } catch (error) {
     notify(`request-id: ${requestId} - ${error}`);
   }
+};
+
+export const getBrowserName = () => {
+  if (!Bowser || !window) {
+    return undefined;
+  }
+
+  const browser = Bowser.getParser(window.navigator.userAgent);
+  const browserName = browser.getBrowserName().toLowerCase();
+
+  return browserName;
+};
+
+export const getPlatform = () => {
+  if (!Bowser || !window) {
+    return undefined;
+  }
+
+  const browser = Bowser.getParser(window.navigator.userAgent);
+  const platform = browser.getPlatform();
+
+  return platform;
 };

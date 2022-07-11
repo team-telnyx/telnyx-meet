@@ -36,6 +36,7 @@ import {
   VirtualBackground,
 } from 'utils/virtualBackground';
 import { MenuList } from 'components/MenuList';
+import { getBrowserName, getPlatform } from 'utils/helpers';
 
 const breakpointLarge = 1450;
 
@@ -335,6 +336,8 @@ function MediaControlBar({
       </Button>
       {optionalFeatures &&
         optionalFeatures.isVirtualBackgroundFeatureEnabled &&
+        getBrowserName() === 'chrome' &&
+        getPlatform()?.type === 'desktop' &&
         renderSelectBackgroungImage()}
     </React.Fragment>
   );
