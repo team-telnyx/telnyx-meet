@@ -1,10 +1,4 @@
-import {
-  useState,
-  useEffect,
-  useContext,
-  useRef,
-  MutableRefObject,
-} from 'react';
+import { useState, useEffect, useContext, useRef } from 'react';
 import { getDevices, Participant, Room, Stream } from '@telnyx/video';
 import { Box, Button, Menu, Text } from 'grommet';
 import {
@@ -42,6 +36,7 @@ import {
   VirtualBackground,
 } from 'utils/virtualBackground';
 import { MenuList } from './MenuList';
+import { getBrowserName } from 'utils/helpers';
 
 const breakpointMedium = 1023;
 
@@ -869,6 +864,7 @@ export default function RoomControls({
       <RightBoxMenu pad='small' direction='row' gap='large'>
         {optionalFeatures &&
           optionalFeatures.isVirtualBackgroundFeatureEnabled &&
+          getBrowserName() === 'chrome' &&
           renderSelectBackgroungImage()}
         <Box>
           <Button
