@@ -67,6 +67,6 @@ test.describe('Media Preview', () => {
     await expect(page.locator('h1')).toHaveText(ROOM_ID);
     await expect(
       page.locator(`[data-testid="${VIDEO_ELEMENT_ID}"]`)
-    ).toBeVisible();
+    ).toBeVisible({ timeout: 10000 });
   });
 });
