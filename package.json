@@ -7,7 +7,9 @@
     "build:pwa": "NODE_ENV=production next build",
     "build": "next build",
     "lint": "next lint --max-warnings=0",
-    "start": "next start"
+    "start": "next start",
+    "test:e2e": "playwright test",
+    "coverage": "playwright show-report"
   },
   "dependencies": {
     "@bugsnag/js": "^7.10.1",
@@ -39,6 +41,7 @@
   },
   "devDependencies": {
     "@bugsnag/source-maps": "^2.3.0",
+    "@playwright/test": "^1.23.2",
     "@types/node": "^14.14.22",
     "@types/react": "^17.0.1",
     "@types/react-copy-to-clipboard": "^5.0.1",
