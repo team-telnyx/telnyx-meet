@@ -39,4 +39,34 @@ test.describe('Media Preview', () => {
       /mute mic/i
     );
   });
+
+  test('should not enable join room button if room id was not provided', async ({
+    page,
+  }) => {
+    await expect(page.locator('[data-testid="input-room-uuid"]')).toBeEmpty();
+
+    await expect(
+      page.locator('[data-testid="btn-join-room"]')
+    ).not.toBeEnabled();
+  });
+
+  test('should join into the meeting and show feed element', async ({
+    page,
+  }) => {
+    const ROOM_ID = 'e65ff637-dee4-4999-9310-6cc6190fc76d';
+    await page.locator('[data-testid="input-room-uuid"]').fill(ROOM_ID);
+    const feedName = await page
+      .locator('[data-testid="input-username"]')
+      .inputValue();
+
+    const VIDEO_ELEMENT_ID = `video-feed-${feedName
+      ?.toLowerCase()
+      .replace(' ', '-')}`;
+
+    await page.locator('[data-testid="btn-join-room"]').click();
+    await expect(page.locator('h1')).toHaveText(ROOM_ID);
+    await expect(
+      page.locator(`[data-testid="${VIDEO_ELEMENT_ID}"]`)
+    ).toBeVisible();
+  });
 });
