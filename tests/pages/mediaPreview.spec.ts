@@ -17,12 +17,26 @@ test.describe('Media Preview', () => {
   });
 
   test('should enable video', async ({ page }) => {
+    await expect(page.locator('#video-preview')).not.toBeVisible();
     await expect(page.locator('div > span >> text="Start video"')).toHaveText(
       /start video/i
     );
     await page.locator('div > span >> text="Start video"').click();
+
+    await expect(page.locator('#video-preview')).toBeVisible();
     await expect(page.locator('div > span >> text="Stop video"')).toHaveText(
       /stop video/i
+    );
+  });
+
+  test('should enable audio', async ({ page }) => {
+    await expect(page.locator('div > span >> text="Unmute mic"')).toHaveText(
+      /unmute mic/i
+    );
+    await page.locator('div > span >> text="Unmute mic"').click();
+
+    await expect(page.locator('div > span >> text="Mute mic"')).toHaveText(
+      /mute mic/i
     );
   });
 });

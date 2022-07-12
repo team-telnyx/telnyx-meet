@@ -48,16 +48,50 @@ const config: PlaywrightTestConfig = {
       name: 'chromium',
       use: {
         ...devices['Desktop Chrome'],
+        launchOptions: {
+          args: [
+            '--disable-gpu',
+            '--no-sandbox',
+            '--disable-setuid-sandbox',
+            '--disable-dev-shm-usage',
+            '--disable-features=VizDisplayCompositor',
+            '--use-fake-ui-for-media-stream',
+            '--use-fake-device-for-media-stream',
+            '--allow-file-access-from-files',
+            '--disable-translate',
+            '--ignore-certificate-errors',
+          ],
+        },
       },
     },
 
-    // {
-    //   name: 'firefox',
-    //   use: {
-    //     ...devices['Desktop Firefox'],
-    //   },
-    // },
-
+    {
+      name: 'firefox',
+      use: {
+        ...devices['Desktop Firefox'],
+        launchOptions: {
+          firefoxUserPrefs: {
+            'media.navigator.streams.fake': true,
+            'media.navigator.permission.disabled': true,
+            'browser.cache.disk.enable': false,
+            'browser.cache.disk.capacity': 0,
+            'browser.cache.disk.smart_size.enabled': false,
+            'browser.cache.disk.smart_size.first_run': false,
+            'browser.sessionstore.resume_from_crash': false,
+            'browser.startup.page': 0,
+            'device.storage.enabled': false,
+            'media.gstreamer.enabled': false,
+            'browser.startup.homepage': 'about:blank',
+            'browser.startup.firstrunSkipsHomepage': false,
+            'extensions.update.enabled': false,
+            'app.update.enabled': false,
+            'network.http.use-cache': false,
+            'browser.shell.checkDefaultBrowser': false,
+            'security.ssl.enable_ocsp_stapling': false,
+          },
+        },
+      },
+    },
     // {
     //   name: 'webkit',
     //   use: {
