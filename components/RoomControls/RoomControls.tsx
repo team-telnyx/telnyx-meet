@@ -535,15 +535,6 @@ export default function RoomControls({
 
   const showBubbleNotification = checkBubbleNotification();
 
-  const renderedLeaveButton = (
-    <LeaveButton
-      data-testid='btn-leave-room'
-      label='Leave'
-      onClick={handleLeaveRoom}
-      color='status-error'
-    />
-  );
-
   return (
     <Box
       gridArea='controls'
@@ -766,11 +757,14 @@ export default function RoomControls({
             handleDeviceChange={handleDeviceChange}
           />
         )}
-
-        <Box>{renderedLeaveButton}</Box>
       </RightBoxMenu>
 
-      {renderedLeaveButton}
+      <LeaveButton
+        data-testid='btn-leave-room'
+        label='Leave'
+        onClick={handleLeaveRoom}
+        color='status-error'
+      />
     </Box>
   );
 }

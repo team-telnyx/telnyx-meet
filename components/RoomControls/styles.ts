@@ -19,9 +19,6 @@ export const ControllerBox = styled(Box)`
 `;
 
 export const LeaveButton = styled(Button)`
-  @media (min-width: ${breakpointMedium}px) {
-    display: none;
-  }
   margin-right: 6px;
 `;
 
