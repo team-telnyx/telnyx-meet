@@ -1,28 +1,22 @@
 import { useState, useEffect, useContext, useRef } from 'react';
 import { getDevices, Participant, Room, Stream } from '@telnyx/video';
-import { Box, Button, Menu, Text } from 'grommet';
-import {
-  Group as GroupIcon,
-  Chat as ChatIcon,
-  UserAdd as InviteIcon,
-} from 'grommet-icons';
+import { Box, Button, Text } from 'grommet';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+
+import { Group as GroupIcon, UserAdd as InviteIcon } from 'grommet-icons';
+
 import {
   faMicrophone,
   faMicrophoneSlash,
   faVideo,
   faVideoSlash,
   faLaptop,
-  faCheck,
+  faAngleDown,
 } from '@fortawesome/free-solid-svg-icons';
-import styled from 'styled-components';
 
-import { TelnyxMeetContext } from 'contexts/TelnyxMeetContext';
 import { TelnyxRoom } from 'hooks/room';
-
+import { TelnyxMeetContext } from 'contexts/TelnyxMeetContext';
 import ErrorDialog from 'components/ErrorDialog';
-
-import { Chat } from './Chat';
 
 import { getUserMedia } from 'utils/userMedia';
 import {
@@ -30,57 +24,20 @@ import {
   saveItemSessionStorage,
   USER_PREFERENCE_BACKGROUND_TYPE,
 } from 'utils/storage';
+
 import {
   addVirtualBackgroundStream,
   imagesOptions,
   VirtualBackground,
 } from 'utils/virtualBackground';
-import { MenuList } from './MenuList';
+
+import { MenuList } from '../MenuList';
+import { Chat } from '../Chat';
+import { ControllerBox, LeaveButton, RightBoxMenu } from './styles';
+import { DeviceMenuList } from './DeviceMenuList';
+import { ChatButton } from './ChatButton';
+import { ControlButton } from './ControlButton';
 import { getBrowserName, getPlatform } from 'utils/helpers';
-
-const breakpointMedium = 1023;
-
-const RightBoxMenu = styled(Box)`
-  @media (max-width: ${breakpointMedium}px) {
-    display: none;
-  }
-  align-items: center;
-  justify-content: center;
-`;
-
-const ControllerBox = styled(Box)`
-  @media (max-width: ${breakpointMedium}px) {
-    display: none;
-  }
-`;
-
-const LeaveButton = styled(Button)`
-  @media (min-width: ${breakpointMedium}px) {
-    display: none;
-  }
-  margin-right: 6px;
-`;
-
-const FontAwesomeIconStyled = styled(FontAwesomeIcon)`
-  @media (max-width: ${breakpointMedium}px) {
-    font-size: 25px;
-  }
-`;
-
-const Bubble = styled.div`
-  background-color: #8ab4f8;
-  border-color: #202124;
-  right: -3px;
-  position: absolute;
-  top: -4px;
-  border-radius: 50%;
-  border: 2px solid white;
-  height: 18px;
-  width: 18px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-`;
 
 const isSinkIdSupported = (): boolean => {
   const audio = document.createElement('audio');
@@ -88,61 +45,25 @@ const isSinkIdSupported = (): boolean => {
   return typeof audio?.setSinkId === 'function';
 };
 
-function DeviceSelect({
-  kind,
-  devices = [],
-  selectedDeviceId,
-  handleDeviceChange,
-}: {
-  kind: 'audio_input' | 'video_input' | 'audio_output';
-  devices: Array<{ id: string; label: string }>;
-  selectedDeviceId?: string;
-  handleDeviceChange: (
-    kind: 'audio_input' | 'video_input' | 'audio_output',
-    deviceId: string
-  ) => void;
-}) {
-  const currentDeviceId = selectedDeviceId;
-
-  let label = '';
-  switch (kind) {
-    case 'audio_input':
-      label = 'mic';
-      break;
-    case 'audio_output':
-      label = 'output';
-      break;
-    case 'video_input':
-      label = 'camera';
-      break;
-    default:
-      throw new Error('Unknown device type!');
-  }
-
-  return (
-    <Menu
-      label={`Change ${label}`}
-      items={devices.map((device) => ({
-        label: device.label,
-        icon: (
-          <Box>
-            {device.id === currentDeviceId && (
-              <Text color='accent-1'>
-                <FontAwesomeIconStyled icon={faCheck} fixedWidth />
-              </Text>
-            )}
-          </Box>
-        ),
-        gap: 'small', // gap between icon and text
-        reverse: true, // icon on right
-        // TODO give some sort UI feedback that device was successfully changed
-        onClick: () => handleDeviceChange(kind, device.id),
-      }))}
-      disabled={devices.length < 2}
-      icon={false}
-    ></Menu>
-  );
-}
+type RoomControlsProps = {
+  isParticipantsListVisible: boolean;
+  isInviteParticipantVisible: boolean;
+  useMixedAudioForOutput: boolean;
+  participantsByActivity: TelnyxRoom['participantsByActivity'];
+  addStream: TelnyxRoom['addStream'];
+  removeStream: TelnyxRoom['removeStream'];
+  updateStream: TelnyxRoom['updateStream'];
+  disconnect: TelnyxRoom['disconnect'];
+  setIsParticipantsListVisible: React.Dispatch<React.SetStateAction<boolean>>;
+  setIsInviteParticipantVisible: React.Dispatch<React.SetStateAction<boolean>>;
+  setUseMixedAudioForOutput: React.Dispatch<React.SetStateAction<boolean>>;
+  streams: { [key: string]: Stream };
+  disableScreenshare: boolean;
+  sendMessage: Room['sendMessage'];
+  messages: TelnyxRoom['messages'];
+  getLocalParticipant: () => Participant;
+  camera: VirtualBackground['camera'];
+};
 
 export default function RoomControls({
   isParticipantsListVisible,
@@ -162,25 +83,7 @@ export default function RoomControls({
   messages,
   getLocalParticipant,
   camera,
-}: {
-  isParticipantsListVisible: boolean;
-  isInviteParticipantVisible: boolean;
-  useMixedAudioForOutput: boolean;
-  participantsByActivity: TelnyxRoom['participantsByActivity'];
-  addStream: TelnyxRoom['addStream'];
-  removeStream: TelnyxRoom['removeStream'];
-  updateStream: TelnyxRoom['updateStream'];
-  disconnect: TelnyxRoom['disconnect'];
-  setIsParticipantsListVisible: React.Dispatch<React.SetStateAction<boolean>>;
-  setIsInviteParticipantVisible: React.Dispatch<React.SetStateAction<boolean>>;
-  setUseMixedAudioForOutput: React.Dispatch<React.SetStateAction<boolean>>;
-  streams: { [key: string]: Stream };
-  disableScreenshare: boolean;
-  sendMessage: Room['sendMessage'];
-  messages: TelnyxRoom['messages'];
-  getLocalParticipant: () => Participant;
-  camera: VirtualBackground['camera'];
-}) {
+}: RoomControlsProps) {
   const {
     audioInputDeviceId,
     audioOutputDeviceId,
@@ -423,20 +326,6 @@ export default function RoomControls({
     }
   };
 
-  const renderSelectBackgroungImage = () => {
-    return (
-      <span style={{ color: '#fff' }}>
-        <MenuList
-          disabled={!selfStream?.isVideoEnabled}
-          selectedValue={virtualBackgroundType}
-          title='Change background'
-          data={imagesOptions}
-          onChange={(item) => handleVirtualBg(item.value)}
-        ></MenuList>
-      </span>
-    );
-  };
-
   const handleTrackUpdate = (
     kind: 'audio' | 'video',
     track: MediaStreamTrack | undefined
@@ -525,6 +414,34 @@ export default function RoomControls({
           onDeviceError: handleDeviceError,
         },
       });
+    }
+  };
+
+  const handleShareScreenClick = () => {
+    if (presentationTracks.audio || presentationTracks.video) {
+      presentationTracks.audio?.stop();
+      presentationTracks.video?.stop();
+      if (presentationStream) {
+        removeStream('presentation');
+      }
+      setPresentationTracks({ audio: undefined, video: undefined });
+    } else {
+      navigator?.mediaDevices
+        ?.getDisplayMedia({ audio: true, video: true })
+        .then((stream) => {
+          setPresentationTracks({
+            audio: stream?.getAudioTracks()[0],
+            video: stream?.getVideoTracks()[0],
+          });
+        })
+        .catch((error) => {
+          if (
+            error instanceof DOMException &&
+            error.name === 'NotAllowedError'
+          ) {
+            handleDeviceError('screenshare');
+          }
+        });
     }
   };
 
@@ -618,6 +535,15 @@ export default function RoomControls({
 
   const showBubbleNotification = checkBubbleNotification();
 
+  const renderedLeaveButton = (
+    <LeaveButton
+      data-testid='btn-leave-room'
+      label='Leave'
+      onClick={handleLeaveRoom}
+      color='status-error'
+    />
+  );
+
   return (
     <Box
       gridArea='controls'
@@ -647,121 +573,57 @@ export default function RoomControls({
 
       <Box pad='small' direction='row' gap='medium'>
         <Box width='80px'>
-          <Button
-            data-testid='btn-toggle-audio'
+          <ControlButton
+            dataTestId='btn-toggle-audio'
             size='large'
             onClick={handleAudioClick}
             disabled={!selfStream?.isConfigured}
-          >
-            <Box align='center' gap='xsmall'>
-              <Box>
-                <Text
-                  size='40.3px' // kinda hacky, make fa icon 48px
-                  color={
-                    selfStream?.isAudioEnabled ? 'accent-1' : 'status-error'
-                  }
-                >
-                  <FontAwesomeIconStyled
-                    icon={
-                      selfStream?.isAudioEnabled
-                        ? faMicrophone
-                        : faMicrophoneSlash
-                    }
-                    fixedWidth
-                  />
-                </Text>
-              </Box>
-              <Text size='xsmall' color='light-6'>
-                {selfStream?.isAudioEnabled ? 'Mute mic' : 'Unmute mic'}
-              </Text>
-            </Box>
-          </Button>
+            enabledIcon={{
+              icon: faMicrophone,
+              label: 'Mute mic',
+            }}
+            disabledIcon={{
+              icon: faMicrophoneSlash,
+              label: 'Unmute mic',
+            }}
+            showEnabledIcon={selfStream?.isAudioEnabled}
+          />
         </Box>
-
         <Box width='80px'>
-          <Button
-            data-testid='btn-toggle-video'
+          <ControlButton
+            dataTestId='btn-toggle-video'
+            data-e2e='toggle video'
             size='large'
             onClick={handleVideoClick}
             disabled={!selfStream?.isConfigured}
-            data-e2e='toggle video'
-          >
-            <Box align='center' gap='xsmall'>
-              <Box>
-                <Text
-                  size='40.3px' // kinda hacky, make fa icon 48px
-                  color={
-                    selfStream?.isVideoEnabled ? 'accent-1' : 'status-error'
-                  }
-                >
-                  <FontAwesomeIconStyled
-                    icon={selfStream?.isVideoEnabled ? faVideo : faVideoSlash}
-                    fixedWidth
-                  />
-                </Text>
-              </Box>
-              <Text size='xsmall' color='light-6'>
-                {selfStream?.isVideoEnabled ? 'Stop video' : 'Start video'}
-              </Text>
-            </Box>
-          </Button>
+            enabledIcon={{
+              icon: faVideo,
+              label: 'Stop video',
+            }}
+            disabledIcon={{
+              icon: faVideoSlash,
+              label: 'Start video',
+            }}
+            showEnabledIcon={selfStream?.isVideoEnabled}
+          />
         </Box>
-
         <ControllerBox width='80px'>
-          <Button
-            data-testid='btn-toggle-screen-sharing'
+          <ControlButton
+            dataTestId='btn-toggle-screen-sharing'
             size='large'
             disabled={disableScreenshare}
-            onClick={() => {
-              if (presentationTracks.audio || presentationTracks.video) {
-                presentationTracks.audio?.stop();
-                presentationTracks.video?.stop();
-                if (presentationStream) {
-                  removeStream('presentation');
-                }
-                setPresentationTracks({ audio: undefined, video: undefined });
-              } else {
-                navigator?.mediaDevices
-                  ?.getDisplayMedia({ audio: true, video: true })
-                  .then((stream) => {
-                    setPresentationTracks({
-                      audio: stream?.getAudioTracks()[0],
-                      video: stream?.getVideoTracks()[0],
-                    });
-                  })
-                  .catch((error) => {
-                    if (
-                      error instanceof DOMException &&
-                      error.name === 'NotAllowedError'
-                    ) {
-                      handleDeviceError('screenshare');
-                    }
-                  });
-              }
+            enabledIcon={{
+              icon: faLaptop,
+              label: 'Stop share',
             }}
-          >
-            <Box align='center' gap='xsmall'>
-              <Box>
-                <Text
-                  size='40.3px' // kinda hacky, make fa icon 48px
-                  color={
-                    presentationStream?.isVideoEnabled
-                      ? 'accent-1'
-                      : 'status-error'
-                  }
-                >
-                  <FontAwesomeIconStyled icon={faLaptop} fixedWidth />
-                </Text>
-              </Box>
-              <Text size='xsmall' color='light-6'>
-                {presentationStream?.isVideoEnabled
-                  ? 'Stop share'
-                  : 'Start share'}
-              </Text>
-            </Box>
-          </Button>
+            disabledIcon={{
+              icon: faLaptop,
+              label: 'Start share',
+            }}
+            showEnabledIcon={presentationStream?.isVideoEnabled}
+            onClick={handleShareScreenClick}
+          />
         </ControllerBox>
-
         <ControllerBox width='80px'>
           <Button
             data-testid='btn-toggle-participant-list'
@@ -796,7 +658,6 @@ export default function RoomControls({
             </Box>
           </Button>
         </ControllerBox>
-
         {optionalFeatures.isDialOutEnabled && (
           <ControllerBox width='80px'>
             <Button
@@ -824,39 +685,16 @@ export default function RoomControls({
 
         {localParticipant.canReceiveMessages && (
           <ControllerBox>
-            <Button
-              data-testid='btn-toggle-chat'
-              size='large'
+            <ChatButton
               onClick={() => {
                 setShowChatBox((value) => !value);
                 unreadMessages.current = [];
               }}
-            >
-              <Box align='center' gap='xsmall'>
-                <Box style={{ position: 'relative' }}>
-                  {showBubbleNotification && (
-                    <Bubble>
-                      <span
-                        style={{
-                          fontSize: '10px',
-                          textAlign: 'center',
-                          fontWeight: 'bold',
-                        }}
-                      >
-                        {getTotalUnreadMessages()}
-                      </span>
-                    </Bubble>
-                  )}
-                  <ChatIcon
-                    size='large'
-                    color={showChatBox ? 'accent-1' : 'light-5'}
-                  />
-                </Box>
-                <Text size='xsmall' color='light-6'>
-                  Chat
-                </Text>
-              </Box>
-            </Button>
+              totalUnreadMessages={
+                showBubbleNotification ? getTotalUnreadMessages() : 0
+              }
+              isChatBoxOpened={showChatBox}
+            />
           </ControllerBox>
         )}
       </Box>
@@ -865,8 +703,22 @@ export default function RoomControls({
         {optionalFeatures &&
           optionalFeatures.isVirtualBackgroundFeatureEnabled &&
           getBrowserName() === 'chrome' &&
-          getPlatform()?.type === 'desktop' &&
-          renderSelectBackgroungImage()}
+          getPlatform()?.type === 'desktop' && (
+            <span style={{ color: '#fff' }}>
+              <MenuList
+                disabled={!selfStream?.isVideoEnabled}
+                selectedValue={virtualBackgroundType}
+                title='Change background'
+                data={imagesOptions}
+                onChange={(item) => handleVirtualBg(item.value)}
+                icon={<FontAwesomeIcon icon={faAngleDown} fixedWidth />}
+                itemsIconOptions={{
+                  gap: 'small', // gap between icon and text
+                  reverse: true, // icon on right
+                }}
+              ></MenuList>
+            </span>
+          )}
         <Box>
           <Button
             onClick={() => {
@@ -892,14 +744,14 @@ export default function RoomControls({
           </Box>
         )}
 
-        <DeviceSelect
+        <DeviceMenuList
           kind='audio_input'
           devices={devices?.audioinput}
           selectedDeviceId={audioInputDeviceId}
           handleDeviceChange={handleDeviceChange}
         />
 
-        <DeviceSelect
+        <DeviceMenuList
           kind='video_input'
           devices={devices?.videoinput}
           selectedDeviceId={videoInputDeviceId}
@@ -907,7 +759,7 @@ export default function RoomControls({
         />
 
         {isSinkIdSupported() && (
-          <DeviceSelect
+          <DeviceMenuList
             kind='audio_output'
             devices={devices?.audiooutput}
             selectedDeviceId={audioOutputDeviceId}
@@ -915,22 +767,10 @@ export default function RoomControls({
           />
         )}
 
-        <Box>
-          <Button
-            data-testid='btn-leave-room'
-            label='Leave'
-            onClick={handleLeaveRoom}
-            color='status-error'
-          />
-        </Box>
+        <Box>{renderedLeaveButton}</Box>
       </RightBoxMenu>
 
-      <LeaveButton
-        data-testid='btn-leave-room'
-        label='Leave'
-        onClick={handleLeaveRoom}
-        color='status-error'
-      />
+      {renderedLeaveButton}
     </Box>
   );
 }
