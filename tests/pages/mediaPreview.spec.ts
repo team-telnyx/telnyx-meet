@@ -1,7 +1,7 @@
 import { test, expect, type Page } from '@playwright/test';
 
 test.beforeEach(async ({ page }) => {
-  await page.goto('http://localhost:3000/rooms');
+  await page.goto(`${process.env.HOSTNAME}/rooms`);
 });
 
 test.describe('Media Preview', () => {
