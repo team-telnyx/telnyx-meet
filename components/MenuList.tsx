@@ -1,8 +1,7 @@
-import { useState } from 'react';
 import { Box, Menu, Text } from 'grommet';
 import styled from 'styled-components';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faCheck, faAngleDown } from '@fortawesome/free-solid-svg-icons';
+import { faCheck } from '@fortawesome/free-solid-svg-icons';
 const breakpointMedium = 1023;
 
 const FontAwesomeIconStyled = styled(FontAwesomeIcon)`
@@ -18,6 +17,8 @@ export function MenuList({
   disabled = false,
   size = 'medium',
   selectedValue = '',
+  icon,
+  itemsIconOptions,
 }: {
   title: string;
   data: Array<{ label: string; value: string }>;
@@ -25,6 +26,11 @@ export function MenuList({
   disabled?: boolean;
   size?: string;
   selectedValue?: string;
+  icon?: React.ReactNode;
+  itemsIconOptions?: {
+    gap?: string; // gap between icon and text
+    reverse?: boolean;
+  };
 }) {
   if (!data || data.length < 1) {
     return null;
@@ -49,9 +55,10 @@ export function MenuList({
         onClick: () => {
           onChange(item);
         },
+        ...itemsIconOptions,
       }))}
       disabled={disabled}
-      icon={<FontAwesomeIcon icon={faAngleDown} fixedWidth />}
+      icon={icon ? icon : false}
     ></Menu>
   );
 }
