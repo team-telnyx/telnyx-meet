@@ -8,7 +8,7 @@ import path from 'path';
  * https://github.com/motdotla/dotenv
  */
 // Read from default ".env" file.
-dotenv.config({ path: path.resolve(__dirname, './.env.local') });
+dotenv.config({ path: path.resolve(__dirname, './.env.sample') });
 
 /**
  * See https://playwright.dev/docs/test-configuration.
