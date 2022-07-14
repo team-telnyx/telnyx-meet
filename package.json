@@ -37,7 +37,8 @@
     "styled-components": "^5.2.1",
     "unique-names-generator": "^4.3.1",
     "uuid": "^8.3.2",
-    "webrtc-adapter": "^7.7.0"
+    "webrtc-adapter": "^7.7.0",
+    "dotenv": "^16.0.1"
   },
   "devDependencies": {
     "@bugsnag/source-maps": "^2.3.0",

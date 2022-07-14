@@ -1,7 +1,7 @@
 import { test, expect, type Page } from '@playwright/test';
 
 test.beforeEach(async ({ page }) => {
-  await page.goto(process.env.HOSTNAME);
+  await page.goto('/');
 });
 
 test.describe('Home page', () => {
