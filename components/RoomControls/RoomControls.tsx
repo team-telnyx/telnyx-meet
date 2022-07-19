@@ -229,8 +229,8 @@ export default function RoomControls({
   useEffect(() => {
     if (
       isVideoPlaying &&
-      optionalFeatures &&
-      optionalFeatures.isVirtualBackgroundFeatureEnabled
+      getBrowserName() === 'chrome' &&
+      getPlatform()?.type === 'desktop'
     ) {
       const videoElement = document.getElementById(VIDEO_ELEMENT_ID);
 
@@ -691,25 +691,22 @@ export default function RoomControls({
       </Box>
 
       <RightBoxMenu pad='small' direction='row' gap='large'>
-        {optionalFeatures &&
-          optionalFeatures.isVirtualBackgroundFeatureEnabled &&
-          getBrowserName() === 'chrome' &&
-          getPlatform()?.type === 'desktop' && (
-            <span style={{ color: '#fff' }}>
-              <MenuList
-                disabled={!selfStream?.isVideoEnabled}
-                selectedValue={virtualBackgroundType}
-                title='Change background'
-                data={imagesOptions}
-                onChange={(item) => handleVirtualBg(item.value)}
-                icon={<FontAwesomeIcon icon={faAngleDown} fixedWidth />}
-                itemsIconOptions={{
-                  gap: 'small', // gap between icon and text
-                  reverse: true, // icon on right
-                }}
-              ></MenuList>
-            </span>
-          )}
+        {getBrowserName() === 'chrome' && getPlatform()?.type === 'desktop' && (
+          <span style={{ color: '#fff' }}>
+            <MenuList
+              disabled={!selfStream?.isVideoEnabled}
+              selectedValue={virtualBackgroundType}
+              title='Change background'
+              data={imagesOptions}
+              onChange={(item) => handleVirtualBg(item.value)}
+              icon={<FontAwesomeIcon icon={faAngleDown} fixedWidth />}
+              itemsIconOptions={{
+                gap: 'small', // gap between icon and text
+                reverse: true, // icon on right
+              }}
+            ></MenuList>
+          </span>
+        )}
 
         {optionalFeatures && optionalFeatures.isAudioControlEnabled && (
           <Box>

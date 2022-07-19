@@ -88,7 +88,17 @@ function MediaControlBar({
   const [virtualBackgroundType, setVirtualBackgroundType] = useState<
     string | undefined
   >();
+
+  const [showVirtualBackgroundFeature, setShowVirtualBackgroundFeature] =
+    useState(false);
+
   const router = useRouter();
+
+  useEffect(() => {
+    if (getBrowserName() === 'chrome' && getPlatform()?.type === 'desktop') {
+      setShowVirtualBackgroundFeature(true);
+    }
+  }, []);
 
   useEffect(() => {
     navigator.mediaDevices.enumerateDevices().then((devices) => {
@@ -339,11 +349,7 @@ function MediaControlBar({
           </Text>
         </Box>
       </Button>
-      {optionalFeatures &&
-        optionalFeatures.isVirtualBackgroundFeatureEnabled &&
-        getBrowserName() === 'chrome' &&
-        getPlatform()?.type === 'desktop' &&
-        renderSelectBackgroungImage()}
+      {showVirtualBackgroundFeature && renderSelectBackgroungImage()}
     </React.Fragment>
   );
 }
