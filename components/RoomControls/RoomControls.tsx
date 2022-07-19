@@ -227,7 +227,11 @@ export default function RoomControls({
   }, []);
 
   useEffect(() => {
-    if (isVideoPlaying) {
+    if (
+      isVideoPlaying &&
+      getBrowserName() === 'chrome' &&
+      getPlatform()?.type === 'desktop'
+    ) {
       const videoElement = document.getElementById(VIDEO_ELEMENT_ID);
 
       const backgroundValue = getItemSessionStorage(
