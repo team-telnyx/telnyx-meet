@@ -61,8 +61,6 @@ export default function Rooms({
     isDialOutEnabled: queryParameters.dial_out === 'true',
     isNetworkMetricsEnabled: queryParameters.network_metrics === 'true',
     isSimulcastEnabled: queryParameters.simulcast === 'true',
-    isVirtualBackgroundFeatureEnabled:
-      queryParameters.virtual_background === 'true',
   };
 
   const [roomId, setRoomId] = useState<string>();

@@ -25,7 +25,7 @@ export const transformFetchErrorToBugsnag = (
 };
 
 export const getBrowserName = () => {
-  if (!Bowser || !window) {
+  if (typeof window === 'undefined' || !Bowser || !window) {
     return undefined;
   }
 
@@ -36,7 +36,7 @@ export const getBrowserName = () => {
 };
 
 export const getPlatform = () => {
-  if (!Bowser || !window) {
+  if (typeof window === 'undefined' || !Bowser || !window) {
     return undefined;
   }
 
