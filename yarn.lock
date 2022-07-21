@@ -397,10 +397,10 @@
     "@mediapipe/camera_utils" "^0.3.1640029074"
     "@mediapipe/selfie_segmentation" "^0.1.1632777926"
 
-"@telnyx/video@^0.2.0-alpha.24":
-  version "0.2.0-alpha.24"
-  resolved "https://registry.yarnpkg.com/@telnyx/video/-/video-0.2.0-alpha.24.tgz#8661a85946ddba9d8d3aa3f5ef321e089baaeec9"
-  integrity sha512-sGI1a5DfNydzCFDwBVNUMq1o2c60HukJLMuGA6EDCAsKF+sxEZMlAsERHy9O/C0sBob2a7ipvd22fou/gP/NWA==
+"@telnyx/video@^0.2.0-alpha.25":
+  version "0.2.0-alpha.25"
+  resolved "https://registry.yarnpkg.com/@telnyx/video/-/video-0.2.0-alpha.25.tgz#9c853f044dd3b4edaa32aea06a3740c299680a96"
+  integrity sha512-B0J2nEd6iM7ty2U6HltwSdYzPHofdPpx7uq415yGIvSlcTpdBkAmnLAs7/DoMFb4gOG9iUdlSFgj/K3Mcpjiig==
   dependencies:
     "@types/uuid" "^8.3.0"
     events "^3.3.0"
