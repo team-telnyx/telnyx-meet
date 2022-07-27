@@ -389,6 +389,11 @@
   resolved "https://registry.yarnpkg.com/@rushstack/eslint-patch/-/eslint-patch-1.1.0.tgz#7f698254aadf921e48dda8c0a6b304026b8a9323"
   integrity sha512-JLo+Y592QzIE+q7Dl2pMUtt4q8SKYI5jDrZxrozEQxnGVOyYE+GWK9eLkwTaeN9DDctlaRAQ3TBmzZ1qdLE30A==
 
+"@telnyx/rtc-diagnostics@^0.0.0-alpha.1":
+  version "0.0.0-alpha.1"
+  resolved "https://registry.yarnpkg.com/@telnyx/rtc-diagnostics/-/rtc-diagnostics-0.0.0-alpha.1.tgz#6a1163eec0e92e94a3897f06091b338650a02113"
+  integrity sha512-C0OknUAORvPouN7oePPBqVUS1jVLXSb62AGQMrN4qimzHN2M/LuBJ4+bCoTx+IpGkpUc2zE9arF07+mxSoq8lQ==
+
 "@telnyx/video-processors@^0.0.0-alpha.4":
   version "0.0.0-alpha.4"
   resolved "https://registry.yarnpkg.com/@telnyx/video-processors/-/video-processors-0.0.0-alpha.4.tgz#78c454270e0e16505f4d3fc74192bf4fd78eba99"

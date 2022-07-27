@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef, useContext } from 'react';
-import { Text } from 'grommet';
+import { Button, Text } from 'grommet';
 import styled from 'styled-components';
+import { videoDiagnostics } from '@telnyx/rtc-diagnostics';
 
 import { TelnyxMeetContext } from 'contexts/TelnyxMeetContext';
 
@@ -61,6 +62,8 @@ function MediaPreview() {
     { title: string; body: string } | undefined
   >(undefined);
 
+  const [loadingDiagnostics, setLoadingDiagnostics] = useState(false);
+
   const videoElRef = useRef<HTMLVideoElement>(null);
   const camera = useRef() as VirtualBackground['camera'];
   //https://github.com/DefinitelyTyped/DefinitelyTyped/issues/28884#issuecomment-471341041
@@ -112,6 +115,21 @@ function MediaPreview() {
         width: '100%',
       }}
     >
+      {optionalFeatures?.isDiagnosticsEnabled && (
+        <Button
+          style={{ position: 'fixed', top: 10, right: 10 }}
+          onClick={async () => {
+            setLoadingDiagnostics(true);
+            const diagnostics = await videoDiagnostics();
+            alert(JSON.stringify(diagnostics, null, 2));
+            setLoadingDiagnostics(false);
+          }}
+          label={loadingDiagnostics ? 'Loading...' : 'Diagnostics'}
+          disabled={loadingDiagnostics}
+          secondary
+        />
+      )}
+
       {error && (
         <ErrorDialog onClose={() => setError(undefined)} error={error} />
       )}

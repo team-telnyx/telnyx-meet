@@ -55,12 +55,14 @@ export default function Rooms({
     network_metrics: string;
     simulcast: string;
     virtual_background: string;
+    diagnostics: string;
   };
   const optionalFeatures = {
     isAudioControlEnabled: queryParameters.audio_control === 'true',
     isDialOutEnabled: queryParameters.dial_out === 'true',
     isNetworkMetricsEnabled: queryParameters.network_metrics === 'true',
     isSimulcastEnabled: queryParameters.simulcast === 'true',
+    isDiagnosticsEnabled: queryParameters.diagnostics === 'true',
   };
 
   const [roomId, setRoomId] = useState<string>();
