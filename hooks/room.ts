@@ -155,7 +155,19 @@ export const useRoom = ({
           }
         });
 
-        roomRef.current.on('disconnected', (state) => {
+        roomRef.current.on('disconnected', (reason, state) => {
+          if (reason === 'network_disconnected') {
+            sendNotification({
+              body: 'network_disconnected - Check your network connection',
+            });
+          }
+
+          if (reason === 'user_initiated') {
+            sendNotification({
+              body: 'user_initiated - Disconnect method executed by user',
+            });
+          }
+
           setParticipantsByActivity(new Set());
           typeof callbacks?.onDisconnected === 'function' &&
             callbacks.onDisconnected();
