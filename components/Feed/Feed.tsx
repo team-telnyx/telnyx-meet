@@ -47,7 +47,9 @@ function Feed({
 }: FeedProps) {
   const isTelephonyEngineParticipant =
     participant.origin === 'telephony_engine';
-  const showAudioActivityIndicator = isSpeaking && stream?.key === 'self';
+  const showAudioActivityIndicator =
+    isSpeaking &&
+    (participant.origin === 'telephony_engine' || stream?.key === 'self');
   const [showStatsOverlay, setShowStatsOverlay] = useState(false);
   const [allowedBrowser, setAllowedBrowser] = useState(false);
 
