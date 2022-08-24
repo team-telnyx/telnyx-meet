@@ -337,6 +337,7 @@ export const useRoom = ({
             (!key || key === 'self') &&
             participantId !== roomRef.current!.getLocalParticipant().id
           ) {
+            console.log(`${participantId} is speaking`);
             setDominantSpeakerId(participantId);
             setParticipantsByActivity((value) => {
               return new Set([
