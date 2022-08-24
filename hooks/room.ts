@@ -168,6 +168,12 @@ export const useRoom = ({
             });
           }
 
+          if (reason === 'max_timeout_reached') {
+            sendNotification({
+              body: 'max_timeout_reached - Reached max timeout to connect',
+            });
+          }
+
           setParticipantsByActivity(new Set());
           typeof callbacks?.onDisconnected === 'function' &&
             callbacks.onDisconnected();
