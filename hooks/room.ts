@@ -170,7 +170,7 @@ export const useRoom = ({
 
           if (reason === 'max_timeout_reached') {
             sendNotification({
-              body: 'max_timeout_reached - Reached max timeout to connect',
+              body: 'max_timeout_reached - Reached out max timeout to connect',
             });
           }
 
