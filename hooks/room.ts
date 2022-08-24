@@ -156,9 +156,9 @@ export const useRoom = ({
         });
 
         roomRef.current.on('disconnected', (reason, state) => {
-          if (reason === 'network_disconnected') {
+          if (reason === 'network_error') {
             sendNotification({
-              body: 'network_disconnected - Check your network connection',
+              body: 'network_error - Check your network connection',
             });
           }
 
@@ -168,9 +168,9 @@ export const useRoom = ({
             });
           }
 
-          if (reason === 'max_timeout_reached') {
+          if (reason === 'timed_out') {
             sendNotification({
-              body: 'max_timeout_reached - Reached out max timeout to connect',
+              body: 'timed_out - Reached out timeout limit to connect',
             });
           }
 
