@@ -16,7 +16,7 @@
     "@fortawesome/free-solid-svg-icons": "^6.0.0",
     "@fortawesome/react-fontawesome": "^0.1.17",
     "@telnyx/rtc-diagnostics": "^0.0.0-alpha.1",
-    "@telnyx/video": "^0.2.0-alpha.25",
+    "@telnyx/video": "^0.2.0-alpha.26",
     "@telnyx/video-processors": "^0.0.0-alpha.4",
     "@zeit/next-source-maps": "0.0.4-canary.1",
     "bowser": "^2.11.0",
