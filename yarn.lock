@@ -402,10 +402,10 @@
     "@mediapipe/camera_utils" "^0.3.1640029074"
     "@mediapipe/selfie_segmentation" "^0.1.1632777926"
 
-"@telnyx/video@^0.2.0-alpha.26":
-  version "0.2.0-alpha.26"
-  resolved "https://registry.yarnpkg.com/@telnyx/video/-/video-0.2.0-alpha.26.tgz#fd752c4f79c7d2eea06ed29252e8e85eb4a34745"
-  integrity sha512-+yp321mlMKFFU/yL+VuW5kf7TqswNeupeeHd/NLvVUZzmQ79B4H7lF3bwSVcoYYGHeH1boHmwcJ8nfYLqstEWA==
+"@telnyx/video@^0.2.0-alpha.27":
+  version "0.2.0-alpha.27"
+  resolved "https://registry.yarnpkg.com/@telnyx/video/-/video-0.2.0-alpha.27.tgz#b0e87bfa9045afd339e0772e392c267714b640b7"
+  integrity sha512-QFN20+UynbKTaBND+kF1fbxa4zoDWIalswETa14PWbM7Wd3pekTp+3kwlhOdRxIejm5Y9vPm5eQvSOgMzeNNLg==
   dependencies:
     "@types/uuid" "^8.3.0"
     events "^3.3.0"
