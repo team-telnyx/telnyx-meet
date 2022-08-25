@@ -417,7 +417,11 @@ export const useRoom = ({
     };
 
     if (!roomRef.current) {
-      connectAndJoinRoom();
+      connectAndJoinRoom().catch((error) => {
+        sendNotification({ body: error.message });
+        typeof callbacks?.onDisconnected === 'function' &&
+          callbacks.onDisconnected();
+      });
     }
 
     // Note: we only want this to run once. Probably there's a better way to structure this.
