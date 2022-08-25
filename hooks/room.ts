@@ -413,7 +413,7 @@ export const useRoom = ({
         });
       }
 
-      await roomRef.current.connect({ timeout: 1 * 1000 });
+      await roomRef.current.connect();
     };
 
     if (!roomRef.current) {
