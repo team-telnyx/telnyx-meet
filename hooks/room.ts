@@ -109,6 +109,7 @@ export const useRoom = ({
         sendNotification({ body: (error as Error).message });
         typeof callbacks?.onDisconnected === 'function' &&
           callbacks.onDisconnected();
+        roomRef.current = undefined;
       }
 
       // failed to initialize don't proceed further
@@ -415,7 +416,7 @@ export const useRoom = ({
       try {
         await roomRef.current.connect();
       } catch (error) {
-        roomRef.current = undefined;
+        throw error;
       }
     };
 
