@@ -107,7 +107,6 @@ export const useRoom = ({
         });
       } catch (error) {
         debugger;
-        roomRef.current = undefined;
         sendNotification({ body: (error as Error).message });
         typeof callbacks?.onDisconnected === 'function' &&
           callbacks.onDisconnected();
@@ -167,6 +166,7 @@ export const useRoom = ({
       });
 
       roomRef.current.on('disconnected', (reason, state) => {
+        debugger;
         if (reason === 'network_error') {
           sendNotification({
             body: 'network_error - Check your network connection',
@@ -417,11 +417,7 @@ export const useRoom = ({
       try {
         await roomRef.current.connect();
       } catch (error) {
-        debugger;
         roomRef.current = undefined;
-        sendNotification({ body: (error as Error).message });
-        typeof callbacks?.onDisconnected === 'function' &&
-          callbacks.onDisconnected();
       }
     };
 
