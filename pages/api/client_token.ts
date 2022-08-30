@@ -21,7 +21,7 @@ export default async function handler(
             method: 'POST',
             body: JSON.stringify({
               refresh_token_ttl_secs: 3600,
-              token_ttl_secs: 60,
+              token_ttl_secs: 60 * 5,
             }),
             headers: {
               'Content-Type': 'application/json',

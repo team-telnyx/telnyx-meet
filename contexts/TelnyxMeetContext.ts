@@ -8,6 +8,8 @@ const TelnyxMeetContext = React.createContext<{
   audioOutputDeviceId: string | undefined;
   videoInputDeviceId: string | undefined;
   unreadMessages: React.MutableRefObject<TelnyxRoom['messages'] | null>;
+  autoReconnectState: string | undefined;
+  setAutoReconnectState: Dispatch<SetStateAction<string | undefined>>;
   setAudioInputDeviceId: Dispatch<SetStateAction<string | undefined>>;
   setAudioOutputDeviceId: Dispatch<SetStateAction<string | undefined>>;
   setVideoInputDeviceId: Dispatch<SetStateAction<string | undefined>>;
@@ -26,7 +28,10 @@ const TelnyxMeetContext = React.createContext<{
   audioOutputDeviceId: undefined,
   videoInputDeviceId: undefined,
   unreadMessages: React.createRef<TelnyxRoom['messages'] | null>(),
-
+  autoReconnectState: undefined,
+  setAutoReconnectState: (
+    value: React.SetStateAction<string | undefined>
+  ) => {},
   setAudioInputDeviceId: (
     value: React.SetStateAction<string | undefined>
   ) => {},

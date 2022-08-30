@@ -101,6 +101,7 @@ function Room({
     participantIds.push(item.id);
   });
 
+  console.log('state===>', state);
   return (
     <Box fill background='#1b1b1b' overflow='hidden'>
       <RoomInfo roomId={roomId} />

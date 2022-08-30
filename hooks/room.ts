@@ -11,7 +11,7 @@ import {
 import { DebugContext } from 'contexts/DebugContext';
 import { TelnyxMeetContext } from 'contexts/TelnyxMeetContext';
 
-const TOKEN_TTL = 50;
+const TOKEN_TTL = 300;
 
 interface Props {
   roomId: string;
@@ -67,6 +67,8 @@ export const useRoom = ({
     sendNotification,
     setNetworkMetrics,
     unreadMessages,
+    autoReconnectState,
+    setAutoReconnectState,
     optionalFeatures,
     setIsVideoPlaying,
   } = useContext(TelnyxMeetContext);
@@ -95,168 +97,173 @@ export const useRoom = ({
     _setMessages(messagesRef.current);
   };
 
-  useEffect(() => {
-    const connectAndJoinRoom = async () => {
-      try {
-        roomRef.current = await initialize({
-          roomId,
-          clientToken,
-          context: JSON.stringify(context),
-          logLevel: 'DEBUG',
-          enableMessages: true,
+  const connectAndJoinRoom = async () => {
+    try {
+      roomRef.current = await initialize({
+        roomId,
+        clientToken,
+        context: JSON.stringify(context),
+        logLevel: 'DEBUG',
+        enableMessages: true,
+      });
+    } catch (error) {
+      sendNotification({ body: (error as Error).message });
+      typeof callbacks?.onDisconnected === 'function' &&
+        callbacks.onDisconnected();
+      roomRef.current = undefined;
+      setAutoReconnectState('disconnected');
+
+      setTimeout(async () => {
+        if (!roomRef.current) {
+          sendNotification({
+            body: 'catch==>Auto-reconnect - Trying to reconnect',
+          });
+
+          setAutoReconnectState('connecting');
+
+          await connectAndJoinRoom();
+        }
+      }, 3000);
+    }
+
+    // failed to initialize don't proceed further
+    if (!roomRef.current) {
+      return;
+    }
+
+    setState(roomRef.current.getState());
+    setDebugState(roomRef.current.getState());
+
+    roomRef.current.on('state_changed', (value) => {
+      setState(value);
+      setDebugState(value);
+    });
+
+    roomRef.current.on('connected', (state) => {
+      setParticipantsByActivity((value) => {
+        return new Set([
+          roomRef.current!.getLocalParticipant().id,
+          ...state.participants.keys(),
+        ]);
+      });
+      state.streams.forEach((stream) => {
+        if (stream.key === 'presentation') {
+          setPresenter(state.participants.get(stream.participantId));
+        }
+
+        if (
+          stream.participantId === roomRef.current!.getLocalParticipant().id
+        ) {
+          return;
+        }
+
+        roomRef.current!.addSubscription(stream.participantId, stream.key, {
+          audio: true,
+          video: true,
         });
-      } catch (error) {
-        sendNotification({ body: (error as Error).message });
-        typeof callbacks?.onDisconnected === 'function' &&
-          callbacks.onDisconnected();
+      });
+      typeof callbacks?.onConnected === 'function' && callbacks.onConnected();
+
+      if (
+        optionalFeatures.isNetworkMetricsEnabled &&
+        state.participants.size > 0 &&
+        roomRef.current!.getLocalParticipant().id
+      ) {
+        const participantIds: Array<string> = [];
+
+        state.participants.forEach((item) => {
+          participantIds.push(item.id);
+        });
+
+        roomRef.current!.enableNetworkMetricsReport(participantIds);
+      }
+    });
+
+    roomRef.current.on('disconnected', (reason, state) => {
+      if (reason === 'network_error') {
+        sendNotification({
+          body: 'network_error - Check your network connection',
+        });
+      }
+
+      if (reason === 'user_initiated') {
+        sendNotification({
+          body: 'user_initiated - Disconnect method executed by user',
+        });
+      }
+
+      if (reason === 'timed_out') {
+        sendNotification({
+          body: 'timed_out - Reached out timeout limit to connect',
+        });
+      }
+
+      if (reason === 'timed_out' || reason === 'network_error') {
         roomRef.current = undefined;
+        setAutoReconnectState('disconnected');
+
+        setTimeout(async () => {
+          if (!roomRef.current) {
+            sendNotification({
+              body: 'Auto-reconnect - Trying to reconnect',
+            });
+
+            setAutoReconnectState('connecting');
+            await connectAndJoinRoom();
+          }
+        }, 3000);
       }
 
-      // failed to initialize don't proceed further
-      if (!roomRef.current) {
-        return;
+      setParticipantsByActivity(new Set());
+      typeof callbacks?.onDisconnected === 'function' &&
+        callbacks.onDisconnected();
+    });
+
+    roomRef.current.on('participant_joined', (participantId, state) => {
+      if (
+        optionalFeatures.isNetworkMetricsEnabled &&
+        state.participants.size > 0
+      ) {
+        const participantIds: Array<string> = [];
+        state.participants.forEach((item) => {
+          participantIds.push(item.id);
+        });
+
+        roomRef.current!.enableNetworkMetricsReport(participantIds);
       }
 
-      setState(roomRef.current.getState());
-      setDebugState(roomRef.current.getState());
-
-      roomRef.current.on('state_changed', (value) => {
-        setState(value);
-        setDebugState(value);
+      setParticipantsByActivity((value) => {
+        return new Set([
+          roomRef.current!.getLocalParticipant().id,
+          ...value,
+          participantId,
+        ]);
       });
 
-      roomRef.current.on('connected', (state) => {
-        setParticipantsByActivity((value) => {
-          return new Set([
-            roomRef.current!.getLocalParticipant().id,
-            ...state.participants.keys(),
-          ]);
-        });
-        state.streams.forEach((stream) => {
-          if (stream.key === 'presentation') {
-            setPresenter(state.participants.get(stream.participantId));
-          }
+      typeof callbacks?.onParticipantJoined === 'function' &&
+        callbacks.onParticipantJoined(participantId, state);
+    });
 
-          if (
-            stream.participantId === roomRef.current!.getLocalParticipant().id
-          ) {
-            return;
-          }
+    roomRef.current.on(
+      'participant_leaving',
+      (participantId, reason, state) => {
+        if (reason === 'kicked') {
+          if (state.localParticipantId === participantId) {
+            sendNotification({
+              body: 'You got kicked from the room by the moderator!',
+            });
+          } else {
+            const context = JSON.parse(
+              state.participants.get(participantId).context
+            );
 
-          roomRef.current!.addSubscription(stream.participantId, stream.key, {
-            audio: true,
-            video: true,
-          });
-        });
-        typeof callbacks?.onConnected === 'function' && callbacks.onConnected();
-
-        if (
-          optionalFeatures.isNetworkMetricsEnabled &&
-          state.participants.size > 0 &&
-          roomRef.current!.getLocalParticipant().id
-        ) {
-          const participantIds: Array<string> = [];
-
-          state.participants.forEach((item) => {
-            participantIds.push(item.id);
-          });
-
-          roomRef.current!.enableNetworkMetricsReport(participantIds);
-        }
-      });
-
-      roomRef.current.on('disconnected', (reason, state) => {
-        if (reason === 'network_error') {
-          sendNotification({
-            body: 'network_error - Check your network connection',
-          });
-        }
-
-        if (reason === 'user_initiated') {
-          sendNotification({
-            body: 'user_initiated - Disconnect method executed by user',
-          });
-        }
-
-        if (reason === 'timed_out') {
-          sendNotification({
-            body: 'timed_out - Reached out timeout limit to connect',
-          });
-        }
-
-        setParticipantsByActivity(new Set());
-        typeof callbacks?.onDisconnected === 'function' &&
-          callbacks.onDisconnected();
-      });
-
-      roomRef.current.on('participant_joined', (participantId, state) => {
-        if (
-          optionalFeatures.isNetworkMetricsEnabled &&
-          state.participants.size > 0
-        ) {
-          const participantIds: Array<string> = [];
-          state.participants.forEach((item) => {
-            participantIds.push(item.id);
-          });
-
-          roomRef.current!.enableNetworkMetricsReport(participantIds);
-        }
-
-        setParticipantsByActivity((value) => {
-          return new Set([
-            roomRef.current!.getLocalParticipant().id,
-            ...value,
-            participantId,
-          ]);
-        });
-
-        typeof callbacks?.onParticipantJoined === 'function' &&
-          callbacks.onParticipantJoined(participantId, state);
-      });
-
-      roomRef.current.on(
-        'participant_leaving',
-        (participantId, reason, state) => {
-          if (reason === 'kicked') {
-            if (state.localParticipantId === participantId) {
-              sendNotification({
-                body: 'You got kicked from the room by the moderator!',
-              });
-            } else {
-              const context = JSON.parse(
-                state.participants.get(participantId).context
-              );
-
-              sendNotification({
-                body: `${
-                  context.username ? context.username : participantId
-                } has been kicked by the moderator!`,
-              });
-            }
-          }
-
-          if (
-            optionalFeatures.isNetworkMetricsEnabled &&
-            state.participants.size > 0
-          ) {
-            roomRef.current!.disableNetworkMetricsReport([participantId]);
+            sendNotification({
+              body: `${
+                context.username ? context.username : participantId
+              } has been kicked by the moderator!`,
+            });
           }
         }
-      );
-
-      roomRef.current.on('participant_left', (participantId, state) => {
-        if (presenter?.id === participantId) {
-          setPresenter(undefined);
-        }
-
-        if (dominantSpeakerId === participantId) {
-          setDominantSpeakerId(undefined);
-        }
-
-        setParticipantsByActivity((value) => {
-          value.delete(participantId);
-          return new Set([roomRef.current!.getLocalParticipant().id, ...value]);
-        });
 
         if (
           optionalFeatures.isNetworkMetricsEnabled &&
@@ -264,163 +271,178 @@ export const useRoom = ({
         ) {
           roomRef.current!.disableNetworkMetricsReport([participantId]);
         }
-      });
-
-      roomRef.current.on('stream_published', (participantId, key, state) => {
-        if (key === 'presentation') {
-          setPresenter(state.participants.get(participantId));
-        }
-
-        if (participantId === roomRef.current!.getLocalParticipant().id) {
-          return;
-        }
-
-        roomRef.current!.addSubscription(participantId, key, {
-          audio: true,
-          video: true,
-        });
-      });
-
-      roomRef.current.on('stream_unpublished', (participantId, key, state) => {
-        if (key === 'presentation') {
-          setPresenter(undefined);
-        }
-
-        if (dominantSpeakerId === participantId && key === 'self') {
-          setDominantSpeakerId(undefined);
-        }
-      });
-
-      roomRef.current.on('track_enabled', (participantId, key, kind, state) => {
-        if (kind === 'video') {
-          setIsVideoPlaying(true);
-        }
-      });
-      roomRef.current.on(
-        'track_disabled',
-        (participantId, key, kind, state) => {
-          if (kind === 'video') {
-            setIsVideoPlaying(false);
-          }
-        }
-      );
-
-      roomRef.current.on(
-        'track_censored',
-        (participantId, key, kind, state) => {
-          if (kind === 'audio') {
-            if (state.localParticipantId === participantId) {
-              sendNotification({
-                body: `Your audio from "${key}" stream has been censored by the moderator`,
-              });
-            } else {
-              const context = JSON.parse(
-                state.participants.get(participantId).context
-              );
-
-              sendNotification({
-                body: `${
-                  context.username ? context.username : participantId
-                }'s audio from "${key}" stream has been censored by the moderator`,
-              });
-            }
-          }
-        }
-      );
-
-      roomRef.current.on(
-        'track_uncensored',
-        (participantId, key, kind, state) => {
-          if (kind === 'audio') {
-            if (state.localParticipantId === participantId) {
-              sendNotification({
-                body: `Your audio from "${key}" stream has been uncensored by the moderator`,
-              });
-            } else {
-              const context = JSON.parse(
-                state.participants.get(participantId).context
-              );
-
-              sendNotification({
-                body: `${
-                  context.username ? context.username : participantId
-                }'s audio from "${key}" stream has been uncensored by the moderator`,
-              });
-            }
-          }
-        }
-      );
-
-      roomRef.current.on('audio_activity', (participantId, key) => {
-        if (
-          (!key || key === 'self') &&
-          participantId !== roomRef.current!.getLocalParticipant().id
-        ) {
-          console.log(`${participantId} is speaking`);
-          setDominantSpeakerId(participantId);
-          setParticipantsByActivity((value) => {
-            return new Set([
-              roomRef.current!.getLocalParticipant().id,
-              participantId,
-              ...value,
-            ]);
-          });
-        }
-      });
-
-      roomRef.current.on(
-        'subscription_started',
-        (participantId, key, state) => {}
-      );
-      roomRef.current.on(
-        'subscription_reconfigured',
-        (participantId, key, state) => {}
-      );
-      roomRef.current.on(
-        'subscription_ended',
-        (participantId, key, state) => {}
-      );
-      roomRef.current.on(
-        'message_received',
-        (participantId, message, recipients, state) => {
-          const participant = state.participants.get(participantId);
-          const fromUsername = JSON.parse(participant.context).username;
-
-          if (!unreadMessages.current) {
-            unreadMessages.current = [];
-          }
-
-          const newMessages = unreadMessages.current.concat({
-            from: participantId,
-            fromUsername,
-            message,
-            recipients,
-          });
-
-          unreadMessages.current = newMessages;
-
-          setMessages({
-            from: participantId,
-            fromUsername,
-            message,
-            recipients,
-          });
-        }
-      );
-
-      roomRef.current.on('network_metrics_report', (networkMetrics) => {
-        console.debug('network_metrics_report', networkMetrics);
-        setNetworkMetrics(networkMetrics);
-      });
-
-      try {
-        await roomRef.current.connect();
-      } catch (error) {
-        throw error;
       }
-    };
+    );
 
-    if (!roomRef.current) {
+    roomRef.current.on('participant_left', (participantId, state) => {
+      if (presenter?.id === participantId) {
+        setPresenter(undefined);
+      }
+
+      if (dominantSpeakerId === participantId) {
+        setDominantSpeakerId(undefined);
+      }
+
+      setParticipantsByActivity((value) => {
+        value.delete(participantId);
+        return new Set([roomRef.current!.getLocalParticipant().id, ...value]);
+      });
+
+      if (
+        optionalFeatures.isNetworkMetricsEnabled &&
+        state.participants.size > 0
+      ) {
+        roomRef.current!.disableNetworkMetricsReport([participantId]);
+      }
+    });
+
+    roomRef.current.on('stream_published', (participantId, key, state) => {
+      if (key === 'presentation') {
+        setPresenter(state.participants.get(participantId));
+      }
+
+      if (participantId === roomRef.current!.getLocalParticipant().id) {
+        return;
+      }
+
+      roomRef.current!.addSubscription(participantId, key, {
+        audio: true,
+        video: true,
+      });
+    });
+
+    roomRef.current.on('stream_unpublished', (participantId, key, state) => {
+      if (key === 'presentation') {
+        setPresenter(undefined);
+      }
+
+      if (dominantSpeakerId === participantId && key === 'self') {
+        setDominantSpeakerId(undefined);
+      }
+    });
+
+    roomRef.current.on('track_enabled', (participantId, key, kind, state) => {
+      if (kind === 'video') {
+        setIsVideoPlaying(true);
+      }
+    });
+    roomRef.current.on('track_disabled', (participantId, key, kind, state) => {
+      if (kind === 'video') {
+        setIsVideoPlaying(false);
+      }
+    });
+
+    roomRef.current.on('track_censored', (participantId, key, kind, state) => {
+      if (kind === 'audio') {
+        if (state.localParticipantId === participantId) {
+          sendNotification({
+            body: `Your audio from "${key}" stream has been censored by the moderator`,
+          });
+        } else {
+          const context = JSON.parse(
+            state.participants.get(participantId).context
+          );
+
+          sendNotification({
+            body: `${
+              context.username ? context.username : participantId
+            }'s audio from "${key}" stream has been censored by the moderator`,
+          });
+        }
+      }
+    });
+
+    roomRef.current.on(
+      'track_uncensored',
+      (participantId, key, kind, state) => {
+        if (kind === 'audio') {
+          if (state.localParticipantId === participantId) {
+            sendNotification({
+              body: `Your audio from "${key}" stream has been uncensored by the moderator`,
+            });
+          } else {
+            const context = JSON.parse(
+              state.participants.get(participantId).context
+            );
+
+            sendNotification({
+              body: `${
+                context.username ? context.username : participantId
+              }'s audio from "${key}" stream has been uncensored by the moderator`,
+            });
+          }
+        }
+      }
+    );
+
+    roomRef.current.on('audio_activity', (participantId, key) => {
+      if (
+        (!key || key === 'self') &&
+        participantId !== roomRef.current!.getLocalParticipant().id
+      ) {
+        console.log(`${participantId} is speaking`);
+        setDominantSpeakerId(participantId);
+        setParticipantsByActivity((value) => {
+          return new Set([
+            roomRef.current!.getLocalParticipant().id,
+            participantId,
+            ...value,
+          ]);
+        });
+      }
+    });
+
+    roomRef.current.on(
+      'subscription_started',
+      (participantId, key, state) => {}
+    );
+    roomRef.current.on(
+      'subscription_reconfigured',
+      (participantId, key, state) => {}
+    );
+    roomRef.current.on('subscription_ended', (participantId, key, state) => {});
+    roomRef.current.on(
+      'message_received',
+      (participantId, message, recipients, state) => {
+        const participant = state.participants.get(participantId);
+        const fromUsername = JSON.parse(participant.context).username;
+
+        if (!unreadMessages.current) {
+          unreadMessages.current = [];
+        }
+
+        const newMessages = unreadMessages.current.concat({
+          from: participantId,
+          fromUsername,
+          message,
+          recipients,
+        });
+
+        unreadMessages.current = newMessages;
+
+        setMessages({
+          from: participantId,
+          fromUsername,
+          message,
+          recipients,
+        });
+      }
+    );
+
+    roomRef.current.on('network_metrics_report', (networkMetrics) => {
+      console.debug('network_metrics_report', networkMetrics);
+      setNetworkMetrics(networkMetrics);
+    });
+
+    try {
+      await roomRef.current.connect();
+    } catch (error) {
+      throw error;
+    }
+  };
+
+  useEffect(() => {
+    if (!roomRef.current && autoReconnectState === 'initial') {
       connectAndJoinRoom();
     }
 
@@ -470,7 +492,7 @@ export const useRoom = ({
         const data = await response.json();
         setClientToken(data.token);
       }
-    }, (TOKEN_TTL - 20) * 1000);
+    }, 4 * 60 * 1000); // 4 minutes
 
     return () => {
       clearInterval(refreshTokenIntervalId);

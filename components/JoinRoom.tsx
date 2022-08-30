@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
+import React, { useContext, useState } from 'react';
 import { Box, Button, TextInput } from 'grommet';
 
 import ErrorDialog from 'components/ErrorDialog';
 import { MediaDeviceErrors } from 'components/MediaPreview/helper';
 
 import { saveItem, USERNAME_KEY } from 'utils/storage';
+import { TelnyxMeetContext } from 'contexts/TelnyxMeetContext';
 
 interface Props {
   roomId: string;
@@ -27,6 +28,8 @@ const JoinRoom = ({
   clientToken,
   refreshToken,
 }: Props) => {
+  const { setAutoReconnectState } = useContext(TelnyxMeetContext);
+
   const [error, setError] = useState<
     { title: string; body: string } | undefined
   >(undefined);
@@ -52,14 +55,15 @@ const JoinRoom = ({
   };
 
   const joinRoom = async () => {
-    if (clientToken && refreshToken) {
-      updateTokens({
-        clientToken,
-        refreshToken,
-      });
+    setAutoReconnectState('initial');
+    // if (clientToken && refreshToken) {
+    //   updateTokens({
+    //     clientToken,
+    //     refreshToken,
+    //   });
 
-      return;
-    }
+    //   return;
+    // }
 
     const response = await fetch('/api/client_token', {
       method: 'POST',

@@ -86,6 +86,10 @@ export default function Rooms({
     string | undefined
   >();
 
+  const [autoReconnectState, setAutoReconnectState] = useState<
+    string | undefined
+  >();
+
   const unreadMessages = useRef<TelnyxRoom['messages'] | null>(null);
 
   const [isAudioTrackEnabled, setIsAudioTrackEnabled] =
@@ -115,15 +119,23 @@ export default function Rooms({
   }, [id]);
 
   useEffect(() => {
-    if (roomId && username && tokens.clientToken && tokens.refreshToken) {
+    if (
+      roomId &&
+      username &&
+      tokens.clientToken &&
+      tokens.refreshToken &&
+      autoReconnectState &&
+      autoReconnectState !== 'disconnected'
+    ) {
       setIsReady(true);
     } else {
       setIsReady(false);
     }
-  }, [roomId, username, tokens]);
+  }, [roomId, username, tokens, autoReconnectState]);
 
   const onDisconnected = () => {
-    setTokens({ clientToken: '', refreshToken: '' });
+    setAutoReconnectState('disconnected');
+    // setTokens({ clientToken: '', refreshToken: '' });
   };
 
   return (
@@ -155,6 +167,8 @@ export default function Rooms({
             optionalFeatures,
             isVideoPlaying,
             setIsVideoPlaying,
+            autoReconnectState,
+            setAutoReconnectState,
           }}
         >
           {roomId && isReady ? (
