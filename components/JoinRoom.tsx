@@ -1,11 +1,6 @@
 import React, { useState } from 'react';
 import { Box, Button, TextInput } from 'grommet';
 
-import ErrorDialog from 'components/ErrorDialog';
-import { MediaDeviceErrors } from 'components/MediaPreview/helper';
-
-import { saveItem, USERNAME_KEY } from 'utils/storage';
-
 interface Props {
   roomId: string;
   username: string;
@@ -16,6 +11,7 @@ interface Props {
   >;
   clientToken: string;
   refreshToken: string;
+  onClickJoin: () => void;
 }
 
 const JoinRoom = ({
@@ -23,70 +19,10 @@ const JoinRoom = ({
   username,
   updateRoomId,
   updateUsername,
-  updateTokens,
-  clientToken,
-  refreshToken,
+  onClickJoin,
 }: Props) => {
-  const [error, setError] = useState<
-    { title: string; body: string } | undefined
-  >(undefined);
-
-  const checkAudioBrowserPermission = async () => {
-    const result = await window?.navigator?.mediaDevices
-      ?.getUserMedia({
-        audio: true,
-      })
-      .then((stream) => {
-        stream.getTracks().forEach(function (track) {
-          track.stop();
-        });
-        return true;
-      })
-      .catch((error) => {
-        if (error instanceof DOMException && error.name === 'NotAllowedError') {
-          return false;
-        }
-      });
-
-    return result;
-  };
-
-  const joinRoom = async () => {
-    if (clientToken && refreshToken) {
-      updateTokens({
-        clientToken,
-        refreshToken,
-      });
-
-      return;
-    }
-
-    const response = await fetch('/api/client_token', {
-      method: 'POST',
-      body: JSON.stringify({
-        room_id: roomId,
-      }),
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
-
-    if (response.ok) {
-      const data = await response.json();
-
-      updateTokens({
-        clientToken: data.token,
-        refreshToken: data.refresh_token,
-      });
-    }
-  };
-
   return (
     <>
-      {error && (
-        <ErrorDialog onClose={() => setError(undefined)} error={error} />
-      )}
-
       <Box
         pad='small'
         gap='medium'
@@ -127,15 +63,7 @@ const JoinRoom = ({
           primary
           disabled={!roomId || !username}
           label='Join room'
-          onClick={async () => {
-            saveItem(USERNAME_KEY, username);
-            const hasAudioPermission = await checkAudioBrowserPermission();
-            if (hasAudioPermission) {
-              joinRoom();
-            } else {
-              setError(MediaDeviceErrors.mediaBlocked);
-            }
-          }}
+          onClick={onClickJoin}
         />
       </Box>
     </>

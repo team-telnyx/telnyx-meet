@@ -15,7 +15,9 @@ import { generateUsername, generateId, getPlatform } from 'utils/helpers';
 import { TelnyxMeetContext } from 'contexts/TelnyxMeetContext';
 
 import { TelnyxRoom } from 'hooks/room';
-import { getItem, USERNAME_KEY } from 'utils/storage';
+import { getItem, saveItem, USERNAME_KEY } from 'utils/storage';
+import { MediaDeviceErrors } from 'components/MediaPreview/helper';
+import ErrorDialog from 'components/ErrorDialog';
 
 const breakpointMedium = 1021;
 
@@ -106,6 +108,10 @@ export default function Rooms({
 
   const [isVideoPlaying, setIsVideoPlaying] = useState<boolean>(false);
 
+  const [error, setError] = useState<
+    { title: string; body: string } | undefined
+  >(undefined);
+
   useEffect(() => {
     setUsername(getUserName());
   }, []);
@@ -122,8 +128,75 @@ export default function Rooms({
     }
   }, [roomId, username, tokens]);
 
-  const onDisconnected = () => {
+  const onDisconnected = (reason: string) => {
+    console.log('reason===>', reason);
     setTokens({ clientToken: '', refreshToken: '' });
+
+    if (reason !== 'user_initiated') {
+      joinRoom();
+    }
+  };
+
+  const joinRoom = async () => {
+    if (clientToken && refreshToken) {
+      setTokens({
+        clientToken,
+        refreshToken,
+      });
+
+      return;
+    }
+
+    const response = await fetch('/api/client_token', {
+      method: 'POST',
+      body: JSON.stringify({
+        room_id: roomId,
+      }),
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (response.ok) {
+      const data = await response.json();
+
+      setTokens({
+        clientToken: data.token,
+        refreshToken: data.refresh_token,
+      });
+    }
+  };
+
+  const onClickJoin = async () => {
+    // async () => {
+    saveItem(USERNAME_KEY, username);
+    const hasAudioPermission = await checkAudioBrowserPermission();
+    if (hasAudioPermission) {
+      joinRoom();
+    } else {
+      setError(MediaDeviceErrors.mediaBlocked);
+    }
+    // }
+  };
+
+  const checkAudioBrowserPermission = async () => {
+    const result = await window?.navigator?.mediaDevices
+      ?.getUserMedia({
+        audio: true,
+      })
+      .then((stream) => {
+        stream.getTracks().forEach(function (track) {
+          track.stop();
+        });
+        return true;
+      })
+      .catch((error) => {
+        if (error instanceof DOMException && error.name === 'NotAllowedError') {
+          return false;
+        }
+      });
+
+    return result;
   };
 
   return (
@@ -157,6 +230,9 @@ export default function Rooms({
             setIsVideoPlaying,
           }}
         >
+          {error && (
+            <ErrorDialog onClose={() => setError(undefined)} error={error} />
+          )}
           {roomId && isReady ? (
             <Room
               roomId={roomId}
@@ -178,6 +254,7 @@ export default function Rooms({
                 updateTokens={setTokens}
                 clientToken={clientToken}
                 refreshToken={refreshToken}
+                onClickJoin={onClickJoin}
               />
             </GridPreviewContainer>
           )}
