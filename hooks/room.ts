@@ -28,6 +28,8 @@ interface Props {
   };
 }
 
+const TOKEN_TTL = 50;
+
 export type TelnyxRoom = Room & {
   state: State;
   dominantSpeakerId?: Participant['id'];
@@ -106,14 +108,6 @@ export const useRoom = ({
       sendNotification({ body: (error as Error).message });
       typeof callbacks?.onDisconnected === 'function' &&
         callbacks.onDisconnected('network_error');
-
-      // setTimeout(async () => {
-      //   sendNotification({
-      //     body: 'catch==>Auto-reconnect - Trying to reconnect',
-      //   });
-
-      //   await connectAndJoinRoom();
-      // }, 3000);
     }
 
     // failed to initialize don't proceed further
@@ -466,7 +460,7 @@ export const useRoom = ({
         const data = await response.json();
         setClientToken(data.token);
       }
-    }, (50 - 20) * 1000);
+    }, (TOKEN_TTL - 20) * 1000);
 
     return () => {
       clearInterval(refreshTokenIntervalId);

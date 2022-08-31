@@ -129,7 +129,6 @@ export default function Rooms({
   }, [roomId, username, tokens]);
 
   const onDisconnected = (reason: string) => {
-    console.log('reason===>', reason);
     setTokens({ clientToken: '', refreshToken: '' });
 
     if (reason !== 'user_initiated') {
@@ -168,7 +167,6 @@ export default function Rooms({
   };
 
   const onClickJoin = async () => {
-    // async () => {
     saveItem(USERNAME_KEY, username);
     const hasAudioPermission = await checkAudioBrowserPermission();
     if (hasAudioPermission) {
@@ -176,7 +174,6 @@ export default function Rooms({
     } else {
       setError(MediaDeviceErrors.mediaBlocked);
     }
-    // }
   };
 
   const checkAudioBrowserPermission = async () => {
