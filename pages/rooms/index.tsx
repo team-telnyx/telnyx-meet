@@ -132,6 +132,7 @@ export default function Rooms({
     setTokens({ clientToken: '', refreshToken: '' });
 
     if (reason !== 'user_initiated') {
+      sendNotification({ body: 'Auto reconnecting...' });
       joinRoom();
     }
   };
