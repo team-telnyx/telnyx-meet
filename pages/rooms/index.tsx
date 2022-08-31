@@ -41,6 +41,8 @@ function getUserName(): string {
     return generateUsername();
   }
 }
+
+const MAX_RECONNECT_TIME = 3;
 export default function Rooms({
   id,
   clientToken,
@@ -58,6 +60,7 @@ export default function Rooms({
     simulcast: string;
     virtual_background: string;
     diagnostics: string;
+    auto_reconnect: string;
   };
   const optionalFeatures = {
     isAudioControlEnabled: queryParameters.audio_control === 'true',
@@ -65,6 +68,7 @@ export default function Rooms({
     isNetworkMetricsEnabled: queryParameters.network_metrics === 'true',
     isSimulcastEnabled: queryParameters.simulcast === 'true',
     isDiagnosticsEnabled: queryParameters.diagnostics === 'true',
+    isAutoReconnectEnabled: queryParameters.auto_reconnect === 'true',
   };
 
   const [roomId, setRoomId] = useState<string>();
@@ -104,6 +108,7 @@ export default function Rooms({
       },
     });
   };
+
   const [networkMetrics, setNetworkMetrics] = useState<NetworkMetrics>();
 
   const [isVideoPlaying, setIsVideoPlaying] = useState<boolean>(false);
@@ -111,6 +116,8 @@ export default function Rooms({
   const [error, setError] = useState<
     { title: string; body: string } | undefined
   >(undefined);
+
+  const [reconnectCount, setReconnectCount] = useState(1);
 
   useEffect(() => {
     setUsername(getUserName());
@@ -131,8 +138,13 @@ export default function Rooms({
   const onDisconnected = (reason: string) => {
     setTokens({ clientToken: '', refreshToken: '' });
 
-    if (reason !== 'user_initiated') {
-      sendNotification({ body: 'Auto reconnecting...' });
+    if (
+      reason !== 'user_initiated' &&
+      optionalFeatures.isAutoReconnectEnabled &&
+      reconnectCount <= MAX_RECONNECT_TIME
+    ) {
+      setReconnectCount((count) => count + 1);
+      sendNotification({ body: `${reconnectCount} - Auto reconnecting...` });
       joinRoom();
     }
   };
