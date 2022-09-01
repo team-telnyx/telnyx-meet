@@ -27,7 +27,7 @@ function Room({
     id: number;
     username: string;
   };
-  onDisconnected: () => void;
+  onDisconnected: (reason: string) => void;
 }) {
   const [useMixedAudioForOutput, setUseMixedAudioForOutput] =
     useState<boolean>(true);
