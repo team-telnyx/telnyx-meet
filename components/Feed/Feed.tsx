@@ -79,19 +79,6 @@ function Feed({
     );
   };
 
-  const renderNetworkMetricsMonitor = () => {
-    if (
-      !stream ||
-      !stream.isConfigured ||
-      !allowedBrowser ||
-      showStatsOverlay
-    ) {
-      return null;
-    }
-
-    return <NetworkMetricsMonitor participant={participant} />;
-  };
-
   const renderVideoBitrate = () => {
     if (participant.origin === 'local') {
       return null;
@@ -130,6 +117,16 @@ function Feed({
       isPresentation={isPresentation}
       showAudioActivityIndicator={showAudioActivityIndicator}
     >
+      <div
+        style={{
+          position: 'absolute',
+          top: 0,
+          right: 0,
+          zIndex: 3,
+        }}
+      >
+        <NetworkMetricsMonitor participant={participant} />
+      </div>
       <FeedHeader showBlackBackgroundColor={showBlackBackgroundColor}>
         <div
           style={{
@@ -138,11 +135,9 @@ function Feed({
           }}
         >
           {renderStats()}
-          {renderNetworkMetricsMonitor()}
           {renderVideoBitrate()}
         </div>
       </FeedHeader>
-
       <VideoContainer>
         {showSpinner && (
           <FeedSpinner data-testid='spinner-status'>
