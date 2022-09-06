@@ -117,16 +117,19 @@ function Feed({
       isPresentation={isPresentation}
       showAudioActivityIndicator={showAudioActivityIndicator}
     >
-      <div
-        style={{
-          position: 'absolute',
-          top: 0,
-          right: 0,
-          zIndex: 3,
-        }}
-      >
-        <NetworkMetricsMonitor participant={participant} />
-      </div>
+      {allowedBrowser && (
+        <div
+          style={{
+            position: 'absolute',
+            top: 0,
+            right: 0,
+            zIndex: 3,
+          }}
+        >
+          <NetworkMetricsMonitor participant={participant} />
+        </div>
+      )}
+
       <FeedHeader showBlackBackgroundColor={showBlackBackgroundColor}>
         <div
           style={{
