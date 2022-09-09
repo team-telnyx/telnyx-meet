@@ -117,7 +117,7 @@ function Feed({
       isPresentation={isPresentation}
       showAudioActivityIndicator={showAudioActivityIndicator}
     >
-      {allowedBrowser && (
+      {allowedBrowser && !showStatsOverlay && (
         <div
           style={{
             position: 'absolute',
