@@ -403,9 +403,9 @@
     "@mediapipe/selfie_segmentation" "^0.1.1632777926"
 
 "@telnyx/video@^0.2.0-alpha.29":
-  version "0.2.0-alpha.29"
-  resolved "https://registry.yarnpkg.com/@telnyx/video/-/video-0.2.0-alpha.29.tgz#e9e3a77e3f10049a4522e221ab8bcefef6932cc4"
-  integrity sha512-J99W8DZdgIpiJm8RYjvoUlVf5hPNaPsuLJAh60on0/aU+HEUe0qx0GdkmTLgbgbYsOAOpSpPRgiJwIpaNHSFgA==
+  version "0.2.0-alpha.30"
+  resolved "https://registry.yarnpkg.com/@telnyx/video/-/video-0.2.0-alpha.30.tgz#be274b38ce0ade2e7455e135977111ccb8cc92ef"
+  integrity sha512-uOM1hn5b1tM8Zab3RrLP7n/CfnFOO1yNwafzgHLYsDCaGfxC0h1G2zLmazWChWQyPZqKP9UugCujU101RmVi/A==
   dependencies:
     "@types/uuid" "^8.3.0"
     events "^3.3.0"
@@ -1719,9 +1719,9 @@ ignore@^5.2.0:
   integrity sha512-CmxgYGiEPCLhfLnpPp1MoRmifwEIOgjcHXxOBjv7mY96c+eWScsOP9c112ZyLdWHi0FxHjI+4uVhKYp/gcdRmQ==
 
 immer@^9.0.2:
-  version "9.0.12"
-  resolved "https://registry.yarnpkg.com/immer/-/immer-9.0.12.tgz#2d33ddf3ee1d247deab9d707ca472c8c942a0f20"
-  integrity sha512-lk7UNmSbAukB5B6dh9fnh5D0bJTOFKxVg2cyJWTYrWRfhLrLMBquONcUs3aFq507hNoIZEDDh8lb8UtOizSMhA==
+  version "9.0.15"
+  resolved "https://registry.yarnpkg.com/immer/-/immer-9.0.15.tgz#0b9169e5b1d22137aba7d43f8a81a495dd1b62dc"
+  integrity sha512-2eB/sswms9AEUSkOm4SbV5Y7Vmt/bKRwByd52jfLkW4OLYeaTP3EEiJ9agqU0O/tq6Dk62Zfj+TJSqfm1rLVGQ==
 
 import-fresh@^3.0.0, import-fresh@^3.2.1:
   version "3.3.0"
@@ -3218,7 +3218,7 @@ which@^2.0.1:
 window-or-global@^1.0.1:
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/window-or-global/-/window-or-global-1.0.1.tgz#dbe45ba2a291aabc56d62cf66c45b7fa322946de"
-  integrity sha1-2+RboqKRqrxW1iz2bEW3+jIpRt4=
+  integrity sha512-tE12J/NenOv4xdVobD+AD3fT06T4KNqnzRhkv5nBIu7K+pvOH2oLCEgYP+i+5mF2jtI6FEADheOdZkA8YWET9w==
 
 word-wrap@^1.2.3:
   version "1.2.3"
