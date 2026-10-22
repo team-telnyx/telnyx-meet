@@ -9,6 +9,9 @@
     "lint": "next lint --max-warnings=0",
     "start": "next start"
   },
+  "engines": {
+    "node": ">=22.23.4 <23"
+  },
   "dependencies": {
     "@bugsnag/js": "^7.10.1",
     "@bugsnag/plugin-react": "^7.10.0",
